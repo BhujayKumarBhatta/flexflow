@@ -1,0 +1,9 @@
+*.pyc
+*.db
+.project
+.pydevproject
+venv
+dist
+*.egg-info
+
+
