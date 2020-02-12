@@ -44,7 +44,7 @@ class SqlalchemyDriver:
             try:
                 self.db.session.add(record)        
                 self.db.session.commit()
-                msg = "{} has been registered.".format(record.to_dict())         
+                msg = "{} has been registered.".format(record)         
             except exc.IntegrityError as e :
                 msg = ('databse integrity error, {} by the same name may be already present  or all the requred'
                        'fileds has not been supplied.\n\n Full detail: {}'.format( record, e))
@@ -57,6 +57,7 @@ class SqlalchemyDriver:
         return msg
     
     def update(self, target_class_obj, updated_data:dict, **search_filters ):
+        msg='no such record found to update'
         updated_value_list = []
         Obj = target_class_obj
         query_result = self.db.session.query(Obj).filter_by(**search_filters)
@@ -87,12 +88,31 @@ class SqlalchemyDriver:
             query_result = self.db.session.query(Obj).filter_by(**search_filters)
         for rowObj in query_result:
             #d = rowObj.to_dict()
-            d = rowObj.__dict__
+            d = rowObj.__dict__.copy()
             if '_sa_instance_state' in d:
                 d.pop('_sa_instance_state')
             result_list.append(d)
         return result_list
 
+    def delete(self, target_class_obj, **search_filters):
+        record = None
+        Obj = target_class_obj
+        if search_filters:        
+            query_result = self.db.session.query(Obj).filter_by(**search_filters)
+            for record in query_result:
+                self.db.session.delete(record) 
+        else:
+            query_result = self.db.session.query(Obj).delete()    
+        if  query_result:
+            try:      
+                self.db.session.commit()             
+                status = "{} has been  deleted successfully".format(search_filters)
+                return status
+            except  Exception as e:
+                    status = "{} could not be deleted , the erro is: \n  {}".format(search_filters, e)
+        else:
+            status = "{} not found in database".format(search_filters)
+        return status   
 
 '''
 docker run  --name mysql -p 3307:3306 -v /opt/mysqldata:/var/lib/mysql  -e MYSQL_ROOT_PASSWORD=welcome@123 -d mysql

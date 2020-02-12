@@ -22,17 +22,32 @@ class Tflask(FTestCase):
         return app
     
     def test_flask_config(self):
-        print(app.config.get('storage_drivers'))
+        #print(app.config.get('storage_drivers'))
+        pass
         
     def test_models(self):
+        m.dbdriver.delete(m.Wfstatus)
+        ###########ADDING SINGLE RECORD 
         record = m.Wfstatus(name="Status1")
+        msg = m.dbdriver.insert(record)
+        #print(msg)           
+        self.assertTrue('has been registered' in msg)
+        ############UPDATING THE RECORD 
+        data = {"name": "Status1111"}
+        msg = m.dbdriver.update(m.Wfstatus, data, name='Status1')
+        self.assertTrue("updated the follwoing" in msg)
+        msg = m.dbdriver.list(m.Wfstatus, name="Status1111")
+        self.assertTrue(msg[0]['name'] == 'Status1111')
+        #DELETE A SINGLE RECORD FILTERED BY NAME
+        msg = m.dbdriver.delete(m.Wfstatus, name="Status1111")
+        #print(msg)
+        self.assertTrue("has been  deleted successfully" in msg)
 #         msg = m.dbdriver.insert(record)            
 #         print(msg)
-        data = {"name": "Status1111"}
-        msg = m.dbdriver.update(m.Wfstatus, data, id=1)
-        print(msg)
-        msg = m.dbdriver.list(m.Wfstatus)
-        print(msg)
-        
+#         msg = m.dbdriver.delete(m.Wfstatus, id='all')
+#         print(msg)
+#         msg = m.dbdriver.list(m.Wfstatus)
+#         print(msg)
+#         
     
 
