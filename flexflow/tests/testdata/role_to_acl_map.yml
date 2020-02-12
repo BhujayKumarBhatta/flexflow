@@ -1,0 +1,53 @@
+- name: role1
+  allow:
+  - tokenleader.list_users
+  - tokenleader.list_user_byname
+  - tokenleader.list_org
+  - tokenleader.list_dept
+  - tokenleader.list_role
+  - tokenleader.list_ou
+  - tokenleader.list_wfc
+  - tokenleader.add_user
+  - tokenleader.add_wfc
+  - tokenleader.add_ou
+  - tokenleader.add_dept
+  - tokenleader.add_org
+  - tokenleader.add_role
+  - tokenleader.delete_user
+  - tokenleader.delete_org
+  - tokenleader.delete_ou
+  - tokenleader.delete_dept
+  - tokenleader.delete_role
+  - tokenleader.delete_wfc
+  - tokenleader.list_services
+  - tokenleader.list_services_byname
+  - tokenleader.add_service
+  - tokenleader.delete_service
+  - tokenleader.delete_service_byname
+  - invstore.list_all
+  - invstore.delete_all
+  - invstore.infobhanreview
+  - xluploader.upload_excel
+  - invstore.tspaction
+  
+- name: role2
+  allow:
+  - service1:third_api:rulename3
+  - service1:fourthapi_api:rulename4
+  
+- name: role3
+  allow:
+  - service1:5thapi_api:rulename5
+  - service1:6thapi_api:rulename6
+  
+- name: role4
+  allow:
+  - service1:first_api:rulename1
+  - service1:fourthapi_api:rulename4
+  - service1:7api_api:rulename7
+  
+#- name: admin
+#  allow:
+#  - service1:first_api:rulename1
+#  - service1:fourthapi_api:rulename4
+#  - service1:7api_api:rulename7

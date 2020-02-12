@@ -1,0 +1,80 @@
+host_name: 0.0.0.0 # for docker this should 0.0.0.0 
+host_port: 5020 
+ssl: disabled # not required other than testing the flaks own ssl. ssl should be handled by apache
+ssl_settings: adhoc
+
+storage_drivers:
+    mongodb:  
+      DRIVER: mongodb
+      Server: dbserver
+      Port: 27017
+      Database: test_flexflow
+      UID: admin
+      db_pwd_key_map: db_pwd
+    mysql:
+      Server: localhost
+      Port: 3306
+      Database: test_flexflow
+      UID: root
+      db_pwd_key_map: db_pwd
+  
+kafka_servers:
+  #- '10.174.112.150:9092'
+  - '10.174.112.152:9092'
+  
+secrets:
+  user_auth_info_file_location: testlocation # where you have write access 
+  fernet_key_file: testlocation # where you have write access and preferebly separated from secrets_file_location
+  db_pwd_key_map: db_pwd # when using encrypt-pwd command use this value for --kemap 
+  tokenleader_pwd_key_map: tl_pwd
+  
+upload_excel:
+    max_row: 30
+    
+    excel_headers: ['InvoiceNo', 'Action', 'TSP', 'Division', 'InfoID', 'CircuitID',
+                    'Speed', 'ARC', 'ServiceType',
+                    'SiteID', 'FullSiteAddress', 'GSTNo',
+                    'BillingDateFrom', 'BillingDateTO', 'InvoiceDate', 'TaxName', 'Total',  ' REMARKS']
+
+    str_columns: ['InvoiceNo', 'Action', 'TSP', 'Division', 'InfoID', 'CircuitID',
+                    'Speed', 'ARC', 'ServiceType',
+                    'SiteID', 'FullSiteAddress', 'GSTNo',
+                    'BillingDateFrom', 'BillingDateTO', 'InvoiceDate', 'TaxName', ' REMARKS']
+                    
+    int_columns: [Total', ]
+                    
+
+    data_length: {
+                        'Action': 100,
+                        'TSP': 60,
+                        'InvoiceNo': 100,
+                        'InfoID': 200,
+                        'CircuitID': 200,
+                        'Speed': 1000,
+                        'ARC': 200,
+                        'GSTNo': 500,
+                        'Division': 500,
+                        'BillingDateFrom': 500,
+                        'BillingDateTO': 500,
+                        'InvoiceDate': 500,
+                        'TaxName':  40,
+                        'Total': 10000,
+                        'ServiceType': 500,
+                        'SiteID': 500,
+                        'FullSiteAddress': 500,
+                        'REMARKS': 5000}
+
+ 
+                                
+  
+
+token:
+     tokenexpiration: 8
+     #default will take the id_rsa keys from the  users home directory and .ssh directiry
+     #put the file name here if  the file name is different
+     #also the public ley need to be copied in the client settings file under /etc/tlclient
+     private_key_file_location: ~/.ssh/id_rsa
+     public_key_file_location: ~/.ssh/id_rsa.pub
+                                
+
+ 
