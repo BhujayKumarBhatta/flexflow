@@ -39,15 +39,15 @@ class Tflask(FTestCase):
         msg = m.dbdriver.list(m.Wfstatus, name="Status1111")
         self.assertTrue(msg[0]['name'] == 'Status1111')
         #DELETE A SINGLE RECORD FILTERED BY NAME
-        msg = m.dbdriver.delete(m.Wfstatus, name="Status1111")
-        #print(msg)
+        msg = m.dbdriver.delete(m.Wfstatus, name="Status1111")        
         self.assertTrue("has been  deleted successfully" in msg)
-#         msg = m.dbdriver.insert(record)            
-#         print(msg)
-#         msg = m.dbdriver.delete(m.Wfstatus, id='all')
-#         print(msg)
-#         msg = m.dbdriver.list(m.Wfstatus)
-#         print(msg)
-#         
+        #########INSERT BULK
+        lod = [{"name": "status2"}, {"name": "status3"}, {"name": "status4"}]
+        msg = m.dbdriver.insert_bulk(m.Wfstatus, lod)        
+        msg = m.dbdriver.list(m.Wfstatus)
+        self.assertTrue(len(msg) == 3)
+        ###########DELETE ALL
+        msg = m.dbdriver.delete(m.Wfstatus)
+        print(msg)
     
 

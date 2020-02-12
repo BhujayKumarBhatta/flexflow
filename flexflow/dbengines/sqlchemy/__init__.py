@@ -56,6 +56,23 @@ class SqlalchemyDriver:
         #print(msg)
         return msg
     
+    def insert_bulk(self, target_class_obj, lod:list):
+        Obj = target_class_obj
+        try:
+            self.db.session.bulk_insert_mappings(Obj, lod)     
+            self.db.session.commit()
+            msg = "has been registered"       
+        except exc.IntegrityError as e :
+            msg = ('databse integrity error, the same name may be already present  or all the requred'
+                   'fileds has not been supplied.\n\n Full detail: {}'.format( e))
+            self.db.session.rollback()
+            #raise
+        except  Exception as e:
+            msg =("could not be registered , the erro is: \n  {}".format(e))
+            self.db.session.rollback() 
+        #print(msg)
+        return msg
+    
     def update(self, target_class_obj, updated_data:dict, **search_filters ):
         msg='no such record found to update'
         updated_value_list = []
@@ -114,6 +131,7 @@ class SqlalchemyDriver:
             status = "{} not found in database".format(search_filters)
         return status   
 
+    
 '''
 docker run  --name mysql -p 3307:3306 -v /opt/mysqldata:/var/lib/mysql  -e MYSQL_ROOT_PASSWORD=welcome@123 -d mysql
 
