@@ -1,10 +1,9 @@
 from flexflow.configs import testconf
-from unittest import TestCase
 from flask_testing import TestCase as FTestCase
-from flask import Flask
 import flexflow
 from flexflow.dbengines.sqlchemy import models as m
 from sqlalchemy import exc
+from flexflow.domains import entities as ent
 
 # class T2(TestCase):
 #     def test_conf(self):
@@ -48,6 +47,12 @@ class Tflask(FTestCase):
         self.assertTrue(len(msg) == 3)
         ###########DELETE ALL
         msg = m.dbdriver.delete(m.Wfstatus)
+        print(msg)
+        
+    def test_repos(self):
+        status_lod = [{"name": "Status1111"}]
+        statrepo = ent.StatusRepo()
+        msg = statrepo.add_status_form_lod(status_lod)
         print(msg)
     
 
