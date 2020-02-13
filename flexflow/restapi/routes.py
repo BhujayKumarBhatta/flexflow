@@ -55,7 +55,7 @@ def wfmaster_list_multiple_searchkey(objname):
     return json.dumps(result)
   
     
-@bp1.route('/update/<objname>', methods=['PUT'])
+@bp1.route('/update/<objname>', methods=['PUT']) #PUT is to replace the entire resourcce, whereas patch is partial update
 def wfmaster_update(objname):
     try:
         repo = repos.DomainRepo(objname)
