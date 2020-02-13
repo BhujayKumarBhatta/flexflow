@@ -1,5 +1,8 @@
 eclipse.preferences.version=1
 encoding//venv/lib/python3.5/site-packages/flask/blueprints.py=utf-8
+encoding//venv/lib/python3.5/site-packages/flask/globals.py=utf-8
+encoding//venv/lib/python3.5/site-packages/flask/testing.py=utf-8
 encoding//venv/lib/python3.5/site-packages/flask_testing/utils.py=utf-8
+encoding//venv/lib/python3.5/site-packages/werkzeug/_internal.py=utf-8
 encoding//venv/lib/python3.5/site-packages/werkzeug/local.py=utf-8
 encoding//venv/lib/python3.5/site-packages/werkzeug/test.py=utf-8
