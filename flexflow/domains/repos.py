@@ -1,6 +1,6 @@
 import json
 from flexflow.dbengines.sqlchemy import models as sqlm
-from flexflow.exceptions import rules_exceptions  as exc
+from flexflow.exceptions import rules_exceptions  as rexc
 from flexflow.domains import entities as ent
 
         
@@ -17,11 +17,15 @@ class DomainRepo:
     
     def __init__(self, objname:str, dbdriver=sqlm.dbdriver):        
         self.dbdriver = dbdriver
-        self.sql_obj = self.sql_obJ_map.get(objname)
-        self.domain_obj = self.domain_obj_map.get(objname)
+        if objname in self.sql_obJ_map.keys():
+            self.sql_obj = self.sql_obJ_map.get(objname)
+            self.domain_obj = self.domain_obj_map.get(objname)
+        else:
+            raise rexc.InvalidWorkflowObject(objname, self.sql_obJ_map.keys())
         
-    def add_form_lod(self, status_lod:list):        
-        db_save_result = self.dbdriver.insert_bulk(self.sql_obj, status_lod)
+    def add_form_lod(self, data_lod:list):
+        self._validate_input_data_lod(data_lod)
+        db_save_result = self.dbdriver.insert_bulk(self.sql_obj, data_lod)
         return db_save_result
         
     def list_obj(self, **search_filters):        
@@ -34,6 +38,7 @@ class DomainRepo:
         return lod
     
     def update_from_lod(self, updated_data_dict, **search_filters):
+        self._validate_input_data_dict(updated_data_dict)
         result = self.dbdriver.update(self.sql_obj, updated_data_dict, **search_filters)
         return result
     
@@ -43,6 +48,16 @@ class DomainRepo:
     
     def _create_domain_object(self, status_dict:dict):
         return self.domain_obj.from_dict(status_dict)
+    
+    def _validate_input_data_lod(self, data_lod):
+        for data_dict in data_lod:
+            self._validate_input_data_dict(data_dict)
+            
+    def _validate_input_data_dict(self, data_dict):
+        for k in  data_dict.keys():
+                if k not in  self.sql_obj__dict__.keys():
+                    raise rexc.InvalidKeysInData(k, self.sql_obj__dict__.keys())
+        
            
 
         
