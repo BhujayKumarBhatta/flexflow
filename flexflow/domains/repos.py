@@ -56,11 +56,16 @@ class DomainRepo:
             self._validate_input_data_dict(data_dict)
             
     def _validate_input_data_dict(self, data_dict):
-        if not isinstance(data_dict, list):
+        if not isinstance(data_dict, dict):
             raise rexc.InvalidInputDataDict
         for k in  data_dict.keys():
                 if k not in  self.sql_obj.__dict__.keys():
-                    raise rexc.InvalidKeysInData(k, [k for k in self.sql_obj__dict__.keys()])
+                    obj_dict_copy = self.sql_obj.__dict__.copy()
+                    pop_keys = [i for i in obj_dict_copy if '__' in i]
+                    for j in pop_keys: obj_dict_copy.pop(j)
+                    if '_sa_class_manager' in obj_dict_copy: obj_dict_copy.pop('_sa_class_manager')
+                    if 'id' in obj_dict_copy: obj_dict_copy.pop('id')                 
+                    raise rexc.InvalidKeysInData(k, obj_dict_copy.keys())
         
            
 

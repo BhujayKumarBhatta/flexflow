@@ -33,6 +33,6 @@ class InvalidKeysInData(FlexFlowException):
     def __init__(self, inputkey, object_attributes):
         self.inputkey = inputkey
         self.object_attributes = object_attributes
-        self.message = ("Invalid key in Input data: %s, it should be one from %s."
+        self.message = ("The key name '%s' is Invalid in Input data, it should be one from %s."
                         "" %(self.inputkey, self.object_attributes))
         super().__init__(self.status, self.message)   

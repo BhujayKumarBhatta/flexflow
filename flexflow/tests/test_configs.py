@@ -73,20 +73,37 @@ class Tflask(FTestCase):
         self.assertTrue(not msg)
       
     def test_routes(self):
-        data= {"name": "ABC"}
-#         token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
-#         for d in address_data:           
-#             print(d)
+        api_route = '/wfmaster/add/Wfstatuswrong'
+        ############WRONG OBJECT NAME   
+        data= [{"name1": "ABC"}]        
+        return_data = self._post_call(api_route, data)
+        self.assertTrue(return_data.get('status') == "InvalidWorkflowObject")
+        ############WRONG DATA , IS NOT LIST
+        api_route = '/wfmaster/add/Wfstatus'      
+        data= {"name1": "ABC"}      
+        return_data = self._post_call(api_route, data)        
+        self.assertTrue(return_data.get('status') == "InvalidInputDataList")
+        ############WRONG DATA, NOT DICTIONARY WITHIN THE LIST            
+        data= ["name1" ,  "ABC" ]     
+        return_data = self._post_call(api_route, data)        
+        self.assertTrue(return_data.get('status') == "InvalidInputDataDict")           
+        ############WRONG KEY IN DATA        
+        data= [{"name1": "ABC"}]        
+        return_data = self._post_call(api_route, data)        
+        self.assertTrue(return_data.get('status') == "InvalidKeysInData")
+        ############REGISTER WITH CORRECT DATA       
+        data= [{"name": "ABC"}]        
+        return_data = self._post_call(api_route, data)
+        #print(return_data)       
+        self.assertTrue("has been registered" in return_data)
+            
+    def _post_call(self, api_route, data):
+#       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
         with self.client:
             self.headers = {'X-Auth-Token': "token_in_byte"}
-            api_route = '/wfmaster/add/Wfstatus'
             response = self.client.post(api_route, 
                                         headers=self.headers,
                                         data=json.dumps(data),
                                         content_type='application/json')
-            print(response)
-            return_data = json.loads(response.data.decode())
-            print(return_data)
-            self.assertTrue(isinstance(return_data, dict))
-    
+            return json.loads(response.data.decode())
 

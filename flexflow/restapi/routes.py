@@ -11,8 +11,9 @@ def wfmaster_add(objname):
     try:
         repo = repos.DomainRepo(objname)
         result = repo.add_form_lod(request.json)
-    except (rexc.InvalidWorkflowObject, rexc.InvalidKeysInData) as err:
-        result = err
+    except (rexc.InvalidWorkflowObject, rexc.InvalidInputDataList,
+            rexc.InvalidInputDataDict, rexc.InvalidKeysInData) as errObj:
+        result = errObj.__repr__()
     except Exception as err:
             result = {'status': "unknown", 'msg': str(err)}
     return json.dumps(result)
