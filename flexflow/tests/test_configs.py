@@ -54,5 +54,9 @@ class Tflask(FTestCase):
         statrepo = repos.DomainRepo("Wfstatus")
         msg = statrepo.add_form_lod(status_lod)
         print(msg)
+        msg = statrepo.list_obj(name="Status1111")
+        print(msg)
+        msg = statrepo.list_dict(name="Status1111")
+        print(msg)
     
 

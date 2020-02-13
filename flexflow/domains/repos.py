@@ -5,7 +5,9 @@ from flexflow.domains import entities as ent
 
         
 class DomainRepo:
-    '''holds all the status as a list
+    '''bridge between domain entities  and storage layer
+    allows creation of domain objects from list of dictionaries
+    and allows all CURD operation
     ''' 
     sql_obJ_map = {"Wfstatus": sqlm.Wfstatus,
                    }
@@ -24,18 +26,18 @@ class DomainRepo:
         
     def list_obj(self, **search_filters):        
         lod = self.dbdriver.list(self.sql_obj, **search_filters)
-        result = [self._create_status_obj(d) for d in lod]    
+        result = [self._create_domain_object(d) for d in lod]    
         return result
     
-#     def list_status_dicts(self, filters={}):
-#         lod = self.db_engine.list(self.target_obj, filters)
-#         return lod
+    def list_dict(self, **search_filters):
+        lod = self.dbdriver.list(self.sql_obj, **search_filters)
+        return lod
     
 #     def delete_status(self, filters={}):
 #         delete_result = self.db_engine.delete(self.target_obj, filters={})
 #         return delete_result
     
-    def _create_status_object(self, status_dict:dict):
+    def _create_domain_object(self, status_dict:dict):
         return self.domain_obj.from_dict(status_dict)
            
 
