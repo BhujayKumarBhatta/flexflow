@@ -1,5 +1,5 @@
 import json
-from flask import Blueprint
+from flask import Blueprint, request
 from flexflow.domains import repos
 from flexflow.exceptions import rules_exceptions  as rexc
 
@@ -10,11 +10,11 @@ bp1 = Blueprint('bp1',__name__)
 def wfmaster_add(objname):
     try:
         repo = repos.DomainRepo(objname)
-        repo.add_form_lod(status_lod)
+        result = repo.add_form_lod(request.json)
     except (rexc.InvalidWorkflowObject, rexc.InvalidKeysInData) as err:
         result = err
     except Exception as err:
-            result = {'status': "error", 'msg': str(err)}
+            result = {'status': "unknown", 'msg': str(err)}
     return json.dumps(result)
     
     

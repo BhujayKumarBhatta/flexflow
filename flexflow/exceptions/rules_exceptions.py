@@ -1,5 +1,14 @@
 from  flexflow.exceptions.parent_exception import FlexFlowException
 
+class InvalidInputDataList(FlexFlowException):
+    status = "InvalidInputDataList"  
+    message = "Data must be  list(json array) type"
+    
+class InvalidInputDataDict(FlexFlowException):
+    status = "InvalidInputDataDict"  
+    message = "Data must be  dictionary(json object) type" 
+    
+        
 class InvalidDocCategory(FlexFlowException):
     status = "InvalidDocCategory"    
     def __init__(self, status_doc_category, list_doc_category):
@@ -10,20 +19,20 @@ class InvalidDocCategory(FlexFlowException):
         super(InvalidDocCategory, self).__init__(self.status, self.message)
         
 class InvalidWorkflowObject(FlexFlowException):
-    status = "InvalidDocCategory"    
+    status = "InvalidWorkflowObject"    
     def __init__(self, objname, domain_obj_names):
         self.objname = objname
         self.domain_obj_names = domain_obj_names
-        self.message = ("Invalid workflow object name: %s , it should be one from %s."
+        self.message = ("Invalid workflow object name: %s, it should be one from %s."
                         "" %(self.objname, self.domain_obj_names))
-        super(InvalidDocCategory, self).__init__(self.status, self.message)
+        super().__init__(self.status, self.message)
         
         
 class InvalidKeysInData(FlexFlowException):
-    status = "InvalidDocCategory"    
+    status = "InvalidKeysInData"    
     def __init__(self, inputkey, object_attributes):
         self.inputkey = inputkey
         self.object_attributes = object_attributes
-        self.message = ("Invalid key in Input data: %s , it should be one from %s."
+        self.message = ("Invalid key in Input data: %s, it should be one from %s."
                         "" %(self.inputkey, self.object_attributes))
-        super(InvalidDocCategory, self).__init__(self.status, self.message)   
+        super().__init__(self.status, self.message)   

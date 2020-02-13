@@ -16,12 +16,12 @@ class DomainRepo:
                    }
     
     def __init__(self, objname:str, dbdriver=sqlm.dbdriver):        
-        self.dbdriver = dbdriver
-        if objname in self.sql_obJ_map.keys():
+        self.dbdriver = dbdriver        
+        if self.sql_obJ_map.get(objname):
             self.sql_obj = self.sql_obJ_map.get(objname)
             self.domain_obj = self.domain_obj_map.get(objname)
         else:
-            raise rexc.InvalidWorkflowObject(objname, self.sql_obJ_map.keys())
+            raise rexc.InvalidWorkflowObject(objname, ','.join(self.sql_obJ_map.keys()))
         
     def add_form_lod(self, data_lod:list):
         self._validate_input_data_lod(data_lod)
@@ -50,13 +50,17 @@ class DomainRepo:
         return self.domain_obj.from_dict(status_dict)
     
     def _validate_input_data_lod(self, data_lod):
+        if not isinstance(data_lod, list):
+            raise rexc.InvalidInputDataList
         for data_dict in data_lod:
             self._validate_input_data_dict(data_dict)
             
     def _validate_input_data_dict(self, data_dict):
+        if not isinstance(data_dict, list):
+            raise rexc.InvalidInputDataDict
         for k in  data_dict.keys():
-                if k not in  self.sql_obj__dict__.keys():
-                    raise rexc.InvalidKeysInData(k, self.sql_obj__dict__.keys())
+                if k not in  self.sql_obj.__dict__.keys():
+                    raise rexc.InvalidKeysInData(k, [k for k in self.sql_obj__dict__.keys()])
         
            
 

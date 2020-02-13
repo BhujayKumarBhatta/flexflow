@@ -1,13 +1,16 @@
+import json
 from flexflow.configs import testconf
 from flask_testing import TestCase as FTestCase
 import flexflow
 from flexflow.dbengines.sqlchemy import models as m
 from sqlalchemy import exc
 from flexflow.domains import repos
+from flexflow.restapi.routes import bp1
 
 
         
-app = flexflow.create_app(config_map_list = [testconf.yml, testconf.test_db_conf])
+app = flexflow.create_app(config_map_list = [testconf.yml, testconf.test_db_conf],
+                          blue_print_list = [bp1,])
         
 class Tflask(FTestCase):
     
@@ -68,6 +71,22 @@ class Tflask(FTestCase):
         self.assertTrue("deleted successfully" in  msg)
         msg=statrepo.list_obj()
         self.assertTrue(not msg)
-        
+      
+    def test_routes(self):
+        data= {"name": "ABC"}
+#         token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
+#         for d in address_data:           
+#             print(d)
+        with self.client:
+            self.headers = {'X-Auth-Token': "token_in_byte"}
+            api_route = '/wfmaster/add/Wfstatus'
+            response = self.client.post(api_route, 
+                                        headers=self.headers,
+                                        data=json.dumps(data),
+                                        content_type='application/json')
+            print(response)
+            return_data = json.loads(response.data.decode())
+            print(return_data)
+            self.assertTrue(isinstance(return_data, dict))
     
 
