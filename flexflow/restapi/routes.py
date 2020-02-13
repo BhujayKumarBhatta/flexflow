@@ -3,7 +3,7 @@ from flask import Blueprint, request
 from flexflow.domains import repos
 from flexflow.exceptions import rules_exceptions  as rexc
 
-bp1 = Blueprint('bp1',__name__)
+bp1 = Blueprint('bp1', __name__)
 
 
 @bp1.route('/add/<objname>', methods=['POST'])
@@ -13,10 +13,11 @@ def wfmaster_add(objname):
         result = repo.add_form_lod(request.json)
     except (rexc.InvalidWorkflowObject, rexc.InvalidInputDataList,
             rexc.InvalidInputDataDict, rexc.InvalidKeysInData) as errObj:
-        result = errObj.__repr__()
+        result = errObj.ret_val
     except Exception as err:
             result = {'status': "unknown", 'msg': str(err)}
     return json.dumps(result)
+
 
 @bp1.route('/list/<objname>/<searchkey>/<searchvalue>', methods=['GET'])
 def wfmaster_list_single_searchkey(objname, searchkey, searchvalue):
@@ -32,7 +33,7 @@ def wfmaster_list_single_searchkey(objname, searchkey, searchvalue):
             result = repo.list_dict(**filter)#convert dict as name=value with **
     except (rexc.InvalidWorkflowObject, rexc.InvalidInputDataDict,
             rexc.InvalidKeysInData) as errObj:
-        result = errObj.__repr__()
+        result = errObj.ret_val
     except Exception as err:
             result = {'status': "unknown", 'msg': str(err)}
     return json.dumps(result)
@@ -48,9 +49,33 @@ def wfmaster_list_multiple_searchkey(objname):
         result = repo.list_dict(**request.json) #convert dict as name=value with **        
     except (rexc.InvalidWorkflowObject, rexc.InvalidInputDataDict,
             rexc.InvalidKeysInData) as errObj:
-        result = errObj.__repr__()
+        result = errObj.ret_val
     except Exception as err:
             result = {'status': "unknown", 'msg': str(err)}
     return json.dumps(result)
+  
     
-    
+@bp1.route('/update/<objname>', methods=['PUT'])
+def wfmaster_update(objname):
+    try:
+        repo = repos.DomainRepo(objname)
+        result = repo.update_from_dict(request.json)
+    except (rexc.InvalidWorkflowObject, rexc.InvalidInputDataDict,
+            rexc.InvalidKeysInData) as errObj:
+        result = errObj.ret_val
+    except Exception as err:
+            result = {'status': "unknown", 'msg': str(err)}
+    return json.dumps(result)
+
+
+@bp1.route('/delete/<objname>', methods=['DELETE'])
+def wfmaster_delete(objname):
+    try:
+        repo = repos.DomainRepo(objname)        
+        result = repo.delete(**request.json)#convert dict as name=value with **
+    except (rexc.InvalidWorkflowObject, rexc.InvalidInputDataDict,
+            rexc.InvalidKeysInData) as errObj:
+        result = errObj.ret_val
+    except Exception as err:
+            result = {'status': "unknown", 'msg': str(err)}
+    return json.dumps(result)

@@ -34,15 +34,17 @@ class DomainRepo:
         return result
     
     def list_dict(self, **search_filters):
+        self._validate_input_data_dict(search_filters)
         lod = self.dbdriver.list(self.sql_obj, **search_filters)
         return lod
     
-    def update_from_lod(self, updated_data_dict, **search_filters):
+    def update_from_dict(self, updated_data_dict, **search_filters):
         self._validate_input_data_dict(updated_data_dict)
         result = self.dbdriver.update(self.sql_obj, updated_data_dict, **search_filters)
         return result
     
     def delete(self, **search_filters):
+        self._validate_input_data_dict(search_filters)
         delete_result = self.dbdriver.delete(self.sql_obj, **search_filters)
         return delete_result
     

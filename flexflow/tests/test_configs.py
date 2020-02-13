@@ -64,7 +64,7 @@ class Tflask(FTestCase):
         self.assertTrue(msg[0]['name'] == 'Status1111')
         ##########UPDATE THE ENTITIES 
         updated_data_dict = {"name": "Status222222"}
-        msg = statrepo.update_from_lod(updated_data_dict)
+        msg = statrepo.update_from_dict(updated_data_dict)
         self.assertTrue("updated the follwoing" in msg)
         ##########DELETE
         msg = statrepo.delete(name='Status222222')
@@ -108,6 +108,16 @@ class Tflask(FTestCase):
         filter_data = {"name": "ABC"}
         msg = self._post_call(api_route, filter_data)        
         self.assertTrue(msg[0].get('name') == "ABC")
+        ###########UPDATE THE DATA
+        api_route = '/update/Wfstatus'
+        update_data_dict = {"name": "DEF"}
+        msg = self._put_call(api_route, update_data_dict)            
+        self.assertTrue("updated the follwoing" in msg)
+        ###########DELETE
+        api_route = '/delete/Wfstatus'
+        filter_data = {"name": "DEF"}
+        msg = self._delete_call(api_route, filter_data)        
+        self.assertTrue("has been  deleted successfully" in msg)
         
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
@@ -127,3 +137,22 @@ class Tflask(FTestCase):
                                         headers=self.headers,)
             return json.loads(response.data.decode())
 
+    def _put_call(self, api_route, data):
+#       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
+        with self.client:
+            self.headers = {'X-Auth-Token': "token_in_byte"}
+            response = self.client.put(api_route, 
+                                        headers=self.headers,
+                                        data=json.dumps(data),
+                                        content_type='application/json')
+            return json.loads(response.data.decode())
+
+    def _delete_call(self, api_route, data):
+#       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
+        with self.client:
+            self.headers = {'X-Auth-Token': "token_in_byte"}
+            response = self.client.delete(api_route, 
+                                        headers=self.headers,
+                                        data=json.dumps(data),
+                                        content_type='application/json')
+            return json.loads(response.data.decode())
