@@ -33,6 +33,10 @@ class DomainRepo:
         lod = self.dbdriver.list(self.sql_obj, **search_filters)
         return lod
     
+    def update_from_lod(self, updated_data_dict, **search_filters):
+        result = self.dbdriver.update(self.sql_obj, updated_data_dict, **search_filters)
+        return result
+    
 #     def delete_status(self, filters={}):
 #         delete_result = self.db_engine.delete(self.target_obj, filters={})
 #         return delete_result

@@ -53,10 +53,13 @@ class Tflask(FTestCase):
         status_lod = [{"name": "Status1111"}]
         statrepo = repos.DomainRepo("Wfstatus")
         msg = statrepo.add_form_lod(status_lod)
-        print(msg)
+        self.assertTrue('has been registered' in msg)
         msg = statrepo.list_obj(name="Status1111")
-        print(msg)
+        self.assertTrue(msg[0].name == 'Status1111')
         msg = statrepo.list_dict(name="Status1111")
-        print(msg)
+        self.assertTrue(msg[0]['name'] == 'Status1111')
+        updated_data_dict = {"name": "Status222222"}
+        msg = statrepo.update_from_lod(updated_data_dict)
+        self.assertTrue("updated the follwoing" in msg)
     
 
