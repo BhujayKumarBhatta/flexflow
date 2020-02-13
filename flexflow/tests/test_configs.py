@@ -4,6 +4,7 @@ import flexflow
 from flexflow.dbengines.sqlchemy import models as m
 from sqlalchemy import exc
 from flexflow.domains import repos
+from werkzeug._reloader import StatReloaderLoop
 
 # class T2(TestCase):
 #     def test_conf(self):
@@ -50,16 +51,27 @@ class Tflask(FTestCase):
         print(msg)
         
     def test_repos(self):
-        status_lod = [{"name": "Status1111"}]
+        #####INITIALIZE A REPO FOR DOMAIN ENTITY
         statrepo = repos.DomainRepo("Wfstatus")
+        ##############ADD ENTITY
+        status_lod = [{"name": "Status1111"}]        
         msg = statrepo.add_form_lod(status_lod)
         self.assertTrue('has been registered' in msg)
+        ##################LIST OBJECTS  FROM REPO
         msg = statrepo.list_obj(name="Status1111")
         self.assertTrue(msg[0].name == 'Status1111')
+        ############LIST THE ENTITIES AS DICT 
         msg = statrepo.list_dict(name="Status1111")
         self.assertTrue(msg[0]['name'] == 'Status1111')
+        ##########UPDATE THE ENTITIES 
         updated_data_dict = {"name": "Status222222"}
         msg = statrepo.update_from_lod(updated_data_dict)
         self.assertTrue("updated the follwoing" in msg)
+        ##########DELETE
+        msg = statrepo.delete(name='Status222222')
+        self.assertTrue("deleted successfully" in  msg)
+        msg=statrepo.list_obj()
+        self.assertTrue(not msg)
+        
     
 

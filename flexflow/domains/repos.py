@@ -37,9 +37,9 @@ class DomainRepo:
         result = self.dbdriver.update(self.sql_obj, updated_data_dict, **search_filters)
         return result
     
-#     def delete_status(self, filters={}):
-#         delete_result = self.db_engine.delete(self.target_obj, filters={})
-#         return delete_result
+    def delete(self, **search_filters):
+        delete_result = self.dbdriver.delete(self.sql_obj, **search_filters)
+        return delete_result
     
     def _create_domain_object(self, status_dict:dict):
         return self.domain_obj.from_dict(status_dict)
