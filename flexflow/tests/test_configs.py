@@ -3,7 +3,7 @@ from flask_testing import TestCase as FTestCase
 import flexflow
 from flexflow.dbengines.sqlchemy import models as m
 from sqlalchemy import exc
-from flexflow.domains import entities as ent
+from flexflow.domains import repos
 
 # class T2(TestCase):
 #     def test_conf(self):
@@ -51,8 +51,8 @@ class Tflask(FTestCase):
         
     def test_repos(self):
         status_lod = [{"name": "Status1111"}]
-        statrepo = ent.StatusRepo()
-        msg = statrepo.add_status_form_lod(status_lod)
+        statrepo = repos.DomainRepo("Wfstatus")
+        msg = statrepo.add_form_lod(status_lod)
         print(msg)
     
 
