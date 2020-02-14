@@ -56,7 +56,7 @@ class SqlalchemyDriver:
         #print(msg)
         return msg
     
-    def add_from_lod(self, lod:list):
+    def add_from_lod_mock(self, lod:list):
         pass
         #iterate through lod and get the dict 
         #the relationship keys will have the value as id or primary key 
@@ -70,6 +70,23 @@ class SqlalchemyDriver:
         Obj = target_class_obj
         try:
             self.db.session.bulk_insert_mappings(Obj, lod)     
+            self.db.session.commit()
+            msg = "has been registered"       
+        except exc.IntegrityError as e :
+            msg = ('databse integrity error, the same name may be already present  or all the requred'
+                   'fileds has not been supplied.\n\n Full detail: {}'.format( e))
+            self.db.session.rollback()
+            #raise
+        except  Exception as e:
+            msg =("could not be registered , the erro is: \n  {}".format(e))
+            self.db.session.rollback() 
+        #print(msg)
+        return msg
+    
+    def add_from_lobj(self, lobj:list):
+        #Obj = target_class_obj
+        try:
+            self.db.session.add_all(lobj)     
             self.db.session.commit()
             msg = "has been registered"       
         except exc.IntegrityError as e :
@@ -105,7 +122,7 @@ class SqlalchemyDriver:
         #print(msg)
         return msg  
     
-    def list(self, target_class_obj,  **search_filters ):            
+    def list_as_dict(self, target_class_obj,  **search_filters ):            
         result_list = []
         Obj = target_class_obj
         print('filter for the listing is  %s' %(search_filters))
@@ -120,6 +137,15 @@ class SqlalchemyDriver:
                 d.pop('_sa_instance_state')
             result_list.append(d)
         return result_list
+    
+    def list_as_obj(self, target_class_obj,  **search_filters ): 
+        Obj = target_class_obj
+        print('filter for the listing is  %s' %(search_filters))
+        if not search_filters:
+            query_result = self.db.session.query(Obj).all()            #result = conn.execute(s)
+        else:
+            query_result = self.db.session.query(Obj).filter_by(**search_filters)        
+        return query_result
 
     def delete(self, target_class_obj, **search_filters):
         record = None
