@@ -2,6 +2,8 @@ import json
 from flexflow.dbengines.sqlchemy import models as sqlm
 from flexflow.exceptions import rules_exceptions  as rexc
 from flexflow.domains import entities as ent
+from sqlalchemy.orm.relationships import RelationshipProperty
+from sqlalchemy.orm.properties import ColumnProperty
 
         
 class DomainRepo:
@@ -10,6 +12,8 @@ class DomainRepo:
     and allows all CURD operation
     ''' 
     sql_obJ_map = {"Wfstatus": sqlm.Wfstatus,
+                   "Doctype": sqlm.Doctype,
+                   "Wfaction": sqlm.Wfaction
                    }
     
     domain_obj_map = {"Wfstatus": ent.Wfstatus,
@@ -57,7 +61,7 @@ class DomainRepo:
         for data_dict in data_lod:
             self._validate_input_data_dict(data_dict)
             
-    def _validate_input_data_dict(self, data_dict):
+    def _validate_input_data_dict(self, data_dict):        
         if not isinstance(data_dict, dict):
             raise rexc.InvalidInputDataDict
         for k in  data_dict.keys():
@@ -68,6 +72,21 @@ class DomainRepo:
                     if '_sa_class_manager' in obj_dict_copy: obj_dict_copy.pop('_sa_class_manager')
                     if 'id' in obj_dict_copy: obj_dict_copy.pop('id')                 
                     raise rexc.InvalidKeysInData(k, obj_dict_copy.keys())
+                else:
+                    attr = getattr(self.sql_obj, k)
+                    attr_property = attr.property
+                    v = isinstance(attr_property, RelationshipProperty)
+                    x = isinstance(attr_property, ColumnProperty)
+                    #property checking worked well , now get the table name
+                    print(attr_property)
+                    attr_target = attr_property.target
+                    print(attr_target)
+                    attr_metatadta = attr.metadata.tables
+                    print(attr_metatadta)
+                    pass
+                
+    
+            
         
            
 

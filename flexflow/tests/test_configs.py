@@ -2,7 +2,7 @@ import json
 from flexflow.configs import testconf
 from flask_testing import TestCase as FTestCase
 import flexflow
-from flexflow.dbengines.sqlchemy import models as m
+from flexflow.dbengines.sqlchemy import models as m, SqlalchemyDriver
 from sqlalchemy import exc
 from flexflow.domains import repos
 from flexflow.restapi.routes import bp1
@@ -50,27 +50,38 @@ class Tflask(FTestCase):
         print(msg)
         
     def test_repos(self):
-        #####INITIALIZE A REPO FOR DOMAIN ENTITY
-        statrepo = repos.DomainRepo("Wfstatus")
-        ##############ADD ENTITY
-        status_lod = [{"name": "Status1111"}]        
-        msg = statrepo.add_form_lod(status_lod)
-        self.assertTrue('has been registered' in msg)
-        ##################LIST OBJECTS  FROM REPO
-        msg = statrepo.list_obj(name="Status1111")
-        self.assertTrue(msg[0].name == 'Status1111')
-        ############LIST THE ENTITIES AS DICT 
-        msg = statrepo.list_dict(name="Status1111")
-        self.assertTrue(msg[0]['name'] == 'Status1111')
-        ##########UPDATE THE ENTITIES 
-        updated_data_dict = {"name": "Status222222"}
-        msg = statrepo.update_from_dict(updated_data_dict)
-        self.assertTrue("updated the follwoing" in msg)
-        ##########DELETE
-        msg = statrepo.delete(name='Status222222')
-        self.assertTrue("deleted successfully" in  msg)
-        msg=statrepo.list_obj()
-        self.assertTrue(not msg)
+#         #####INITIALIZE A REPO FOR DOMAIN ENTITY
+#         statrepo = repos.DomainRepo("Wfstatus")
+#         ##############ADD ENTITY
+#         status_lod = [{"name": "Status1111"}]        
+#         msg = statrepo.add_form_lod(status_lod)
+#         self.assertTrue('has been registered' in msg)
+#         ##################LIST OBJECTS  FROM REPO
+#         msg = statrepo.list_obj(name="Status1111")
+#         self.assertTrue(msg[0].name == 'Status1111')
+#         ############LIST THE ENTITIES AS DICT 
+#         msg = statrepo.list_dict(name="Status1111")
+#         self.assertTrue(msg[0]['name'] == 'Status1111')
+#         ##########UPDATE THE ENTITIES 
+#         updated_data_dict = {"name": "Status222222"}
+#         msg = statrepo.update_from_dict(updated_data_dict)
+#         self.assertTrue("updated the follwoing" in msg)
+#         ##########DELETE
+#         msg = statrepo.delete(name='Status222222')
+#         self.assertTrue("deleted successfully" in  msg)
+#         msg=statrepo.list_obj()
+#         self.assertTrue(not msg)
+        ##########Test LOD WHEN RELATION
+        Wfaction_lod = [{"name": "name1",
+                         "assocated_doctype": 1,
+                         "need_prev_status": "s0",
+                         "need_current_status": "s1",
+                         "leads_to_status": "s2",
+                         "permitted_to_roles": ["r1",]
+                         }]
+        actionrepo = repos.DomainRepo("Wfaction")
+        msg = actionrepo.add_form_lod(Wfaction_lod)
+        print(msg)
       
     def test_routes(self):
         api_route = '/add/Wfstatuswrong'

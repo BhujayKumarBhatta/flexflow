@@ -56,6 +56,16 @@ class SqlalchemyDriver:
         #print(msg)
         return msg
     
+    def add_from_lod(self, lod:list):
+        pass
+        #iterate through lod and get the dict 
+        #the relationship keys will have the value as id or primary key 
+        #auto id by sql may not work for this purpose , we might have to assign uuid or name field as the primary key
+        #from the dict identify which keys are relationship and to which class
+        #for relationship keys  search the respective class to get the object
+        # append to a list of object - convert lod to loobj
+        # use  session.all_all(loobj)
+    
     def insert_bulk(self, target_class_obj, lod:list):
         Obj = target_class_obj
         try:
