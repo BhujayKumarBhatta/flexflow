@@ -1,4 +1,5 @@
 from datetime import datetime
+import uuid
 from sqlalchemy.dialects.mysql import JSON
 from flexflow.dbengines.sqlchemy import SqlalchemyDriver
 
@@ -16,13 +17,13 @@ dt_str_fmt = '%d-%m-%Y'
 
 
 class Wfstatus(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
+    #id = db.Column(db.String(200), primary_key=True)
+    name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
     
     
 class Doctype(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
+    #id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
     #one to many: -     
     #Because relationships are declared before they are established you can use strings to refer to classes that are not created yet (for instance if Doctype defines a relationship to WFAction which is declared later in the file).
     #the foreign key will be declared in the WFAction class , doctype_id = db.Column(db.Integer, db.ForeignKey('doctype.id'))
@@ -34,7 +35,7 @@ class Wfaction(db.Model):
     name = db.Column(db.String(120), unique=True, nullable=False)
     #many to one - place both foreign key  id and relationship in the "Many side" of the relationship
     assocated_doctype = db.relationship('Doctype', backref='wfactions')
-    assocated_doctype_id = db.Column(db.Integer, db.ForeignKey('doctype.id'))
+    assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
     ###########       
     need_prev_status = db.Column(db.String(120), nullable=False)    
     ####################

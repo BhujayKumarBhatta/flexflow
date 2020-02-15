@@ -26,6 +26,8 @@ class Tflask(FTestCase):
         
     def test_models(self):
         m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Doctype)
+        m.dbdriver.delete(m.Wfaction)
         ###########ADDING SINGLE RECORD 
         record = m.Wfstatus(name="Status1")
         msg = m.dbdriver.insert(record)
@@ -50,6 +52,7 @@ class Tflask(FTestCase):
         print(msg)
         
     def test_repos(self):
+        pass
 #         #####INITIALIZE A REPO FOR DOMAIN ENTITY
 #         statrepo = repos.DomainRepo("Wfstatus")
 #         ##############ADD ENTITY
@@ -72,8 +75,12 @@ class Tflask(FTestCase):
 #         msg=statrepo.list_obj()
 #         self.assertTrue(not msg)
         ##########Test LOD WHEN RELATION
+        Doctype_lod = [{"name": "doctype1"}, {"name": "doctype2"}]
+        doctype_repo = repos.DomainRepo("Doctype")
+        msg = doctype_repo.add_form_lod(Doctype_lod)
+        print('doctype', msg)
         Wfaction_lod = [{"name": "name1",
-                         "assocated_doctype": 1,
+                         "assocated_doctype": "doctype1",
                          "need_prev_status": "s0",
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
@@ -81,7 +88,7 @@ class Tflask(FTestCase):
                          }]
         actionrepo = repos.DomainRepo("Wfaction")
         msg = actionrepo.add_form_lod(Wfaction_lod)
-        print(msg)
+        print('action ',msg)
         #replce all the previous tests for list to list_dict
         #test with doctype creation and wfaction creation
       
