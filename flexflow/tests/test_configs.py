@@ -25,9 +25,9 @@ class Tflask(FTestCase):
         pass
         
     def test_models(self):
-        m.dbdriver.delete(m.Wfstatus)
-        m.dbdriver.delete(m.Doctype)
         m.dbdriver.delete(m.Wfaction)
+        m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Doctype)        
         ###########ADDING SINGLE RECORD 
         record = m.Wfstatus(name="Status1")
         msg = m.dbdriver.insert(record)
@@ -53,27 +53,27 @@ class Tflask(FTestCase):
         
     def test_repos(self):
         pass
-#         #####INITIALIZE A REPO FOR DOMAIN ENTITY
-#         statrepo = repos.DomainRepo("Wfstatus")
-#         ##############ADD ENTITY
-#         status_lod = [{"name": "Status1111"}]        
-#         msg = statrepo.add_form_lod(status_lod)
-#         self.assertTrue('has been registered' in msg)
-#         ##################LIST OBJECTS  FROM REPO
-#         msg = statrepo.list_obj(name="Status1111")
-#         self.assertTrue(msg[0].name == 'Status1111')
-#         ############LIST THE ENTITIES AS DICT 
-#         msg = statrepo.list_dict(name="Status1111")
-#         self.assertTrue(msg[0]['name'] == 'Status1111')
-#         ##########UPDATE THE ENTITIES 
-#         updated_data_dict = {"name": "Status222222"}
-#         msg = statrepo.update_from_dict(updated_data_dict)
-#         self.assertTrue("updated the follwoing" in msg)
-#         ##########DELETE
-#         msg = statrepo.delete(name='Status222222')
-#         self.assertTrue("deleted successfully" in  msg)
-#         msg=statrepo.list_obj()
-#         self.assertTrue(not msg)
+        #####INITIALIZE A REPO FOR DOMAIN ENTITY
+        statrepo = repos.DomainRepo("Wfstatus")
+        ##############ADD ENTITY
+        status_lod = [{"name": "Status1111"}]        
+        msg = statrepo.add_form_lod(status_lod)
+        self.assertTrue('has been registered' in msg)
+        ##################LIST OBJECTS  FROM REPO
+        msg = statrepo.list_obj(name="Status1111")
+        self.assertTrue(msg[0].name == 'Status1111')
+        ############LIST THE ENTITIES AS DICT 
+        msg = statrepo.list_dict(name="Status1111")
+        self.assertTrue(msg[0]['name'] == 'Status1111')
+        ##########UPDATE THE ENTITIES 
+        updated_data_dict = {"name": "Status222222"}
+        msg = statrepo.update_from_dict(updated_data_dict)
+        self.assertTrue("updated the follwoing" in msg)
+        ##########DELETE
+        msg = statrepo.delete(name='Status222222')
+        self.assertTrue("deleted successfully" in  msg)
+        msg=statrepo.list_obj()
+        self.assertTrue(not msg)
         ##########Test LOD WHEN RELATION
         Doctype_lod = [{"name": "doctype1"}, {"name": "doctype2"}]
         doctype_repo = repos.DomainRepo("Doctype")
@@ -94,51 +94,51 @@ class Tflask(FTestCase):
       
     def test_routes(self):
         pass
-#         api_route = '/add/Wfstatuswrong'
-#         ############WRONG OBJECT NAME   
-#         data= [{"name1": "ABC"}]        
-#         return_data = self._post_call(api_route, data)
-#         self.assertTrue(return_data.get('status') == "InvalidWorkflowObject")
-#         ############WRONG DATA , IS NOT LIST
-#         api_route = '/add/Wfstatus'      
-#         data= {"name1": "ABC"}      
-#         return_data = self._post_call(api_route, data)        
-#         self.assertTrue(return_data.get('status') == "InvalidInputDataList")
-#         ############WRONG DATA, NOT DICTIONARY WITHIN THE LIST            
-#         data= ["name1" ,  "ABC" ]     
-#         return_data = self._post_call(api_route, data)        
-#         self.assertTrue(return_data.get('status') == "InvalidInputDataDict")           
-#         ############WRONG KEY IN DATA        
-#         data= [{"name1": "ABC"}]        
-#         return_data = self._post_call(api_route, data)        
-#         self.assertTrue(return_data.get('status') == "InvalidKeysInData")
-#         ############REGISTER WITH CORRECT DATA       
-#         data= [{"name": "ABC"}]        
-#         return_data = self._post_call(api_route, data)
-#         #print(return_data)       
-#         self.assertTrue("has been registered" in return_data)
-#         ###########LIST WITHOUT FILTER WITH GET METHOD
-#         api_route = '/list/Wfstatus/all/all'
-#         msg = self._get_call(api_route)
-#         self.assertTrue(msg[0].get('name') == "ABC")
-#         api_route = '/list/Wfstatus/name/ABC'
-#         msg = self._get_call(api_route)
-#         self.assertTrue(msg[0].get('name') == "ABC")
-#         ###########LIST WITH FILTER WITH POST METHOD
-#         api_route = '/list/Wfstatus'
-#         filter_data = {"name": "ABC"}
-#         msg = self._post_call(api_route, filter_data)        
-#         self.assertTrue(msg[0].get('name') == "ABC")
-#         ###########UPDATE THE DATA
-#         api_route = '/update/Wfstatus'
-#         update_data_dict = {"name": "DEF"}
-#         msg = self._put_call(api_route, update_data_dict)            
-#         self.assertTrue("updated the follwoing" in msg)
-#         ###########DELETE
-#         api_route = '/delete/Wfstatus'
-#         filter_data = {"name": "DEF"}
-#         msg = self._delete_call(api_route, filter_data)        
-#         self.assertTrue("has been  deleted successfully" in msg)
+        api_route = '/add/Wfstatuswrong'
+        ############WRONG OBJECT NAME   
+        data= [{"name1": "ABC"}]        
+        return_data = self._post_call(api_route, data)
+        self.assertTrue(return_data.get('status') == "InvalidWorkflowObject")
+        ############WRONG DATA , IS NOT LIST
+        api_route = '/add/Wfstatus'      
+        data= {"name1": "ABC"}      
+        return_data = self._post_call(api_route, data)        
+        self.assertTrue(return_data.get('status') == "InvalidInputDataList")
+        ############WRONG DATA, NOT DICTIONARY WITHIN THE LIST            
+        data= ["name1" ,  "ABC" ]     
+        return_data = self._post_call(api_route, data)        
+        self.assertTrue(return_data.get('status') == "InvalidInputDataDict")           
+        ############WRONG KEY IN DATA        
+        data= [{"name1": "ABC"}]        
+        return_data = self._post_call(api_route, data)        
+        self.assertTrue(return_data.get('status') == "InvalidKeysInData")
+        ############REGISTER WITH CORRECT DATA       
+        data= [{"name": "ABC"}]        
+        return_data = self._post_call(api_route, data)
+        #print(return_data)       
+        self.assertTrue("has been registered" in return_data)
+        ###########LIST WITHOUT FILTER WITH GET METHOD
+        api_route = '/list/Wfstatus/all/all'
+        msg = self._get_call(api_route)
+        self.assertTrue(msg[0].get('name') == "ABC")
+        api_route = '/list/Wfstatus/name/ABC'
+        msg = self._get_call(api_route)
+        self.assertTrue(msg[0].get('name') == "ABC")
+        ###########LIST WITH FILTER WITH POST METHOD
+        api_route = '/list/Wfstatus'
+        filter_data = {"name": "ABC"}
+        msg = self._post_call(api_route, filter_data)        
+        self.assertTrue(msg[0].get('name') == "ABC")
+        ###########UPDATE THE DATA
+        api_route = '/update/Wfstatus'
+        update_data_dict = {"name": "DEF"}
+        msg = self._put_call(api_route, update_data_dict)            
+        self.assertTrue("updated the follwoing" in msg)
+        ###########DELETE
+        api_route = '/delete/Wfstatus'
+        filter_data = {"name": "DEF"}
+        msg = self._delete_call(api_route, filter_data)        
+        self.assertTrue("has been  deleted successfully" in msg)
         
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
