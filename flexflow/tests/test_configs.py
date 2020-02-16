@@ -89,8 +89,10 @@ class Tflask(FTestCase):
         actionrepo = repos.DomainRepo("Wfaction")
         msg = actionrepo.add_form_lod(Wfaction_lod)
         print('action ',msg)
-        #replce all the previous tests for list to list_dict
-        #test with doctype creation and wfaction creation
+        msg = actionrepo.list_dict()
+        print(msg)
+        self.assertTrue(msg[0]['assocated_doctype_name'] == 'doctype1')
+        
       
     def test_routes(self):
         pass

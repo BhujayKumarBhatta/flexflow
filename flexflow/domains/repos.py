@@ -85,7 +85,6 @@ class DomainRepo:
                     if 'id' in obj_dict_copy: obj_dict_copy.pop('id')                 
                     raise rexc.InvalidKeysInData(k, obj_dict_copy.keys())
                 
-                
     def _convert_lod_to_lobj(self, lod: list):
         lobj = []
         for data_dict in lod:
