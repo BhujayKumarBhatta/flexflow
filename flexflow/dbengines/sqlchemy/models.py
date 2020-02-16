@@ -46,4 +46,17 @@ class Wfaction(db.Model):
     permitted_to_roles = db.Column(JSON)
     
 
+class Wfdoc(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    #many to one - place both foreign key  id and relationship in the "Many side" of the relationship
+    assocated_doctype = db.relationship('Doctype', backref='wfactions')
+    assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
+    #associated actions = wfdoc.associated_doctype.wfactions   
+    prev_status = db.Column(db.String(120))
+    current_status = db.Column(db.String(120))
+    #allowed_next_action is filter the assocated_actions by prev and current_status
+    ## we should compute the allowed actions, 
+    doc_data = db.Column(JSON)
+    
+    
     
