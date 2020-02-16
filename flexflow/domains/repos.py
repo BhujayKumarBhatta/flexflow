@@ -1,10 +1,9 @@
 import json
 from flexflow.dbengines.sqlchemy import models as sqlm
 from flexflow.exceptions import rules_exceptions  as rexc
-from flexflow.domains import entities as ent
 from sqlalchemy.orm.relationships import RelationshipProperty
 from sqlalchemy.orm.properties import ColumnProperty
-
+from flexflow.domains.entities import entities as ent
         
 class DomainRepo:
     '''bridge between domain entities  and storage layer
@@ -13,7 +12,8 @@ class DomainRepo:
     ''' 
     sql_obJ_map = {"Wfstatus": sqlm.Wfstatus,
                    "Doctype": sqlm.Doctype,
-                   "Wfaction": sqlm.Wfaction
+                   "Wfaction": sqlm.Wfaction,
+                   "Wfdoc": sqlm.Wfdoc
                    }
     
     domain_obj_map = {"Wfstatus": ent.Wfstatus,

@@ -1,7 +1,7 @@
 import json
 from flexflow.exceptions import rules_exceptions  as rexc
 from flexflow.domains import repos
-from flexflow.domains.
+from flexflow.domains.entities import Entities
 
 
 class Wfstatus(Entities):
@@ -40,6 +40,7 @@ class Wfaction(Entities):
                 "leads_to_status": self.leads_to_status,
                 "permitted_to_roles": self.permitted_to_roles
                 }
+        
         
 class Wfdoc(Entities):
     

@@ -49,7 +49,7 @@ class Wfaction(db.Model):
 class Wfdoc(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     #many to one - place both foreign key  id and relationship in the "Many side" of the relationship
-    assocated_doctype = db.relationship('Doctype', backref='wfactions')
+    assocated_doctype = db.relationship('Doctype', backref='wfdocs')
     assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
     #associated actions = wfdoc.associated_doctype.wfactions   
     prev_status = db.Column(db.String(120))

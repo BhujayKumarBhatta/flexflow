@@ -6,6 +6,8 @@ from flexflow.dbengines.sqlchemy import models as m, SqlalchemyDriver
 from sqlalchemy import exc
 from flexflow.domains import repos
 from flexflow.restapi.routes import bp1
+from flexflow.domains.repos import DomainRepo
+from flexflow.domains.entities import entities as ent
 
 
         
@@ -155,7 +157,17 @@ class Tflask(FTestCase):
         filter_data = {"name": "DEF"}
         msg = self._delete_call(api_route, filter_data)        
         self.assertTrue("has been  deleted successfully" in msg)
+    
+    def test_entities(self):
+        doctype_repo = DomainRepo("Doctype")
+        action_repo = DomainRepo("Wfaction")
+        docrepo = DomainRepo("Wfdoc")
+        doctype1 = ent.Doctype("doctype1")
+        doctype2 = ent.Doctype("doctype2")
+        lodobj = [doctype1, doctype2]
+        #doctype_repo.add_list_of_domain_obj([lodobj])  start work form here
         
+         
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
         with self.client:
