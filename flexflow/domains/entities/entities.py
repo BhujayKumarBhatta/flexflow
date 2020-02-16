@@ -1,24 +1,8 @@
 import json
 from flexflow.exceptions import rules_exceptions  as rexc
 from flexflow.domains import repos
+from flexflow.domains.
 
-
-class Entities:
-    def __repr__(self):
-        return '<{}(name={})>'.format(self.__class__.__name__, self.name)
-    
-    def __str__(self):
-        return self.name
-        
-    def to_dict(self):
-        return self.__class__.__dict__
-        
-    def to_json(self):
-        return  json.dumps(self.to_dict())
-    
-    @classmethod
-    def from_dict(cls, adict):
-        return cls(**adict)  
 
 class Wfstatus(Entities):
     '''workflow status master'''
