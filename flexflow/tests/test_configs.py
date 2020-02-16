@@ -92,6 +92,15 @@ class Tflask(FTestCase):
         msg = actionrepo.list_dict()
         print(msg)
         self.assertTrue(msg[0]['assocated_doctype_name'] == 'doctype1')
+        updated_data_dict = {"name": "name1",
+                         "assocated_doctype": "doctype2",
+                         "need_prev_status": "s0",
+                         "need_current_status": "s1",
+                         "leads_to_status": "s2",
+                         "permitted_to_roles": ["r1",]
+                         }
+        msg = actionrepo.update_from_dict(updated_data_dict)
+        print(msg)
         
       
     def test_routes(self):

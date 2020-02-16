@@ -56,7 +56,8 @@ class DomainRepo:
     
     def update_from_dict(self, updated_data_dict, **search_filters):
         self._validate_input_data_dict(updated_data_dict)
-        result = self.dbdriver.update(self.sql_obj, updated_data_dict, **search_filters)
+        dict_to_obj = self._convert_relational_text_to_obj_in_dict(updated_data_dict)
+        result = self.dbdriver.update(self.sql_obj, dict_to_obj, **search_filters)
         return result
     
     def delete(self, **search_filters):
@@ -88,28 +89,30 @@ class DomainRepo:
     def _convert_lod_to_lobj(self, lod: list):
         lobj = []
         for data_dict in lod:
-            for k, v  in data_dict.items():
-                attr = getattr(self.sql_obj, k)
-                attr_property = attr.property
-                if  isinstance(attr_property, RelationshipProperty): #otherwise isinstance(attr_property, ColumnProperty):
-                    attr_target = attr_property.target #<class 'sqlalchemy.sql.schema.Table'> doctype,  #print(type(attr_target), attr_target) #target itself is  the table
-                    related_class_name = attr_target.__str__().capitalize()  #All sqlobj class must be Only the first letter as Capital, all other small
-                    realted_class_object = self.sql_obJ_map.get(related_class_name)
-                    local_remote_pair = attr_property.local_remote_pairs[0]  #here assumption is this attribute of the class have only on local_remote_pair
-                    #could there be a case where there are multiple ?
-                    _, remote_obj = local_remote_pair
-                    primary_key_of_related_obj = remote_obj.name
-                    search_filter_for_related_obj = {primary_key_of_related_obj: v}
-                    row_obj_qset = self.dbdriver.list_as_obj(realted_class_object, **search_filter_for_related_obj)
-                    row_obj_list = [obj for obj in row_obj_qset]
-                    if row_obj_list: 
-                        row_obj = row_obj_list[0] #replace the value of the relationship based key to actual object
-                        data_dict.update({k: row_obj})
+            dict_to_obj = self._convert_relational_text_to_obj_in_dict(data_dict)
+            #convert the non relational also to obj
             dict_to_obj = self.sql_obj(**data_dict)#convert the data_dict as parameter to class object
-            lobj.append(dict_to_obj) #add  the object to the list , items in new list is class object replacing the earlier dictionary items
+            lobj.append(dict_to_obj) #add  the object to the list, items in new list is class object replacing the earlier dictionary items
         return  lobj    
         
-           
-
+    def _convert_relational_text_to_obj_in_dict(self, data_dict): 
+        for k, v  in data_dict.items():
+            attr = getattr(self.sql_obj, k)
+            attr_property = attr.property
+            if  isinstance(attr_property, RelationshipProperty): #otherwise isinstance(attr_property, ColumnProperty):
+                attr_target = attr_property.target #<class 'sqlalchemy.sql.schema.Table'> doctype,  #print(type(attr_target), attr_target) #target itself is  the table
+                related_class_name = attr_target.__str__().capitalize()  #All sqlobj class must be Only the first letter as Capital, all other small
+                realted_class_object = self.sql_obJ_map.get(related_class_name)
+                local_remote_pair = attr_property.local_remote_pairs[0]  #here assumption is this attribute of the class have only on local_remote_pair
+                #could there be a case where there are multiple ?
+                _, remote_obj = local_remote_pair
+                primary_key_of_related_obj = remote_obj.name
+                search_filter_for_related_obj = {primary_key_of_related_obj: v}
+                row_obj_qset = self.dbdriver.list_as_obj(realted_class_object, **search_filter_for_related_obj)
+                row_obj_list = [obj for obj in row_obj_qset]
+                if row_obj_list: 
+                    row_obj = row_obj_list[0] #replace the value of the relationship based key to actual object
+                    data_dict.update({k: row_obj})
+        return data_dict
         
     
