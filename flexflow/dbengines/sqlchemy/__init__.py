@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import exc
 from urllib.parse import quote_plus
+from flexflow.exceptions import rules_exceptions  as rexc
 # from sqlalchemy.orm import mapper, scoped_session, sessionmaker
 
     
@@ -100,7 +101,8 @@ class SqlalchemyDriver:
         #print(msg)
         return msg
     
-    def update(self, target_class_obj, updated_data:dict, **search_filters ):
+    def update_all(self, target_class_obj, updated_data:dict, **search_filters ):
+        ''' Danger : if no search_filter if provided it will change all the records '''
         msg='no such record found to update'
         updated_value_list = []
         Obj = target_class_obj
@@ -112,6 +114,29 @@ class SqlalchemyDriver:
                       )
                 updated_value_list.append(what_updated)
                 setattr(matchedObj, k, v)
+        if query_result and updated_value_list:            
+            try:                
+                self.db.session.commit()
+                msg = "updated the follwoing %s" %updated_value_list
+            except  Exception as e:
+                msg =("could not be updated , the erro is: \n  {}".format( e))
+                self.db.session.rollback() 
+        #print(msg)
+        return msg
+    
+    def update(self, target_class_obj, updated_data:dict, **search_filters ):
+        '''SAFE: without search filter no records will be updated'''        
+        if not search_filters: raise rexc.SearhKeyNotProvided
+        msg='no such record found to update'
+        updated_value_list = []
+        Obj = target_class_obj
+        query_result = self.db.session.query(Obj).filter_by(**search_filters).first()
+        for k, v in updated_data.items():
+            what_updated = ('{} attribute from current value {}'
+                  ' to  {}'.format(k, getattr(query_result, k), v)
+                  )
+            updated_value_list.append(what_updated)
+            setattr(query_result, k, v)
         if query_result and updated_value_list:            
             try:                
                 self.db.session.commit()

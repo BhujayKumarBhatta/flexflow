@@ -54,7 +54,15 @@ class DomainRepo:
         obj = self.dbdriver.list_as_obj(self.sql_obj, **search_filters)
         return obj
     
+    def update_all_from_dict(self, updated_data_dict, **search_filters):
+        ''' Danger : if no search_filter if provided it will change all the records '''
+        self._validate_input_data_dict(updated_data_dict)
+        dict_to_obj = self._convert_relational_text_to_obj_in_dict(updated_data_dict)
+        result = self.dbdriver.update_all(self.sql_obj, dict_to_obj, **search_filters)
+        return result
+    
     def update_from_dict(self, updated_data_dict, **search_filters):
+        ''' SAFE : if no search_filter if provided it will change all the records '''
         self._validate_input_data_dict(updated_data_dict)
         dict_to_obj = self._convert_relational_text_to_obj_in_dict(updated_data_dict)
         result = self.dbdriver.update(self.sql_obj, dict_to_obj, **search_filters)

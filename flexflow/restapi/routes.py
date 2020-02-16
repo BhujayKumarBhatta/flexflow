@@ -59,7 +59,8 @@ def wfmaster_list_multiple_searchkey(objname):
 def wfmaster_update(objname):
     try:
         repo = repos.DomainRepo(objname)
-        result = repo.update_from_dict(request.json)
+        result = repo.update_from_dict(request.json.get('update_data_dict'),
+                                       **request.json.get('search_filter'))
     except (rexc.InvalidWorkflowObject, rexc.InvalidInputDataDict,
             rexc.InvalidKeysInData) as errObj:
         result = errObj.ret_val

@@ -67,7 +67,8 @@ class Tflask(FTestCase):
         self.assertTrue(msg[0]['name'] == 'Status1111')
         ##########UPDATE THE ENTITIES 
         updated_data_dict = {"name": "Status222222"}
-        msg = statrepo.update_from_dict(updated_data_dict)
+        searchf = {"name": "Status1111"}
+        msg = statrepo.update_from_dict(updated_data_dict, **searchf)
         self.assertTrue("updated the follwoing" in msg)
         ##########DELETE
         msg = statrepo.delete(name='Status222222')
@@ -92,6 +93,7 @@ class Tflask(FTestCase):
         msg = actionrepo.list_dict()
         print(msg)
         self.assertTrue(msg[0]['assocated_doctype_name'] == 'doctype1')
+        searchf = {"name": "name1"}
         updated_data_dict = {"name": "name1",
                          "assocated_doctype": "doctype2",
                          "need_prev_status": "s0",
@@ -99,7 +101,7 @@ class Tflask(FTestCase):
                          "leads_to_status": "s2",
                          "permitted_to_roles": ["r1",]
                          }
-        msg = actionrepo.update_from_dict(updated_data_dict)
+        msg = actionrepo.update_from_dict(updated_data_dict, **searchf)
         print(msg)
         
       
@@ -142,9 +144,13 @@ class Tflask(FTestCase):
         self.assertTrue(msg[0].get('name') == "ABC")
         ###########UPDATE THE DATA
         api_route = '/update/Wfstatus'
-        update_data_dict = {"name": "DEF"}
-        msg = self._put_call(api_route, update_data_dict)            
-        self.assertTrue("updated the follwoing" in msg)
+        data_dict = {"update_data_dict": {"name": "DEF"},
+                     "search_filter": {"name": "ABC"}
+                     }
+                            
+        msg = self._put_call(api_route, data_dict)
+        print(msg)          
+        #self.assertTrue("updated the follwoing" in msg)
         ###########DELETE
         api_route = '/delete/Wfstatus'
         filter_data = {"name": "DEF"}

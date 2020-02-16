@@ -35,4 +35,8 @@ class InvalidKeysInData(FlexFlowException):
         self.object_attributes = object_attributes
         self.message = ("The key name '%s' is Invalid in Input data, it should be one from %s."
                         "" %(self.inputkey, self.object_attributes))
-        super().__init__(self.status, self.message)   
+        super().__init__(self.status, self.message)
+        
+class SearhKeyNotProvided(FlexFlowException):
+    status = "SearhKeyNotProvided"  
+    message = "Provide a search filter for the record you want to update"
