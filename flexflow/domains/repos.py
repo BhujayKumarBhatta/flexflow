@@ -37,6 +37,13 @@ class DomainRepo:
         data_lobj = self._convert_lod_to_lobj(data_lod)
         db_save_result = self.dbdriver.add_from_lobj(data_lobj)
         return db_save_result
+    
+    def add_list_of_domain_obj(self, list_of_domain_obj):
+        data_lod =[]
+        for domain_obj in list_of_domain_obj:
+            data_lod.append(domain_obj.to_dict())
+        result = self.add_form_lod(data_lod)
+        return result
         
     def list_domain_obj(self, **search_filters):        
         lod = self.dbdriver.list(self.sql_obj, **search_filters)

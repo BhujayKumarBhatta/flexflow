@@ -40,3 +40,27 @@ class InvalidKeysInData(FlexFlowException):
 class SearhKeyNotProvided(FlexFlowException):
     status = "SearhKeyNotProvided"  
     message = "Provide a search filter for the record you want to update"
+    
+class InvalidObjTypeInInputParam(FlexFlowException):
+    status = "InvalidObjTypeInInputParam"    
+    def __init__(self, param_name, required_value):
+        self.param_name = param_name
+        self.required_value = required_value.__name__
+        
+        
+        self.message = ("value for %s parameter must be a class of %s"
+                        "" %(self.param_name, self.required_value))
+        super().__init__(self.status, self.message)
+        
+class PrimaryKeyNotPresentInSearch(FlexFlowException):
+    status = "PrimaryKeyNotPresentInSearch"    
+    def __init__(self, primary_key, supplied_value):
+        self.primary_key = primary_key
+        self.supplied_value = supplied_value
+        
+        
+        self.message = ("primary key  %s  is absent in search dictionary  %s"
+                        "" %(self.primary_key, self.supplied_value))
+        super().__init__(self.status, self.message)
+        
+        

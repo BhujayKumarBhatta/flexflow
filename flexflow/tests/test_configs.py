@@ -159,14 +159,39 @@ class Tflask(FTestCase):
         self.assertTrue("has been  deleted successfully" in msg)
     
     def test_entities(self):
-        doctype_repo = DomainRepo("Doctype")
-        action_repo = DomainRepo("Wfaction")
+        m.dbdriver.delete(m.Wfaction)
+        m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Doctype)
+        m.dbdriver.delete(m.Wfdoc)              
         docrepo = DomainRepo("Wfdoc")
+        ###########register doctype
         doctype1 = ent.Doctype("doctype1")
         doctype2 = ent.Doctype("doctype2")
         lodobj = [doctype1, doctype2]
-        #doctype_repo.add_list_of_domain_obj([lodobj])  start work form here
-        
+        doctype_repo = DomainRepo("Doctype")  
+        msg = doctype_repo.add_list_of_domain_obj(lodobj)
+        self.assertTrue("has been registered" in msg)
+        ########register action rules        
+        wfaction1_dict=  {"name": "wfaction1",
+                         "assocated_doctype": "doctype1",
+                         "need_prev_status": "s0",
+                         "need_current_status": "s1",
+                         "leads_to_status": "s2",
+                         "permitted_to_roles": ["r1",]
+                         }
+        wfaction2_dict=  {"name": "wfaction2",
+                         "assocated_doctype": "doctype2",
+                         "need_prev_status": "s1",
+                         "need_current_status": "s2",
+                         "leads_to_status": "s3",
+                         "permitted_to_roles": ["r2",]
+                         }
+        wfaction1 = ent.Wfaction.from_dict(wfaction1_dict)
+        wfaction2 = ent.Wfaction.from_dict(wfaction2_dict)
+        lodobj = [wfaction1, wfaction2]
+        action_repo = DomainRepo("Wfaction")
+        msg = action_repo.add_list_of_domain_obj(lodobj)
+        self.assertTrue("has been registered" in msg)
          
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
