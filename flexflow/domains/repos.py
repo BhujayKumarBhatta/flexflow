@@ -58,6 +58,13 @@ class DomainRepo:
         lod = self.dbdriver.list_as_dict(self.sql_obj, **search_filters)
         return lod
     
+    def list_json(self, **search_filters):
+        lod = self.list_dict(**search_filters)
+        for d in lod:
+            if '_sa_instance_state' in d:
+                d.pop('_sa_instance_state')
+        return json.dumps(lod)
+    
     def list_obj(self, **search_filters):
         '''returns as iterator'''
         self._validate_input_data_dict(search_filters)

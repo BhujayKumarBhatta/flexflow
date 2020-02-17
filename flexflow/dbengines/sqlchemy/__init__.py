@@ -150,22 +150,28 @@ class SqlalchemyDriver:
     def list_as_dict(self, target_class_obj,  **search_filters ):            
         result_list = []
         Obj = target_class_obj
-        print('filter for the listing is  %s' %(search_filters))
+        #print('filter for the listing is  %s' %(search_filters))
         if not search_filters:
             query_result = self.db.session.query(Obj).all()            #result = conn.execute(s)
         else:
             query_result = self.db.session.query(Obj).filter_by(**search_filters)
-        for rowObj in query_result:
-            #d = rowObj.to_dict()
-            d = rowObj.__dict__.copy()
+        obj_from_qry = [obj for obj in query_result]
+        for obj in obj_from_qry:
+            #d = rowObj.to_dict()  # we have to keep a to_dict method in sql models
+            #after copy method is loosing the attributes which have relationship
+            #d = obj.__dict__.copy()
+            d = {}
+            for k, v in obj.__dict__.items():
+                d.update({k: v})            
+            result_list.append(d)
+        for d in result_list:
             if '_sa_instance_state' in d:
                 d.pop('_sa_instance_state')
-            result_list.append(d)
         return result_list
     
     def list_as_obj(self, target_class_obj,  **search_filters ): 
         Obj = target_class_obj
-        print('filter for the listing is  %s' %(search_filters))
+        #print('filter for the listing is  %s' %(search_filters))
         if not search_filters:
             query_result = self.db.session.query(Obj).all()            #result = conn.execute(s)
         else:

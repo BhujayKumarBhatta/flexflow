@@ -51,7 +51,7 @@ class Tflask(FTestCase):
         self.assertTrue(len(msg) == 3)
         ###########DELETE ALL
         msg = m.dbdriver.delete(m.Wfstatus)
-        print(msg)
+        self.assertTrue("has been  deleted successfully" in msg)
         
     def test_repos(self):
         pass
@@ -81,7 +81,7 @@ class Tflask(FTestCase):
         Doctype_lod = [{"name": "doctype1"}, {"name": "doctype2"}]
         doctype_repo = repos.DomainRepo("Doctype")
         msg = doctype_repo.add_form_lod(Doctype_lod)
-        print('doctype', msg)
+        self.assertTrue('has been registered' in msg)
         Wfaction_lod = [{"name": "name1",
                          "assocated_doctype": {"name": "doctype1"},
                          "need_prev_status": "s0",
@@ -91,9 +91,9 @@ class Tflask(FTestCase):
                          }]
         actionrepo = repos.DomainRepo("Wfaction")
         msg = actionrepo.add_form_lod(Wfaction_lod)
-        print('action ',msg)
+        self.assertTrue('has been registered' in msg)
         msg = actionrepo.list_dict()
-        print(msg)
+        self.assertTrue(isinstance(msg[0], dict))
         self.assertTrue(msg[0]['assocated_doctype_name'] == 'doctype1')
         searchf = {"name": "name1"}
         updated_data_dict = {"name": "name1",
@@ -104,7 +104,7 @@ class Tflask(FTestCase):
                          "permitted_to_roles": ["r1",]
                          }
         msg = actionrepo.update_from_dict(updated_data_dict, **searchf)
-        print(msg)
+        self.assertTrue("updated the follwoing" in  msg)
         
     def test_routes(self):
         pass
@@ -148,10 +148,10 @@ class Tflask(FTestCase):
         data_dict = {"update_data_dict": {"name": "DEF"},
                      "search_filter": {"name": "ABC"}
                      }
-                            
+                              
         msg = self._put_call(api_route, data_dict)
-        print(msg)          
-        #self.assertTrue("updated the follwoing" in msg)
+        self.assertTrue("updated the follwoing" in msg)         
+        self.assertTrue("updated the follwoing" in msg)
         ###########DELETE
         api_route = '/delete/Wfstatus'
         filter_data = {"name": "DEF"}
@@ -192,6 +192,20 @@ class Tflask(FTestCase):
         action_repo = DomainRepo("Wfaction")
         msg = action_repo.add_list_of_domain_obj(lodobj)
         self.assertTrue("has been registered" in msg)
+        ############retrieve action1 from repo
+        doctype_list = doctype_repo.list_obj()
+        self.assertTrue(isinstance(doctype_list[0], m.Doctype ))
+        doctype_list = doctype_repo.list_domain_obj()
+        self.assertTrue(isinstance(doctype_list[0], ent.Doctype ))
+        #why sometime  assocated_doctype is deletd from the return dict 
+        # Start work from here to change the sqlchemy==>list_as_dict
+        action_list = action_repo.list_dict()
+        print(  action_list[0] ) 
+        self.assertTrue( isinstance(action_list[0]['assocated_doctype']), m.Doctype)
+#         action1 = action_repo.list_obj()
+#         print(action1)
+#         action1 = action_repo.list_domain_obj()
+#         print(action1)
          
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
