@@ -17,6 +17,9 @@ class DomainRepo:
                    }
     
     domain_obj_map = {"Wfstatus": ent.Wfstatus,
+                      "Doctype": ent.Doctype,
+                      "Wfaction": ent.Wfaction,
+                      "Wfdoc": ent.Wfdoc
                    }
     
     def __init__(self, objname:str, dbdriver=sqlm.dbdriver):        
@@ -46,7 +49,7 @@ class DomainRepo:
         return result
         
     def list_domain_obj(self, **search_filters):        
-        lod = self.dbdriver.list(self.sql_obj, **search_filters)
+        lod = self.dbdriver.list_as_dict(self.sql_obj, **search_filters)
         result = [self._create_domain_object(d) for d in lod]    
         return result
     
@@ -122,7 +125,12 @@ class DomainRepo:
                 #could there be a case where there are multiple ?
                 _, remote_obj = local_remote_pair
                 primary_key_of_related_obj = remote_obj.name
-                search_filter_for_related_obj = {primary_key_of_related_obj: v}
+                if not isinstance(v, dict):
+                    raise rexc.InvalidObjTypeInInputParam(k, dict)
+                if not primary_key_of_related_obj in v:
+                    raise rexc.PrimaryKeyNotPresentInSearch(primary_key_of_related_obj, v)
+                search_value = v.get(primary_key_of_related_obj)
+                search_filter_for_related_obj = {primary_key_of_related_obj: search_value}
                 row_obj_qset = self.dbdriver.list_as_obj(realted_class_object, **search_filter_for_related_obj)
                 row_obj_list = [obj for obj in row_obj_qset]
                 if row_obj_list: 

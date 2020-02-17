@@ -83,7 +83,7 @@ class Tflask(FTestCase):
         msg = doctype_repo.add_form_lod(Doctype_lod)
         print('doctype', msg)
         Wfaction_lod = [{"name": "name1",
-                         "assocated_doctype": "doctype1",
+                         "assocated_doctype": {"name": "doctype1"},
                          "need_prev_status": "s0",
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
@@ -97,7 +97,7 @@ class Tflask(FTestCase):
         self.assertTrue(msg[0]['assocated_doctype_name'] == 'doctype1')
         searchf = {"name": "name1"}
         updated_data_dict = {"name": "name1",
-                         "assocated_doctype": "doctype2",
+                         "assocated_doctype": {"name": "doctype2"},
                          "need_prev_status": "s0",
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
@@ -173,14 +173,14 @@ class Tflask(FTestCase):
         self.assertTrue("has been registered" in msg)
         ########register action rules        
         wfaction1_dict=  {"name": "wfaction1",
-                         "assocated_doctype": "doctype1",
+                         "assocated_doctype": {"name": "doctype1"},
                          "need_prev_status": "s0",
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
                          "permitted_to_roles": ["r1",]
                          }
         wfaction2_dict=  {"name": "wfaction2",
-                         "assocated_doctype": "doctype2",
+                         "assocated_doctype": {"name": "doctype2"},
                          "need_prev_status": "s1",
                          "need_current_status": "s2",
                          "leads_to_status": "s3",

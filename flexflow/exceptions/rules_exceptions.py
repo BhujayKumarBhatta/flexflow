@@ -59,7 +59,7 @@ class PrimaryKeyNotPresentInSearch(FlexFlowException):
         self.supplied_value = supplied_value
         
         
-        self.message = ("primary key  %s  is absent in search dictionary  %s"
+        self.message = ("primary key: '%s',   is absent in search dictionary  %s"
                         "" %(self.primary_key, self.supplied_value))
         super().__init__(self.status, self.message)
         
