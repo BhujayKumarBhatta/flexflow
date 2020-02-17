@@ -199,6 +199,7 @@ class Tflask(FTestCase):
         self.assertTrue(isinstance(doctype_list[0], ent.Doctype ))
         #why sometime  assocated_doctype is deletd from the return dict 
         # Start work from here to change the sqlchemy==>list_as_dict
+        #s
         action_list = action_repo.list_dict()
         print(  action_list[0] ) 
         self.assertTrue( isinstance(action_list[0]['assocated_doctype']), m.Doctype)

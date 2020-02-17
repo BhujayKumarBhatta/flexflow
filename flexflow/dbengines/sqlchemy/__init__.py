@@ -157,7 +157,7 @@ class SqlalchemyDriver:
             query_result = self.db.session.query(Obj).filter_by(**search_filters)
         obj_from_qry = [obj for obj in query_result]
         for obj in obj_from_qry:
-            #d = rowObj.to_dict()  # we have to keep a to_dict method in sql models
+            #d = rowObj.to_dict()  #we have to keep a to_dict method in sql models
             #after copy method is loosing the attributes which have relationship
             #d = obj.__dict__.copy()
             d = {}
