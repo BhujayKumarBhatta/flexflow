@@ -5,6 +5,11 @@ from flexflow.domains import repos
 class Entities:
     related_obj_map = {}
     
+    def __init__(self, **kwargs):        
+        for k, v in kwargs.items():
+            if k not in self.__dict__.keys():
+                setattr(self, k, v)
+    
     def __repr__(self):
         return '<{}(name={})>'.format(self.__class__.__name__, self.name)
     
@@ -21,7 +26,7 @@ class Entities:
     def to_json(self):
         return  json.dumps(self.to_dict())
     
-    def _validate_param_values(self):
+    def _validate_relationship_param_values(self):
         for  k,v in self.__dict__.items():
             if k in self.related_obj_map.keys() and \
              not isinstance(v, self.related_obj_map.get(k).get('mapped_object')):

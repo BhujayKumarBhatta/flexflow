@@ -215,7 +215,17 @@ class Tflask(FTestCase):
         action_list_filtered_by_doctype = action_repo.list_domain_obj(**seearchf)
         self.assertTrue(action_list_filtered_by_doctype[0].assocated_doctype.name == 'doctype2')
         self.assertTrue(action_list_filtered_by_doctype[1].assocated_doctype.name == 'doctype2')
-         
+        ####update relattionship field action1 doctype from 1 to 2 
+        wfaction1_dict.update( 
+            { "assocated_doctype": {"name": "doctype2"} } )
+        searchf = {"name": "wfaction1"}
+        msg = action_repo.update_from_dict(wfaction1_dict, **searchf)
+        self.assertTrue("updated the follwoing" in msg)
+        action_list_filtered_by_doctype = action_repo.list_domain_obj(**seearchf)
+        self.assertTrue(len(action_list_filtered_by_doctype) == 3)
+        ###CHECK THE ID ATTRIBUTE FROM SQL OBJ HAS BEEN PASSED TO DOMAINOBJ
+        self.assertTrue(hasattr(action_list_filtered_by_doctype[0], 'id'))
+        
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
         with self.client:

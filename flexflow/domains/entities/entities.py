@@ -7,17 +7,16 @@ from sqlalchemy.orm.relationships import RelationshipProperty
 class Wfstatus(Entities):
     '''workflow status master'''
     
-    def __init__(self, name):
+    def __init__(self, name, **kwargs):
         self.name = name
+        super().__init__(**kwargs)
 
 
 class Doctype(Entities):
     
     def __init__(self, name, **kwargs):
         self.name = name
-        for k, v in kwargs.items():
-            if k not in self.__dict__.keys():
-                setattr(self, k, v)
+        super().__init__(**kwargs)
         
     @property
     def wfactions(self):
@@ -28,7 +27,7 @@ class Doctype(Entities):
         
 
 class Wfaction(Entities):
-    
+    '''every action will have relation to one doctype'''
     related_obj_map = {"assocated_doctype": {"mapped_object": Doctype, "primary_key": "name"},
                              }
     
@@ -42,14 +41,13 @@ class Wfaction(Entities):
         self.need_prev_status = need_prev_status
         self.need_current_status = need_current_status
         self.leads_to_status = leads_to_status
-#         if not isinstance(assocated_doctype, Doctype): 
+#         if not isinstance(permitted_to_roles, list): 
 #             raise rexc.InvalidObjTypeInInputParam("permitted_to_roles", list )
         self.permitted_to_roles = permitted_to_roles
         #self.repo = repos.DomainRepo(self.__class__.__name__)#ensure storage level class name is same as emtities class name
-        self._validate_param_values()
-        for k, v in kwargs.items():
-            if k not in self.__dict__.keys():
-                setattr(self, k, v)
+        self._validate_relationship_param_values()
+        super().__init__(**kwargs)
+        
   
   
 class Wfdoc(Entities):
@@ -61,16 +59,14 @@ class Wfdoc(Entities):
                  prev_status:str, current_status:str, 
                  doc_data:dict, **kwargs):
         self.assocated_doctype = assocated_doctype
+        self.assocated_doctype_name = self.assocated_doctype.name
         self.prev_status = prev_status
         self.current_status = current_status
         self.doc_data = doc_data
-        for k, v in kwargs.items():
-            if k not in self.__dict__.keys():
-                setattr(self, k, v)
+        self._validate_relationship_param_values()
+        super().__init__(**kwargs)
         
-    @property
-    def assocated_doctype_name(self):
-        return self.assocated_doctype.name
+    
     
     
         
