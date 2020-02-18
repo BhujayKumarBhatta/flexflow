@@ -186,27 +186,35 @@ class Tflask(FTestCase):
                          "leads_to_status": "s3",
                          "permitted_to_roles": ["r2",]
                          }
+        wfaction3_dict=  {"name": "wfaction3",
+                         "assocated_doctype": {"name": "doctype2"},
+                         "need_prev_status": "s2",
+                         "need_current_status": "s3",
+                         "leads_to_status": "s4",
+                         "permitted_to_roles": ["r3",]
+                         }
         wfaction1 = ent.Wfaction.from_dict(wfaction1_dict)
         wfaction2 = ent.Wfaction.from_dict(wfaction2_dict)
-        lodobj = [wfaction1, wfaction2]
+        wfaction3 = ent.Wfaction.from_dict(wfaction3_dict)
+        lodobj = [wfaction1, wfaction2, wfaction3]
         action_repo = DomainRepo("Wfaction")
         msg = action_repo.add_list_of_domain_obj(lodobj)
         self.assertTrue("has been registered" in msg)
         ############retrieve action1 from repo
-        doctype_list = doctype_repo.list_obj()
-        self.assertTrue(isinstance(doctype_list[0], m.Doctype ))
-        doctype_list = doctype_repo.list_domain_obj()
-        self.assertTrue(isinstance(doctype_list[0], ent.Doctype ))
-        #why sometime  assocated_doctype is deletd from the return dict 
-        # Start work from here to change the sqlchemy==>list_as_dict
-        #s
-        action_list = action_repo.list_dict()
-        print(  action_list[0] ) 
-        self.assertTrue( isinstance(action_list[0]['assocated_doctype']), m.Doctype)
-#         action1 = action_repo.list_obj()
-#         print(action1)
-#         action1 = action_repo.list_domain_obj()
-#         print(action1)
+        doctype_list_sobj = doctype_repo.list_obj()
+        self.assertTrue(isinstance(doctype_list_sobj[0], m.Doctype ))
+        doctype_list_dobj = doctype_repo.list_domain_obj()
+        self.assertTrue(isinstance(doctype_list_dobj[0], ent.Doctype ))
+        action_list_dict = action_repo.list_dict()
+        self.assertTrue( isinstance(action_list_dict[0]['assocated_doctype'], dict))
+        action_list_sobj = action_repo.list_obj()
+        self.assertTrue( isinstance(action_list_sobj[0], m.Wfaction))
+        action_list_dobj= action_repo.list_domain_obj()
+        self.assertTrue( isinstance(action_list_dobj[0], ent.Wfaction))
+        seearchf = {"assocated_doctype": {"name": "doctype2"}}
+        action_list_filtered_by_doctype = action_repo.list_domain_obj(**seearchf)
+        self.assertTrue(action_list_filtered_by_doctype[0].assocated_doctype.name == 'doctype2')
+        self.assertTrue(action_list_filtered_by_doctype[1].assocated_doctype.name == 'doctype2')
          
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()

@@ -155,16 +155,14 @@ class SqlalchemyDriver:
             query_result = self.db.session.query(Obj).all()            #result = conn.execute(s)
         else:
             query_result = self.db.session.query(Obj).filter_by(**search_filters)
-        obj_from_qry = [obj for obj in query_result]
-        for obj in obj_from_qry:
-            #d = rowObj.to_dict()  #we have to keep a to_dict method in sql models
+        #obj_from_qry = [obj for obj in query_result]
+        for obj in query_result:
+            d = obj.to_dict()  #we have to keep a to_dict method in sql models
             #after copy method is loosing the attributes which have relationship
-            #d = obj.__dict__.copy()
-            d = {}
-            for k, v in obj.__dict__.items():
-                d.update({k: v})            
+            #d = obj.__dict__.copy() ##THIS IS A WIRED BEHAVIOUR AND REASON FOR NOT USING DUNDER METHODS DIRECTLY
             result_list.append(d)
         for d in result_list:
+            ####CAN WE KEEP THE SA INSTANCE AND PASS IT TO DOMAIN ENTITIES TO MAKE BOTH SQL AND ENTTITIES OBJECT HAVING SA INSTANCE STATE
             if '_sa_instance_state' in d:
                 d.pop('_sa_instance_state')
         return result_list

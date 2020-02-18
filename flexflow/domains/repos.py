@@ -49,13 +49,15 @@ class DomainRepo:
         return result
         
     def list_domain_obj(self, **search_filters):        
-        lod = self.dbdriver.list_as_dict(self.sql_obj, **search_filters)
+#         lod = self.dbdriver.list_as_dict(self.sql_obj, **search_filters)
+        lod = self.list_dict(**search_filters)
         result = [self._create_domain_object(d) for d in lod]    
         return result
     
     def list_dict(self, **search_filters):
         self._validate_input_data_dict(search_filters)
-        lod = self.dbdriver.list_as_dict(self.sql_obj, **search_filters)
+        search_filter_dict_to_obj = self._convert_relational_text_to_obj_in_dict(search_filters)
+        lod = self.dbdriver.list_as_dict(self.sql_obj, **search_filter_dict_to_obj)
         return lod
     
     def list_json(self, **search_filters):

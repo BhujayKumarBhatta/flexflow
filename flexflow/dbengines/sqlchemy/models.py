@@ -20,6 +20,8 @@ class Wfstatus(db.Model):
     #id = db.Column(db.String(200), primary_key=True)
     name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
     
+    def to_dict(self):
+        return {"name": self.name}
     
 class Doctype(db.Model):
     #id = db.Column(db.Integer, primary_key=True)
@@ -29,6 +31,8 @@ class Doctype(db.Model):
     #the foreign key will be declared in the WFAction class , doctype_id = db.Column(db.Integer, db.ForeignKey('doctype.id'))
     #actionrules = db.relationship('WFAction', backref='doctype')
     #In this case we will use many to one , that is from WFAction class we will create the relationship
+    def to_dict(self):
+        return {"name": self.name}
     
 class Wfaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,6 +49,15 @@ class Wfaction(db.Model):
     #############
     permitted_to_roles = db.Column(JSON)
     
+    def to_dict(self):
+        return {"id": self.id, "name": self.name, 
+                "assocated_doctype": {"name": self.assocated_doctype.name},
+                "assocated_doctype_name": self.assocated_doctype_name,
+                "need_prev_status": self.need_prev_status,
+                "need_current_status": self.need_current_status,
+                "leads_to_status": self.leads_to_status,
+                "permitted_to_roles": self.permitted_to_roles}
+    
 
 class Wfdoc(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -58,5 +71,12 @@ class Wfdoc(db.Model):
     ## we should compute the allowed actions, 
     doc_data = db.Column(JSON)
     
+    def to_dict(self):
+        return {"id": self.id, 
+                "assocated_doctype": {"name": self.assocated_doctype.name},
+                "assocated_doctype_name": self.assocated_doctype_name,
+                "prev_status": self.need_prev_status,
+                "current_status": self.need_current_status,
+                "doc_data": self.doc_data}
     
     

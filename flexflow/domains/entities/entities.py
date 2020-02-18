@@ -10,6 +10,7 @@ class Wfstatus(Entities):
     def __init__(self, name):
         self.name = name
 
+
 class Doctype(Entities):
     
     def __init__(self, name, **kwargs):
@@ -17,17 +18,15 @@ class Doctype(Entities):
         for k, v in kwargs.items():
             if k not in self.__dict__.keys():
                 setattr(self, k, v)
-        #self.wfactions = self._get_related_wfactions_from_repo()
         
-#     @property
-#     def wfactions(self):
-#         doctype_repo = repos.DomainRepo('Doctype')
-#         doctype_obj_from_repo = doctype_repo.list_obj(name=self.name)
-#         wfaction_repo = repos.DomainRepo('Wfaction')
-#         searf = {"assocated_doctype": doctype_obj_from_repo}
-#         result = wfaction_repo.list_domain_obj(**searf)
-#         return result
+    @property
+    def wfactions(self):
+        wfaction_repo = repos.DomainRepo('Wfaction')
+        searh_filter = {"assocated_doctype": {"name": self.name} }
+        result = wfaction_repo.list_domain_obj(**searh_filter)
+        return result
         
+
 class Wfaction(Entities):
     
     related_obj_map = {"assocated_doctype": {"mapped_object": Doctype, "primary_key": "name"},
@@ -38,7 +37,8 @@ class Wfaction(Entities):
                  leads_to_status:str, permitted_to_roles:list, **kwargs ):
         
         self.name = name        
-        self.assocated_doctype = assocated_doctype        
+        self.assocated_doctype = assocated_doctype
+        self.assocated_doctype_name = self.assocated_doctype.name   
         self.need_prev_status = need_prev_status
         self.need_current_status = need_current_status
         self.leads_to_status = leads_to_status
@@ -50,10 +50,7 @@ class Wfaction(Entities):
         for k, v in kwargs.items():
             if k not in self.__dict__.keys():
                 setattr(self, k, v)
-        
-#     @property
-#     def assocated_doctype_name(self):
-#         return self.assocated_doctype.name
+  
   
 class Wfdoc(Entities):
     
