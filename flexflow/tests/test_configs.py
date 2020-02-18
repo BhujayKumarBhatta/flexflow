@@ -238,10 +238,16 @@ class Tflask(FTestCase):
         wfdoc_lod = [wfdoc_dict1]
         wfdoc_repo = repos.DomainRepo("Wfdoc")
         msg = wfdoc_repo.add_form_lod(wfdoc_lod)
-        wfdoc_list = wfdoc_repo.list_domain_obj()        
+        #####SOMETIMES ADD IS FAILING SINVCE THE assocated_doctype in wfdoc_lod
+        ###is becoming Doctype object although we are supplying a dict ???????????
+        wfdoc_list = wfdoc_repo.list_domain_obj()
+        ##########SEE THE COMNNETS above IN CASE OF INPUT TYPE EXCEPTION       
         self.assertTrue(len(wfdoc_list[0].wfactions) == 3)
-        print(wfdoc_list[0].doc_data)
-        ########HOW DO WE GET A SPECIFIC DOC , WHAT IS THE UNIQUE KEY
+        self.assertTrue((wfdoc_list[0].doc_data == doc_data1))
+        #######RETRIEVE DOC USING PRIMKEY
+        searh_string = {"primvalue_of_docdata": 'dk1' }
+        wfdoc_list = wfdoc_repo.list_domain_obj(**searh_string)
+        print(wfdoc_list)
         
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
