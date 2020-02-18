@@ -24,12 +24,20 @@ class Doctype(Entities):
         searh_filter = {"assocated_doctype": {"name": self.name} }
         result = wfaction_repo.list_domain_obj(**searh_filter)
         return result
+    
+    @property
+    def wfdocs(self):
+        wfdoc_repo = repos.DomainRepo('Wfdoc')
+        searh_filter = {"assocated_doctype": {"name": self.name} }
+        result = wfdoc_repo.list_domain_obj(**searh_filter)
+        return result
         
 
 class Wfaction(Entities):
     '''every action will have relation to one doctype'''
-    related_obj_map = {"assocated_doctype": {"mapped_object": Doctype, "primary_key": "name"},
-                             }
+    related_obj_map = {"assocated_doctype": {"mapped_object": Doctype, 
+                                             "primary_key": "name"},
+                                             }
     
     def __init__(self, name:str, assocated_doctype:Doctype,                 
                  need_prev_status:str, need_current_status:str,
@@ -44,7 +52,6 @@ class Wfaction(Entities):
 #         if not isinstance(permitted_to_roles, list): 
 #             raise rexc.InvalidObjTypeInInputParam("permitted_to_roles", list )
         self.permitted_to_roles = permitted_to_roles
-        #self.repo = repos.DomainRepo(self.__class__.__name__)#ensure storage level class name is same as emtities class name
         self._validate_relationship_param_values()
         super().__init__(**kwargs)
         
@@ -52,12 +59,15 @@ class Wfaction(Entities):
   
 class Wfdoc(Entities):
     
-    related_obj_map = {"assocated_doctype": {"mapped_object": Doctype, "primary_key": "name"},
-                             }
+    related_obj_map = {"assocated_doctype": {"mapped_object": Doctype, 
+                                             "primary_key": "name"},
+                                             }
     
-    def __init__(self, assocated_doctype:Doctype, 
+    def __init__(self, primvalue_of_docdata:str, assocated_doctype:Doctype, 
                  prev_status:str, current_status:str, 
                  doc_data:dict, **kwargs):
+        self.primvalue_of_docdata = primvalue_of_docdata
+        self.name = self.primvalue_of_docdata
         self.assocated_doctype = assocated_doctype
         self.assocated_doctype_name = self.assocated_doctype.name
         self.prev_status = prev_status
@@ -65,8 +75,23 @@ class Wfdoc(Entities):
         self.doc_data = doc_data
         self._validate_relationship_param_values()
         super().__init__(**kwargs)
-        
     
-    
+    @property
+    def wfactions(self):
+        wfaction_repo = repos.DomainRepo('Wfaction')
+        searh_filter = {"assocated_doctype": {"name": self.assocated_doctype_name} }
+        result = wfaction_repo.list_domain_obj(**searh_filter)
+        return result
+###########AT TIMES THE SUPER CLASS TO_DICT IS NOT WOROKING
+########POSSIBLY THE RELATED_OBJECT_MAP CLASS VARIABLE IS NOT GETTIGN
+#REPLACED BY THE CHILD CLASS    
+#     def to_dict(self):
+#         return {"primvalue_of_docdata": self.primvalue_of_docdata,
+#                 "name": self.name,
+#                 "assocated_doctype": self.assocated_doctype.to_dict(),
+#                 "assocated_doctype_name": self.assocated_doctype_name,
+#                 "prev_status": self.prev_status,
+#                 "current_status": self.current_status,
+#                 "doc_data": self.doc_data}
     
         

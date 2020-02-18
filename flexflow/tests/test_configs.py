@@ -27,9 +27,11 @@ class Tflask(FTestCase):
         pass
         
     def test_models(self):
+        m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
-        m.dbdriver.delete(m.Doctype)        
+        m.dbdriver.delete(m.Doctype)                     
+        docrepo = DomainRepo("Wfdoc")       
         ###########ADDING SINGLE RECORD 
         record = m.Wfstatus(name="Status1")
         msg = m.dbdriver.insert(record)
@@ -159,10 +161,10 @@ class Tflask(FTestCase):
         self.assertTrue("has been  deleted successfully" in msg)
     
     def test_entities(self):
+        m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
-        m.dbdriver.delete(m.Doctype)
-        m.dbdriver.delete(m.Wfdoc)              
+        m.dbdriver.delete(m.Doctype)                     
         docrepo = DomainRepo("Wfdoc")
         ###########register doctype
         doctype1 = ent.Doctype("doctype1")
@@ -224,7 +226,22 @@ class Tflask(FTestCase):
         action_list_filtered_by_doctype = action_repo.list_domain_obj(**seearchf)
         self.assertTrue(len(action_list_filtered_by_doctype) == 3)
         ###CHECK THE ID ATTRIBUTE FROM SQL OBJ HAS BEEN PASSED TO DOMAINOBJ
-        self.assertTrue(hasattr(action_list_filtered_by_doctype[0], 'id'))
+        #self.assertTrue(hasattr(action_list_filtered_by_doctype[0], 'id'))
+        primkey_of_doc_data = 'dk1'
+        doc_data1 = {"dk1": "dv1", "dk2": "dv2" }
+        wfdoc_dict1 = {"primvalue_of_docdata": 'dk1',
+                       "assocated_doctype": {"name": "doctype2"},
+                         "prev_status": "s2",
+                         "current_status": "s3",
+                         "doc_data": {"dk1": "dv1", "dk2": "dv2" },
+                         }
+        wfdoc_lod = [wfdoc_dict1]
+        wfdoc_repo = repos.DomainRepo("Wfdoc")
+        msg = wfdoc_repo.add_form_lod(wfdoc_lod)
+        wfdoc_list = wfdoc_repo.list_domain_obj()        
+        self.assertTrue(len(wfdoc_list[0].wfactions) == 3)
+        print(wfdoc_list[0].doc_data)
+        ########HOW DO WE GET A SPECIFIC DOC , WHAT IS THE UNIQUE KEY
         
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()

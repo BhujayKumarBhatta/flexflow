@@ -5,16 +5,26 @@ from flexflow.domains import repos
 class Entities:
     related_obj_map = {}
     
-    def __init__(self, **kwargs):        
+    def __init__(self, **kwargs):       
         for k, v in kwargs.items():
             if k not in self.__dict__.keys():
                 setattr(self, k, v)
     
     def __repr__(self):
-        return '<{}(name={})>'.format(self.__class__.__name__, self.name)
+        if hasattr(self, "name"):
+            identifier = str(self.name)
+            repr = '<{}(name={})>'.format(self.__class__.__name__, identifier)
+        else:
+            identifier = self.id
+            repr = '<{}(id={})>'.format(self.__class__.__name__, identifier)
+        return repr
     
     def __str__(self):
-        return self.name
+        if hasattr(self, "name"):
+            identifier = self.name
+        else:
+            identifier = self.id
+        return str(identifier)
         
     def to_dict(self):
         new_dict = self.__dict__.copy()

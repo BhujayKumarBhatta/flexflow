@@ -127,15 +127,15 @@ class DomainRepo:
             attr = getattr(self.sql_obj, k)
             attr_property = attr.property
             if  isinstance(attr_property, RelationshipProperty): #otherwise isinstance(attr_property, ColumnProperty):
+                if not isinstance(v, dict):
+                    raise rexc.InvalidObjTypeInInputParam(k, dict)
                 attr_target = attr_property.target #<class 'sqlalchemy.sql.schema.Table'> doctype,  #print(type(attr_target), attr_target) #target itself is  the table
                 related_class_name = attr_target.__str__().capitalize()  #All sqlobj class must be Only the first letter as Capital, all other small
                 realted_class_object = self.sql_obJ_map.get(related_class_name)
                 local_remote_pair = attr_property.local_remote_pairs[0]  #here assumption is this attribute of the class have only on local_remote_pair
                 #could there be a case where there are multiple ?
                 _, remote_obj = local_remote_pair
-                primary_key_of_related_obj = remote_obj.name
-                if not isinstance(v, dict):
-                    raise rexc.InvalidObjTypeInInputParam(k, dict)
+                primary_key_of_related_obj = remote_obj.name                
                 if not primary_key_of_related_obj in v:
                     raise rexc.PrimaryKeyNotPresentInSearch(primary_key_of_related_obj, v)
                 search_value = v.get(primary_key_of_related_obj)

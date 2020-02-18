@@ -23,6 +23,7 @@ class Wfstatus(db.Model):
     def to_dict(self):
         return {"name": self.name}
     
+    
 class Doctype(db.Model):
     #id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
@@ -34,9 +35,10 @@ class Doctype(db.Model):
     def to_dict(self):
         return {"name": self.name}
     
+    
 class Wfaction(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
+    #id = db.Column(db.Integer, primary_key=True)    
+    name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
     #many to one - place both foreign key  id and relationship in the "Many side" of the relationship
     assocated_doctype = db.relationship('Doctype', backref='wfactions')
     assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
@@ -50,7 +52,7 @@ class Wfaction(db.Model):
     permitted_to_roles = db.Column(JSON)
     
     def to_dict(self):
-        return {"id": self.id, "name": self.name, 
+        return {"name": self.name, 
                 "assocated_doctype": {"name": self.assocated_doctype.name},
                 "assocated_doctype_name": self.assocated_doctype_name,
                 "need_prev_status": self.need_prev_status,
@@ -60,7 +62,7 @@ class Wfaction(db.Model):
     
 
 class Wfdoc(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    primvalue_of_docdata = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
     #many to one - place both foreign key  id and relationship in the "Many side" of the relationship
     assocated_doctype = db.relationship('Doctype', backref='wfdocs')
     assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
@@ -72,11 +74,12 @@ class Wfdoc(db.Model):
     doc_data = db.Column(JSON)
     
     def to_dict(self):
-        return {"id": self.id, 
+        return {"primvalue_of_docdata": self.primvalue_of_docdata,
+                "name": self.primvalue_of_docdata, 
                 "assocated_doctype": {"name": self.assocated_doctype.name},
                 "assocated_doctype_name": self.assocated_doctype_name,
-                "prev_status": self.need_prev_status,
-                "current_status": self.need_current_status,
+                "prev_status": self.prev_status,
+                "current_status": self.current_status,
                 "doc_data": self.doc_data}
     
     
