@@ -159,6 +159,8 @@ class Tflask(FTestCase):
         filter_data = {"name": "DEF"}
         msg = self._delete_call(api_route, filter_data)        
         self.assertTrue("has been  deleted successfully" in msg)
+        
+        
     
     def test_entities(self):
         m.dbdriver.delete(m.Wfdoc) 
@@ -228,12 +230,12 @@ class Tflask(FTestCase):
         ###CHECK THE ID ATTRIBUTE FROM SQL OBJ HAS BEEN PASSED TO DOMAINOBJ
         #self.assertTrue(hasattr(action_list_filtered_by_doctype[0], 'id'))
         primkey_of_doc_data = 'dk1'
-        doc_data1 = {"dk1": "dv1", "dk2": "dv2" }
-        wfdoc_dict1 = {"primvalue_of_docdata": 'dk1',
+        doc_data1 = {"dk1": "dv1" }
+        wfdoc_dict1 = {"id": 'dk1',
                        "assocated_doctype": {"name": "doctype2"},
                          "prev_status": "s2",
                          "current_status": "s3",
-                         "doc_data": {"dk1": "dv1", "dk2": "dv2" },
+                         "doc_data": {"dk1": "dv1"},
                          }
         wfdoc_lod = [wfdoc_dict1]
         wfdoc_repo = repos.DomainRepo("Wfdoc")
@@ -245,9 +247,20 @@ class Tflask(FTestCase):
         self.assertTrue(len(wfdoc_list[0].wfactions) == 3)
         self.assertTrue((wfdoc_list[0].doc_data == doc_data1))
         #######RETRIEVE DOC USING PRIMKEY
-        searh_string = {"primvalue_of_docdata": 'dk1' }
+        searh_string = {"id": 'dk1' }
         wfdoc_list = wfdoc_repo.list_domain_obj(**searh_string)
-        print(wfdoc_list)
+        self.assertTrue(wfdoc_list[0].id == 'dk1')
+        #####from dict create domain obj and then save to repo
+        wfdoc_dict2 = {"id": 'dk2',
+                       "assocated_doctype": {"name": "doctype2"},
+                         "prev_status": "s2",
+                         "current_status": "s3",
+                         "doc_data": {"dk2": "dv2" },
+                         }
+        wfdoc2 = ent.Wfdoc.from_dict(wfdoc_dict2)
+        ###ADD THE DOMAIN OBJECT TO THE DOMAIN REPO
+        msg = wfdoc_repo.add_list_of_domain_obj([wfdoc2])
+        self.assertTrue("has been registered" in msg)        
         
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()

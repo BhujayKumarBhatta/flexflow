@@ -62,7 +62,7 @@ class Wfaction(db.Model):
     
 
 class Wfdoc(db.Model):
-    primvalue_of_docdata = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
+    id = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
     #many to one - place both foreign key  id and relationship in the "Many side" of the relationship
     assocated_doctype = db.relationship('Doctype', backref='wfdocs')
     assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
@@ -74,8 +74,7 @@ class Wfdoc(db.Model):
     doc_data = db.Column(JSON)
     
     def to_dict(self):
-        return {"primvalue_of_docdata": self.primvalue_of_docdata,
-                "name": self.primvalue_of_docdata, 
+        return {"id": self.id,
                 "assocated_doctype": {"name": self.assocated_doctype.name},
                 "assocated_doctype_name": self.assocated_doctype_name,
                 "prev_status": self.prev_status,
