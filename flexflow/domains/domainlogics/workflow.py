@@ -15,7 +15,7 @@ class Workflow:
         
         Also see wfdocObj initialization. Earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         '''
-        doctyoeObj = self.get_doctype_obj_from_name()
+        doctyoeObj = self._get_doctype_obj_from_name()
         primkey_in_datadoc = doctyoeObj.primkey_in_datadoc
         if not data.get(primkey_in_datadoc):
             raise rexc.PrimaryKeyNotPresentInDataDict(primkey_in_datadoc)
@@ -31,8 +31,26 @@ class Workflow:
         wfdoc_repo = DomainRepo("Wfdoc")
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
         return msg
+    
+    def action_change_status(self, wfdoc_id, intended_action):
+        #retrieve the doc
+        wfdocObj = self._get_wfdoc_by_id(wfdoc_id)
+        #retrieve the action obj from  the doc.wfactions by the name intended_action
+        wfactions_list = wfdocObj.wfactions
+        wfactionObj = [item for item in wfactions_list if item.name == intended_action][0]
+        #check the doc.previous and doc.current status and compare with wfaction.need_prev_stat etc.
+        self._check_action_rules(wfdocObj, wfactionObj, intended_action)        
+        #replace doc.current_status by the  action.lead_to_status
+        #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
+        wfdoc_repo = DomainRepo("Wfdoc")
+        updated_data_dict = {"current_status": wfactionObj.leads_to_status}
+        target_doc_id = {"id": wfdocObj.id}
+        msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_id)
+        return msg
         
-    def get_doctype_obj_from_name(self):
+        
+      
+    def _get_doctype_obj_from_name(self):
         '''search by primary key name, hence expected to get one object'''
         result = None
         search_dict = {"name": self.doctype_name}
@@ -41,7 +59,7 @@ class Workflow:
         if  len(lst) == 1 : result = lst[0]              
         return result
     
-    def get_wfdoc_by_id(self, wfdoc_id):
+    def _get_wfdoc_by_id(self, wfdoc_id):
         '''search by primary key id, hence expected to get one object'''
         result = None
         search_dict = {"id": wfdoc_id}
@@ -49,4 +67,10 @@ class Workflow:
         lst = wfdoc_repo.list_domain_obj(**search_dict)
         if  len(lst) == 1 : result = lst[0]              
         return result
-        
+    
+    def _check_action_rules(self, wfdocObj,  wfactionObj, intended_action):
+        if not ( wfactionObj.need_prev_status == wfdocObj.prev_status and 
+                 wfactionObj.need_current_status == wfdocObj.current_status):
+            raise rexc.WorkflowActionRuleViolation(intended_action, 
+                                                   wfactionObj.need_prev_status,
+                                                   wfactionObj.need_current_status)
