@@ -91,4 +91,8 @@ class WorkflowActionRuleViolation(FlexFlowException):
                                 self.need_current_status))
         super().__init__(self.status, self.message)
         
+class NoWorkFlowRuleFound(FlexFlowException):
+    status = "NoWorkFlowRuleFound"    
+    message = "Check the document type associated with this doc and action rules defined for the doctype" 
+        
         

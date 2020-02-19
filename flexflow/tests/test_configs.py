@@ -238,7 +238,7 @@ class Tflask(FTestCase):
         #self.assertTrue(hasattr(action_list_filtered_by_doctype[0], 'id'))
         primkey_of_doc_data = 'dk1'
         doc_data1 = {"dk1": "dv1" }
-        wfdoc_dict1 = {"id": 'dk1',
+        wfdoc_dict1 = {"name": 'dk1',
                        "assocated_doctype": {"name": "doctype2"},
                          "prev_status": "s2",
                          "current_status": "s3",
@@ -254,11 +254,11 @@ class Tflask(FTestCase):
         self.assertTrue(len(wfdoc_list[0].wfactions) == 3)
         self.assertTrue((wfdoc_list[0].doc_data == doc_data1))
         #######RETRIEVE DOC USING PRIMKEY
-        searh_string = {"id": 'dk1' }
+        searh_string = {"name": 'dk1' }
         wfdoc_list = wfdoc_repo.list_domain_obj(**searh_string)
-        self.assertTrue(wfdoc_list[0].id == 'dk1')
+        self.assertTrue(wfdoc_list[0].name == 'dk1')
         #####from dict create domain obj and then save to repo
-        wfdoc_dict2 = {"id": 'dk2',
+        wfdoc_dict2 = {"name": 'dk2',
                        "assocated_doctype": {"name": "doctype2"},
                          "prev_status": "s2",
                          "current_status": "s3",
@@ -274,14 +274,49 @@ class Tflask(FTestCase):
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
         m.dbdriver.delete(m.Doctype)
+        self._register_doctype_n_actions()
+        wf = Workflow('doctype1')
+        msg = wf.create_doc({"dk1": "dv1"})
+        self.assertTrue(msg['message'] == "has been registered" )
+        doc_repo = DomainRepo("Wfdoc")
+        msg = doc_repo.list_domain_obj(name="dv1")
+        print(msg)
+        msg = wf.action_change_status("dv1", "wfaction1")
+        print(msg)
+    
+    def _register_doctype_n_actions(self):
         doctype1 = ent.Doctype("doctype1", "dk1")
         doctype2 = ent.Doctype("doctype2", "dk2")
         lodobj = [doctype1, doctype2]
         doctype_repo = DomainRepo("Doctype")
-        doctype_repo.add_list_of_domain_obj(lodobj)     
-        wf = Workflow('doctype1')
-        msg = wf.create_doc({"dk1": "dv1"})
-        self.assertTrue(msg['message'] == "has been registered" )
+        doctype_repo.add_list_of_domain_obj(lodobj)
+        wfaction1_dict=  {"name": "wfaction1",
+                         "assocated_doctype": {"name": "doctype1"},
+                         "need_prev_status": "",
+                         "need_current_status": "Created",
+                         "leads_to_status": "s1",
+                         "permitted_to_roles": ["r1",]
+                         }
+        wfaction2_dict=  {"name": "wfaction2",
+                         "assocated_doctype": {"name": "doctype2"},
+                         "need_prev_status": "Created",
+                         "need_current_status": "s1",
+                         "leads_to_status": "s2",
+                         "permitted_to_roles": ["r2",]
+                         }
+        wfaction3_dict=  {"name": "wfaction3",
+                         "assocated_doctype": {"name": "doctype2"},
+                         "need_prev_status": "s1",
+                         "need_current_status": "s2",
+                         "leads_to_status": "s3",
+                         "permitted_to_roles": ["r3",]
+                         }
+        wfaction1 = ent.Wfaction.from_dict(wfaction1_dict)
+        wfaction2 = ent.Wfaction.from_dict(wfaction2_dict)
+        wfaction3 = ent.Wfaction.from_dict(wfaction3_dict)
+        lodobj = [wfaction1, wfaction2, wfaction3]
+        action_repo = DomainRepo("Wfaction")
+        action_repo.add_list_of_domain_obj(lodobj)
     
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()

@@ -20,10 +20,10 @@ class Workflow:
         if not data.get(primkey_in_datadoc):
             raise rexc.PrimaryKeyNotPresentInDataDict(primkey_in_datadoc)
         docid = data.get(primkey_in_datadoc)
-        if self.get_wfdoc_by_id(docid):
+        if self._get_wfdoc_by_name(docid):
             raise rexc.DuplicateDocumentExists(docid)
         ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
-        wfdocObj = ent.Wfdoc(id=docid,
+        wfdocObj = ent.Wfdoc(name=docid,
                          assocated_doctype=doctyoeObj,
                          prev_status="",
                          current_status="Created",
@@ -32,21 +32,25 @@ class Workflow:
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
         return msg
     
-    def action_change_status(self, wfdoc_id, intended_action):
+    def action_change_status(self, wfdoc_name, intended_action):
         #retrieve the doc
-        wfdocObj = self._get_wfdoc_by_id(wfdoc_id)
+        wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         #retrieve the action obj from  the doc.wfactions by the name intended_action
         wfactions_list = wfdocObj.wfactions
-        wfactionObj = [item for item in wfactions_list if item.name == intended_action][0]
+        wfactionObj = None
+        for item in wfactions_list:
+            if item.name == intended_action:
+                wfactionObj = item
+                break
         #check the doc.previous and doc.current status and compare with wfaction.need_prev_stat etc.
         self._check_action_rules(wfdocObj, wfactionObj, intended_action)        
         #replace doc.current_status by the  action.lead_to_status
         #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
         wfdoc_repo = DomainRepo("Wfdoc")
         updated_data_dict = {"current_status": wfactionObj.leads_to_status}
-        target_doc_id = {"id": wfdocObj.id}
-        msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_id)
-        return msg
+        target_doc_name = {"name": wfdocObj.name}
+        msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
+        return msg #TODO: change the msg s dict
         
         
       
@@ -59,16 +63,18 @@ class Workflow:
         if  len(lst) == 1 : result = lst[0]              
         return result
     
-    def _get_wfdoc_by_id(self, wfdoc_id):
+    def _get_wfdoc_by_name(self, wfdoc_name):
         '''search by primary key id, hence expected to get one object'''
         result = None
-        search_dict = {"id": wfdoc_id}
+        search_dict = {"name": wfdoc_name}
         wfdoc_repo = DomainRepo("Wfdoc")
         lst = wfdoc_repo.list_domain_obj(**search_dict)
         if  len(lst) == 1 : result = lst[0]              
         return result
     
     def _check_action_rules(self, wfdocObj,  wfactionObj, intended_action):
+        if not wfactionObj:
+            raise rexc.NoWorkFlowRuleFound
         if not ( wfactionObj.need_prev_status == wfdocObj.prev_status and 
                  wfactionObj.need_current_status == wfdocObj.current_status):
             raise rexc.WorkflowActionRuleViolation(intended_action, 

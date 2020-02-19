@@ -75,11 +75,11 @@ class Wfdoc(Entities):
                                              "primary_key": "name"},
                                              }
     
-    def __init__(self, id:str, assocated_doctype:Doctype, 
+    def __init__(self, name:str, assocated_doctype:Doctype, 
                  prev_status:str, current_status:str, 
                  doc_data:dict, **kwargs):
         '''id should be one of the value from the doc_data e.g. invoice_number'''
-        self.id = id
+        self.name = name
         #self.name = self.primvalue_of_docdata
         self.assocated_doctype = assocated_doctype
         self.assocated_doctype_name = self.assocated_doctype.name
@@ -91,7 +91,7 @@ class Wfdoc(Entities):
     
     @property
     def primvalue_of_docdata(self):
-        return self.id
+        return self.name
     
     @property
     def wfactions(self):
