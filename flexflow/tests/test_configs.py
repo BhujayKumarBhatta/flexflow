@@ -8,6 +8,7 @@ from flexflow.domains import repos
 from flexflow.restapi.routes import bp1
 from flexflow.domains.repos import DomainRepo
 from flexflow.domains.entities import entities as ent
+from flexflow.domains.domainlogics.workflow import Workflow
 
 
         
@@ -56,13 +57,16 @@ class Tflask(FTestCase):
         self.assertTrue("has been  deleted successfully" in msg)
         
     def test_repos(self):
-        pass
+        m.dbdriver.delete(m.Wfdoc) 
+        m.dbdriver.delete(m.Wfaction)
+        m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Doctype)  
         #####INITIALIZE A REPO FOR DOMAIN ENTITY
         statrepo = repos.DomainRepo("Wfstatus")
         ##############ADD ENTITY
         status_lod = [{"name": "Status1111"}]        
         msg = statrepo.add_form_lod(status_lod)
-        self.assertTrue('has been registered' in msg)
+        self.assertTrue(msg['message'] == "has been registered" )
         ##################LIST OBJECTS  FROM REPO
         msg = statrepo.list_obj(name="Status1111")
         self.assertTrue(msg[0].name == 'Status1111')
@@ -80,10 +84,11 @@ class Tflask(FTestCase):
         msg=statrepo.list_obj()
         self.assertTrue(not msg)
         ##########Test LOD WHEN RELATION
-        Doctype_lod = [{"name": "doctype1"}, {"name": "doctype2"}]
+        Doctype_lod = [{"name": "doctype1", "primkey_in_datadoc": "dk1"}, 
+                       {"name": "doctype2", "primkey_in_datadoc": "dk2"}]
         doctype_repo = repos.DomainRepo("Doctype")
         msg = doctype_repo.add_form_lod(Doctype_lod)
-        self.assertTrue('has been registered' in msg)
+        self.assertTrue(msg['message'] == "has been registered" )
         Wfaction_lod = [{"name": "name1",
                          "assocated_doctype": {"name": "doctype1"},
                          "need_prev_status": "s0",
@@ -93,7 +98,7 @@ class Tflask(FTestCase):
                          }]
         actionrepo = repos.DomainRepo("Wfaction")
         msg = actionrepo.add_form_lod(Wfaction_lod)
-        self.assertTrue('has been registered' in msg)
+        self.assertTrue(msg['message'] == 'has been registered')
         msg = actionrepo.list_dict()
         self.assertTrue(isinstance(msg[0], dict))
         self.assertTrue(msg[0]['assocated_doctype_name'] == 'doctype1')
@@ -110,6 +115,10 @@ class Tflask(FTestCase):
         
     def test_routes(self):
         pass
+        m.dbdriver.delete(m.Wfdoc) 
+        m.dbdriver.delete(m.Wfaction)
+        m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Doctype) 
         api_route = '/add/Wfstatuswrong'
         ############WRONG OBJECT NAME   
         data= [{"name1": "ABC"}]        
@@ -132,7 +141,7 @@ class Tflask(FTestCase):
         data= [{"name": "ABC"}]        
         return_data = self._post_call(api_route, data)
         #print(return_data)       
-        self.assertTrue("has been registered" in return_data)
+        self.assertTrue(return_data['message'] == "has been registered" )
         ###########LIST WITHOUT FILTER WITH GET METHOD
         api_route = '/list/Wfstatus/all/all'
         msg = self._get_call(api_route)
@@ -159,8 +168,6 @@ class Tflask(FTestCase):
         filter_data = {"name": "DEF"}
         msg = self._delete_call(api_route, filter_data)        
         self.assertTrue("has been  deleted successfully" in msg)
-        
-        
     
     def test_entities(self):
         m.dbdriver.delete(m.Wfdoc) 
@@ -169,12 +176,12 @@ class Tflask(FTestCase):
         m.dbdriver.delete(m.Doctype)                     
         docrepo = DomainRepo("Wfdoc")
         ###########register doctype
-        doctype1 = ent.Doctype("doctype1")
-        doctype2 = ent.Doctype("doctype2")
+        doctype1 = ent.Doctype("doctype1", "dk1")
+        doctype2 = ent.Doctype("doctype2", "dk2")
         lodobj = [doctype1, doctype2]
         doctype_repo = DomainRepo("Doctype")  
         msg = doctype_repo.add_list_of_domain_obj(lodobj)
-        self.assertTrue("has been registered" in msg)
+        self.assertTrue(msg['message'] == "has been registered" )
         ########register action rules        
         wfaction1_dict=  {"name": "wfaction1",
                          "assocated_doctype": {"name": "doctype1"},
@@ -203,7 +210,7 @@ class Tflask(FTestCase):
         lodobj = [wfaction1, wfaction2, wfaction3]
         action_repo = DomainRepo("Wfaction")
         msg = action_repo.add_list_of_domain_obj(lodobj)
-        self.assertTrue("has been registered" in msg)
+        self.assertTrue(msg['message'] == "has been registered" )
         ############retrieve action1 from repo
         doctype_list_sobj = doctype_repo.list_obj()
         self.assertTrue(isinstance(doctype_list_sobj[0], m.Doctype ))
@@ -260,8 +267,22 @@ class Tflask(FTestCase):
         wfdoc2 = ent.Wfdoc.from_dict(wfdoc_dict2)
         ###ADD THE DOMAIN OBJECT TO THE DOMAIN REPO
         msg = wfdoc_repo.add_list_of_domain_obj([wfdoc2])
-        self.assertTrue("has been registered" in msg)        
-        
+        self.assertTrue(msg['message'] == "has been registered" )       
+    
+    def test_workflow(self):
+        m.dbdriver.delete(m.Wfdoc) 
+        m.dbdriver.delete(m.Wfaction)
+        m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Doctype)
+        doctype1 = ent.Doctype("doctype1", "dk1")
+        doctype2 = ent.Doctype("doctype2", "dk2")
+        lodobj = [doctype1, doctype2]
+        doctype_repo = DomainRepo("Doctype")
+        doctype_repo.add_list_of_domain_obj(lodobj)     
+        wf = Workflow('doctype1')
+        msg = wf.create_doc({"dk1": "dv1"})
+        self.assertTrue(msg['message'] == "has been registered" )
+    
     def _post_call(self, api_route, data):
 #       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
         with self.client:

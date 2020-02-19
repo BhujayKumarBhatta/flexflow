@@ -63,4 +63,21 @@ class PrimaryKeyNotPresentInSearch(FlexFlowException):
                         "" %(self.primary_key, self.supplied_value))
         super().__init__(self.status, self.message)
         
+class PrimaryKeyNotPresentInDataDict(FlexFlowException):
+    status = "PrimaryKeyNotPresentInDataDict"    
+    def __init__(self, primary_key):
+        self.primary_key = primary_key
+        self.message = ("primary key: '%s',   is absent in input data dictionary"
+                        "" %(self.primary_key))
+        super().__init__(self.status, self.message)
+        
+class DuplicateDocumentExists(FlexFlowException):
+    status = "DuplicateDocumentExists"    
+    def __init__(self, primary_key):
+        self.primary_key = primary_key
+        self.message = ("document creation failed since duplicate document"
+                        "by the id: '%s',   already exists"
+                        "" %(self.primary_key))
+        super().__init__(self.status, self.message)
+        
         

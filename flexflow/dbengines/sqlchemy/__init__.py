@@ -89,14 +89,10 @@ class SqlalchemyDriver:
         try:
             self.db.session.add_all(lobj)     
             self.db.session.commit()
-            msg = "has been registered"       
-        except exc.IntegrityError as e :
-            msg = ('databse integrity error, the same name may be already present  or all the requred'
-                   'fileds has not been supplied.\n\n Full detail: {}'.format( e))
-            self.db.session.rollback()
-            #raise
+            msg = {"status": "success", "message": "has been registered"} 
         except  Exception as e:
-            msg =("could not be registered , the erro is: \n  {}".format(e))
+            msg ={"status": "Failed", 
+                  "message": "could not be registered , the erro is: \n  {}".format(e)}
             self.db.session.rollback() 
         #print(msg)
         return msg

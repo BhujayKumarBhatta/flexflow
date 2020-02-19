@@ -27,13 +27,15 @@ class Wfstatus(db.Model):
 class Doctype(db.Model):
     #id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
+    primkey_in_datadoc = db.Column(db.String(120),nullable=False) 
     #one to many: -     
     #Because relationships are declared before they are established you can use strings to refer to classes that are not created yet (for instance if Doctype defines a relationship to WFAction which is declared later in the file).
     #the foreign key will be declared in the WFAction class , doctype_id = db.Column(db.Integer, db.ForeignKey('doctype.id'))
     #actionrules = db.relationship('WFAction', backref='doctype')
     #In this case we will use many to one , that is from WFAction class we will create the relationship
     def to_dict(self):
-        return {"name": self.name}
+        return {"name": self.name,
+                "primkey_in_datadoc": self.primkey_in_datadoc}
     
     
 class Wfaction(db.Model):

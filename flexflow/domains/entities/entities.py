@@ -13,9 +13,21 @@ class Wfstatus(Entities):
 
 
 class Doctype(Entities):
+    '''Doctype defines what type of data and what are the workflow
+     action rules which are  applicable to  a category of documents.
+         
+    Workflow documents(a.k.a. Wfdoc) will have to belong to one of 
+    the Doctype category through their assocated_doctype attribute.
     
-    def __init__(self, name, **kwargs):
+    Wfdoc can store only those type of data in its doc_data attribute 
+    which are defined in the Doctype.
+    
+    One such condition is:  the data should have a key whose name 
+    is same as primkey_in_datadoc defined in Doctyoe
+    '''
+    def __init__(self, name, primkey_in_datadoc, **kwargs):
         self.name = name
+        self.primkey_in_datadoc = primkey_in_datadoc
         super().__init__(**kwargs)
         
     @property
