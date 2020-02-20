@@ -113,9 +113,11 @@ class SqlalchemyDriver:
         if query_result and updated_value_list:            
             try:                
                 self.db.session.commit()
-                msg = "updated the follwoing %s" %updated_value_list
+                msg = {"message": "updated the follwoing %s" %updated_value_list,
+                       "status": "success"}
             except  Exception as e:
-                msg =("could not be updated , the erro is: \n  {}".format( e))
+                msg ={ "message": "could not be updated , the erro is: \n  {}".format( e),
+                      "status": "failed"}
                 self.db.session.rollback() 
         #print(msg)
         return msg
@@ -136,9 +138,11 @@ class SqlalchemyDriver:
         if query_result and updated_value_list:            
             try:                
                 self.db.session.commit()
-                msg = "updated the follwoing %s" %updated_value_list
+                msg = {"message" : "updated the follwoing %s" %updated_value_list,
+                       "status": "success"}
             except  Exception as e:
-                msg =("could not be updated , the erro is: \n  {}".format( e))
+                msg = {"message": "could not be updated , the erro is: \n  {}".format( e),
+                       "status": "failed"}
                 self.db.session.rollback() 
         #print(msg)
         return msg  

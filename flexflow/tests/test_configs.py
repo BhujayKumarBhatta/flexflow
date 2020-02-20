@@ -41,7 +41,7 @@ class Tflask(FTestCase):
         ############UPDATING THE RECORD 
         data = {"name": "Status1111"}
         msg = m.dbdriver.update(m.Wfstatus, data, name='Status1')
-        self.assertTrue("updated the follwoing" in msg)
+        self.assertTrue(msg['status'] == "success")
         msg = m.dbdriver.list_as_dict(m.Wfstatus, name="Status1111")
         self.assertTrue(msg[0]['name'] == 'Status1111')
         #DELETE A SINGLE RECORD FILTERED BY NAME
@@ -77,7 +77,7 @@ class Tflask(FTestCase):
         updated_data_dict = {"name": "Status222222"}
         searchf = {"name": "Status1111"}
         msg = statrepo.update_from_dict(updated_data_dict, **searchf)
-        self.assertTrue("updated the follwoing" in msg)
+        self.assertTrue(msg['status'] == "success")
         ##########DELETE
         msg = statrepo.delete(name='Status222222')
         self.assertTrue("deleted successfully" in  msg)
@@ -111,7 +111,7 @@ class Tflask(FTestCase):
                          "permitted_to_roles": ["r1",]
                          }
         msg = actionrepo.update_from_dict(updated_data_dict, **searchf)
-        self.assertTrue("updated the follwoing" in  msg)
+        self.assertTrue(msg['status'] == "success")
         
     def test_routes(self):
         pass
@@ -161,8 +161,7 @@ class Tflask(FTestCase):
                      }
                               
         msg = self._put_call(api_route, data_dict)
-        self.assertTrue("updated the follwoing" in msg)         
-        self.assertTrue("updated the follwoing" in msg)
+        self.assertTrue(msg['status'] == "success")
         ###########DELETE
         api_route = '/delete/Wfstatus'
         filter_data = {"name": "DEF"}
@@ -231,7 +230,7 @@ class Tflask(FTestCase):
             { "assocated_doctype": {"name": "doctype2"} } )
         searchf = {"name": "wfaction1"}
         msg = action_repo.update_from_dict(wfaction1_dict, **searchf)
-        self.assertTrue("updated the follwoing" in msg)
+        self.assertTrue(msg['status'] == "success")
         action_list_filtered_by_doctype = action_repo.list_domain_obj(**seearchf)
         self.assertTrue(len(action_list_filtered_by_doctype) == 3)
         ###CHECK THE ID ATTRIBUTE FROM SQL OBJ HAS BEEN PASSED TO DOMAINOBJ
