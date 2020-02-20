@@ -99,6 +99,14 @@ class Wfdoc(Entities):
         searh_filter = {"assocated_doctype": {"name": self.assocated_doctype_name} }
         result = wfaction_repo.list_domain_obj(**searh_filter)
         return result
+    
+    @property
+    def actions_for_current_status(self):
+        actions_for_current_status = []
+        for actionObj in self.wfactions:
+            if self.current_status == actionObj.need_current_status:
+                actions_for_current_status.append(actionObj.name)
+        return actions_for_current_status
 ###########AT TIMES THE SUPER CLASS TO_DICT IS NOT WOROKING
 ########POSSIBLY THE RELATED_OBJECT_MAP CLASS VARIABLE IS NOT GETTIGN
 #REPLACED BY THE CHILD CLASS    

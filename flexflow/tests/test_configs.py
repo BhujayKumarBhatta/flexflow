@@ -276,26 +276,36 @@ class Tflask(FTestCase):
         m.dbdriver.delete(m.Doctype)
         self._register_doctype_n_actions()
         wf = Workflow('doctype2', 'r1')
+        ### WORKFLOW IS ABLE TO CREATE DOC
         msg = wf.create_doc({"dk2": "dv2"})
         self.assertTrue(msg['message'] == "has been registered" )
+        ####ABLE TO RETRIEVE THE BY THE PRIMKEY AS DEFINED IN THE DOCTYPE
         doc_repo = DomainRepo("Wfdoc")
-        msg = doc_repo.list_domain_obj(name="dv2")
-        self.assertTrue(msg[0].name == "dv2")
+        wfdocObj_list = doc_repo.list_domain_obj(name="dv2")
+        self.assertTrue(wfdocObj_list[0].name == "dv2")
+        ####UPDATE DOC STATUS AS PER THE ACTION RULE
         msg = wf.action_change_status("dv2", "wfaction1")
         self.assertTrue(msg['status'] =="success")
-        #should fail for incorrect role
+        ####SHOULD FAIL FOR INCORRECT ROLE
         wf = Workflow('doctype2', 'r1')
         try:
             msg = wf.action_change_status("dv2", "wfaction2")
         except rexc.RoleNotPermittedForThisAction as err:
             self.assertTrue(err.status == "RoleNotPermittedForThisAction")
-        #should pass the role and the rule 
+        ###SHOULD PASS THE ROLE AND THE RULE 
         wf = Workflow('doctype2', 'r2')
         msg = wf.action_change_status("dv2", "wfaction2")
         self.assertTrue(msg['status'] =="success")
-        #have a test for rule status validation failure
+        ####HAVE A TEST FOR RULE STATUS VALIDATION FAILURE
+        try:
+            msg = wf.action_change_status("dv2", "wfaction1")
+        except rexc.WorkflowActionRuleViolation as err:
+            self.assertTrue(err.status == "WorkflowActionRuleViolation")
+        ####WFDOC SHOULD HAVE actions_for_current_stattus
+        actions_for_current_status = wfdocObj_list[0].actions_for_current_status
+        self.assertTrue(actions_for_current_status == ['wfaction1'])
         
-    
+        
     def _register_doctype_n_actions(self):
         doctype1 = ent.Doctype("doctype1", "dk1")
         doctype2 = ent.Doctype("doctype2", "dk2")
