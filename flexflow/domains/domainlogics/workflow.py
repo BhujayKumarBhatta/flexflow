@@ -23,6 +23,7 @@ class Workflow:
         docid = data.get(primkey_in_datadoc)
         if self._get_wfdoc_by_name(docid):
             raise rexc.DuplicateDocumentExists(docid)
+        ##TODO: check if the role permits for doc creation
         ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         wfdocObj = ent.Wfdoc(name=docid,
                          assocated_doctype=doctyoeObj,

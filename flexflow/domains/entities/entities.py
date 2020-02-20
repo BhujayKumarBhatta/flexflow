@@ -10,7 +10,7 @@ class Wfstatus(Entities):
     def __init__(self, name, **kwargs):
         self.name = name
         super().__init__(**kwargs)
-
+  
 
 class Doctype(Entities):
     '''Doctype defines what type of data and what are the workflow
@@ -43,7 +43,23 @@ class Doctype(Entities):
         searh_filter = {"assocated_doctype": {"name": self.name} }
         result = wfdoc_repo.list_domain_obj(**searh_filter)
         return result
+    
+    @property
+    def datadocfields(self):
+        datadocfields_repo = repos.DomainRepo("Datadocfield")
+        searh_filter = {"assocated_doctype": {"name": self.name} }
+        result = datadocfields_repo.list_domain_obj(**searh_filter)
+        return result
         
+
+class Datadocfield(Entities):
+    
+    def __init__(self, name, associated_doctype, ftype, flength):
+        self.name = name,
+        self.associated_doctype = associated_doctype
+        self.ftype = ftype
+        self.flength = flength
+
 
 class Wfaction(Entities):
     '''every action will have relation to one doctype'''
@@ -107,6 +123,13 @@ class Wfdoc(Entities):
             if self.current_status == actionObj.need_current_status:
                 actions_for_current_status.append(actionObj.name)
         return actions_for_current_status
+    
+    
+    
+    
+    
+    
+    
 ###########AT TIMES THE SUPER CLASS TO_DICT IS NOT WOROKING
 ########POSSIBLY THE RELATED_OBJECT_MAP CLASS VARIABLE IS NOT GETTIGN
 #REPLACED BY THE CHILD CLASS    

@@ -22,7 +22,7 @@ class Wfstatus(db.Model):
     
     def to_dict(self):
         return {"name": self.name}
-    
+        
     
 class Doctype(db.Model):
     #id = db.Column(db.Integer, primary_key=True)
@@ -36,8 +36,24 @@ class Doctype(db.Model):
     def to_dict(self):
         return {"name": self.name,
                 "primkey_in_datadoc": self.primkey_in_datadoc}
-    
-    
+
+   
+class Datadocfield(db.Model):    
+        name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
+        assocated_doctype = db.relationship('Doctype', backref='datadocfields')
+        assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
+        ftype = db.Column(db.String(120), nullable=False)
+        flength = db.Column(db.Integer(120), nullable=False)
+        
+        def to_dict(self):
+            return {"name": self.name,
+                    "assocated_doctype": {"name": self.assocated_doctype.name},
+                    "assocated_doctype_name": self.assocated_doctype_name,
+                    "ftype": self.ftype,
+                    "flength": self.flength
+                }
+            
+ 
 class Wfaction(db.Model):
     #id = db.Column(db.Integer, primary_key=True)    
     name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
