@@ -4,8 +4,9 @@ from flexflow.exceptions import rules_exceptions  as rexc
 
 class Workflow:
     
-    def __init__(self, doctype_name:str):
+    def __init__(self, doctype_name:str, role=None):
         self.doctype_name = doctype_name
+        self.role = role
     
     def create_doc(self, data:dict):
         ''' a key from the data is treated as the primary key for the 
@@ -33,24 +34,21 @@ class Workflow:
         return msg
     
     def action_change_status(self, wfdoc_name, intended_action):
-        #retrieve the doc
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
-        #retrieve the action obj from  the doc.wfactions by the name intended_action
         wfactions_list = wfdocObj.wfactions
         wfactionObj = None
         for item in wfactions_list:
             if item.name == intended_action:
                 wfactionObj = item
                 break
-        #check the doc.previous and doc.current status and compare with wfaction.need_prev_stat etc.
-        self._check_action_rules(wfdocObj, wfactionObj, intended_action)        
-        #replace doc.current_status by the  action.lead_to_status
+        self._check_action_rules(wfdocObj, wfactionObj, intended_action)
         #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
         wfdoc_repo = DomainRepo("Wfdoc")
-        updated_data_dict = {"current_status": wfactionObj.leads_to_status}
+        updated_data_dict = {"current_status": wfactionObj.leads_to_status,
+                             "prev_status": wfdocObj.current_status}
         target_doc_name = {"name": wfdocObj.name}
         msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
-        return msg #TODO: change the msg s dict
+        return msg
         
         
       
@@ -78,5 +76,10 @@ class Workflow:
         if not ( wfactionObj.need_prev_status == wfdocObj.prev_status and 
                  wfactionObj.need_current_status == wfdocObj.current_status):
             raise rexc.WorkflowActionRuleViolation(intended_action, 
-                                                   wfactionObj.need_prev_status,
-                                                   wfactionObj.need_current_status)
+                                                   wfactionObj.need_prev_status,        
+                                                 wfactionObj.need_current_status)
+        default_roles = [None, "admin",] 
+        permitted_to_roles = default_roles + wfactionObj.permitted_to_roles
+        if  self.role  not in permitted_to_roles :
+            raise rexc.RoleNotPermittedForThisAction(self.role, permitted_to_roles)
+            

@@ -9,6 +9,7 @@ from flexflow.restapi.routes import bp1
 from flexflow.domains.repos import DomainRepo
 from flexflow.domains.entities import entities as ent
 from flexflow.domains.domainlogics.workflow import Workflow
+from flexflow.exceptions import rules_exceptions  as rexc
 
 
         
@@ -274,14 +275,26 @@ class Tflask(FTestCase):
         m.dbdriver.delete(m.Wfstatus)
         m.dbdriver.delete(m.Doctype)
         self._register_doctype_n_actions()
-        wf = Workflow('doctype1')
-        msg = wf.create_doc({"dk1": "dv1"})
+        wf = Workflow('doctype2', 'r1')
+        msg = wf.create_doc({"dk2": "dv2"})
         self.assertTrue(msg['message'] == "has been registered" )
         doc_repo = DomainRepo("Wfdoc")
-        msg = doc_repo.list_domain_obj(name="dv1")
-        print(msg)
-        msg = wf.action_change_status("dv1", "wfaction1")
-        print(msg)
+        msg = doc_repo.list_domain_obj(name="dv2")
+        self.assertTrue(msg[0].name == "dv2")
+        msg = wf.action_change_status("dv2", "wfaction1")
+        self.assertTrue(msg['status'] =="success")
+        #should fail for incorrect role
+        wf = Workflow('doctype2', 'r1')
+        try:
+            msg = wf.action_change_status("dv2", "wfaction2")
+        except rexc.RoleNotPermittedForThisAction as err:
+            self.assertTrue(err.status == "RoleNotPermittedForThisAction")
+        #should pass the role and the rule 
+        wf = Workflow('doctype2', 'r2')
+        msg = wf.action_change_status("dv2", "wfaction2")
+        self.assertTrue(msg['status'] =="success")
+        #have a test for rule status validation failure
+        
     
     def _register_doctype_n_actions(self):
         doctype1 = ent.Doctype("doctype1", "dk1")
@@ -290,7 +303,7 @@ class Tflask(FTestCase):
         doctype_repo = DomainRepo("Doctype")
         doctype_repo.add_list_of_domain_obj(lodobj)
         wfaction1_dict=  {"name": "wfaction1",
-                         "assocated_doctype": {"name": "doctype1"},
+                         "assocated_doctype": {"name": "doctype2"},
                          "need_prev_status": "",
                          "need_current_status": "Created",
                          "leads_to_status": "s1",

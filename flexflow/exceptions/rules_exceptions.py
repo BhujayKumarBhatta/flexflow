@@ -82,7 +82,7 @@ class DuplicateDocumentExists(FlexFlowException):
         
 class WorkflowActionRuleViolation(FlexFlowException):
     status = "WorkflowActionRuleViolation"    
-    def __init__(self, need_previous_status, need_current_status, intended_action):
+    def __init__(self, intended_action, need_previous_status, need_current_status):
         self.need_previous_status = need_previous_status
         self.need_current_status = need_current_status
         self.intended_action = intended_action
@@ -95,4 +95,16 @@ class NoWorkFlowRuleFound(FlexFlowException):
     status = "NoWorkFlowRuleFound"    
     message = "Check the document type associated with this doc and action rules defined for the doctype" 
         
-        
+
+class RoleNotPermittedForThisAction(FlexFlowException):
+    status = "RoleNotPermittedForThisAction"    
+    def __init__(self, your_role, permitted_roles):
+        self.your_role = your_role
+        for idx, item  in enumerate(permitted_roles):
+            if item in [ None, "admin"]:
+                permitted_roles.pop(idx)
+        self.permitted_roles = permitted_roles
+        self.message = ("Your role: %s has not been granted permission for this action."
+                        " only follwoing roles have the "
+                        "permission:%s " %(self.your_role, self.permitted_roles))
+        super().__init__(self.status, self.message)       
