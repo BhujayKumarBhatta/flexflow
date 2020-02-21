@@ -40,15 +40,15 @@ class Doctype(db.Model):
    
 class Datadocfield(db.Model):    
         name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
-        assocated_doctype = db.relationship('Doctype', backref='datadocfields')
-        assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
+        associated_doctype = db.relationship('Doctype', backref='datadocfields')
+        associated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
         ftype = db.Column(db.String(120), nullable=False)
         flength = db.Column(db.Integer, nullable=False)
         
         def to_dict(self):
             return {"name": self.name,
-                    "assocated_doctype": {"name": self.assocated_doctype.name},
-                    "assocated_doctype_name": self.assocated_doctype_name,
+                    "associated_doctype": {"name": self.associated_doctype.name},
+                    "associated_doctype_name": self.associated_doctype_name,
                     "ftype": self.ftype,
                     "flength": self.flength
                 }
@@ -58,8 +58,8 @@ class Wfaction(db.Model):
     #id = db.Column(db.Integer, primary_key=True)    
     name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
     #many to one - place both foreign key  id and relationship in the "Many side" of the relationship
-    assocated_doctype = db.relationship('Doctype', backref='wfactions')
-    assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
+    associated_doctype = db.relationship('Doctype', backref='wfactions')
+    associated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
     ###########       
     need_prev_status = db.Column(db.String(120), nullable=False)    
     ####################
@@ -71,8 +71,8 @@ class Wfaction(db.Model):
     
     def to_dict(self):
         return {"name": self.name, 
-                "assocated_doctype": {"name": self.assocated_doctype.name},
-                "assocated_doctype_name": self.assocated_doctype_name,
+                "associated_doctype": {"name": self.associated_doctype.name},
+                "associated_doctype_name": self.associated_doctype_name,
                 "need_prev_status": self.need_prev_status,
                 "need_current_status": self.need_current_status,
                 "leads_to_status": self.leads_to_status,
@@ -82,8 +82,8 @@ class Wfaction(db.Model):
 class Wfdoc(db.Model):
     name = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
     #many to one - place both foreign key  id and relationship in the "Many side" of the relationship
-    assocated_doctype = db.relationship('Doctype', backref='wfdocs')
-    assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
+    associated_doctype = db.relationship('Doctype', backref='wfdocs')
+    associated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
     #associated actions = wfdoc.associated_doctype.wfactions   
     prev_status = db.Column(db.String(120))
     current_status = db.Column(db.String(120))
@@ -93,8 +93,8 @@ class Wfdoc(db.Model):
     
     def to_dict(self):
         return {"name": self.name,
-                "assocated_doctype": {"name": self.assocated_doctype.name},
-                "assocated_doctype_name": self.assocated_doctype_name,
+                "associated_doctype": {"name": self.associated_doctype.name},
+                "associated_doctypename": self.associated_doctype_name,
                 "prev_status": self.prev_status,
                 "current_status": self.current_status,
                 "doc_data": self.doc_data}

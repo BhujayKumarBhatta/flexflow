@@ -93,7 +93,7 @@ class Tflask(FTestCase):
         msg = doctype_repo.add_form_lod(Doctype_lod)
         self.assertTrue(msg['message'] == "has been registered" )
         Wfaction_lod = [{"name": "name1",
-                         "assocated_doctype": {"name": "doctype1"},
+                         "associated_doctype": {"name": "doctype1"},
                          "need_prev_status": "s0",
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
@@ -104,10 +104,10 @@ class Tflask(FTestCase):
         self.assertTrue(msg['message'] == 'has been registered')
         msg = actionrepo.list_dict()
         self.assertTrue(isinstance(msg[0], dict))
-        self.assertTrue(msg[0]['assocated_doctype_name'] == 'doctype1')
+        self.assertTrue(msg[0]['associated_doctype_name'] == 'doctype1')
         searchf = {"name": "name1"}
         updated_data_dict = {"name": "name1",
-                         "assocated_doctype": {"name": "doctype2"},
+                         "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "s0",
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
@@ -188,21 +188,21 @@ class Tflask(FTestCase):
         self.assertTrue(msg['message'] == "has been registered" )
         ########register action rules        
         wfaction1_dict=  {"name": "wfaction1",
-                         "assocated_doctype": {"name": "doctype1"},
+                         "associated_doctype": {"name": "doctype1"},
                          "need_prev_status": "s0",
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
                          "permitted_to_roles": ["r1",]
                          }
         wfaction2_dict=  {"name": "wfaction2",
-                         "assocated_doctype": {"name": "doctype2"},
+                         "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "s1",
                          "need_current_status": "s2",
                          "leads_to_status": "s3",
                          "permitted_to_roles": ["r2",]
                          }
         wfaction3_dict=  {"name": "wfaction3",
-                         "assocated_doctype": {"name": "doctype2"},
+                         "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "s2",
                          "need_current_status": "s3",
                          "leads_to_status": "s4",
@@ -221,18 +221,18 @@ class Tflask(FTestCase):
         doctype_list_dobj = doctype_repo.list_domain_obj()
         self.assertTrue(isinstance(doctype_list_dobj[0], ent.Doctype ))
         action_list_dict = action_repo.list_dict()
-        self.assertTrue( isinstance(action_list_dict[0]['assocated_doctype'], dict))
+        self.assertTrue( isinstance(action_list_dict[0]['associated_doctype'], dict))
         action_list_sobj = action_repo.list_obj()
         self.assertTrue( isinstance(action_list_sobj[0], m.Wfaction))
         action_list_dobj= action_repo.list_domain_obj()
         self.assertTrue( isinstance(action_list_dobj[0], ent.Wfaction))
-        seearchf = {"assocated_doctype": {"name": "doctype2"}}
+        seearchf = {"associated_doctype": {"name": "doctype2"}}
         action_list_filtered_by_doctype = action_repo.list_domain_obj(**seearchf)
-        self.assertTrue(action_list_filtered_by_doctype[0].assocated_doctype.name == 'doctype2')
-        self.assertTrue(action_list_filtered_by_doctype[1].assocated_doctype.name == 'doctype2')
+        self.assertTrue(action_list_filtered_by_doctype[0].associated_doctype.name == 'doctype2')
+        self.assertTrue(action_list_filtered_by_doctype[1].associated_doctype.name == 'doctype2')
         ####update relattionship field action1 doctype from 1 to 2 
         wfaction1_dict.update( 
-            { "assocated_doctype": {"name": "doctype2"} } )
+            { "associated_doctype": {"name": "doctype2"} } )
         searchf = {"name": "wfaction1"}
         msg = action_repo.update_from_dict(wfaction1_dict, **searchf)
         self.assertTrue(msg['status'] == "success")
@@ -243,7 +243,7 @@ class Tflask(FTestCase):
         primkey_of_doc_data = 'dk1'
         doc_data1 = {"dk1": "dv1" }
         wfdoc_dict1 = {"name": 'dk1',
-                       "assocated_doctype": {"name": "doctype2"},
+                       "associated_doctype": {"name": "doctype2"},
                          "prev_status": "s2",
                          "current_status": "s3",
                          "doc_data": {"dk1": "dv1"},
@@ -251,7 +251,7 @@ class Tflask(FTestCase):
         wfdoc_lod = [wfdoc_dict1]
         wfdoc_repo = repos.DomainRepo("Wfdoc")
         msg = wfdoc_repo.add_form_lod(wfdoc_lod)
-        #####SOMETIMES ADD IS FAILING SINVCE THE assocated_doctype in wfdoc_lod
+        #####SOMETIMES ADD IS FAILING SINVCE THE associated_doctype in wfdoc_lod
         ###is becoming Doctype object although we are supplying a dict ???????????
         wfdoc_list = wfdoc_repo.list_domain_obj()
         ##########SEE THE COMNNETS above IN CASE OF INPUT TYPE EXCEPTION       
@@ -263,7 +263,7 @@ class Tflask(FTestCase):
         self.assertTrue(wfdoc_list[0].name == 'dk1')
         #####from dict create domain obj and then save to repo
         wfdoc_dict2 = {"name": 'dk2',
-                       "assocated_doctype": {"name": "doctype2"},
+                       "associated_doctype": {"name": "doctype2"},
                          "prev_status": "s2",
                          "current_status": "s3",
                          "doc_data": {"dk2": "dv2" },
@@ -272,19 +272,46 @@ class Tflask(FTestCase):
         ###ADD THE DOMAIN OBJECT TO THE DOMAIN REPO
         msg = wfdoc_repo.add_list_of_domain_obj([wfdoc2])
         self.assertTrue(msg['message'] == "has been registered" )
+        ####DEFINING FIELDS FOR DOCTYPE2
         f1_dict = {"name": "field1",
-                   "assocated_doctype": {"name": "doctype2"},
+                   "associated_doctype": {"name": "doctype2"},
                    "ftype": "str",
                    "flength": 2}
         f2_dict = {"name": "field2",
-                   "assocated_doctype": {"name": "doctype2"},
+                   "associated_doctype": {"name": "doctype2"},
                    "ftype": "int",
                    "flength": 2}
         docf_repo = repos.DomainRepo("Datadocfield")
         msg = docf_repo.add_form_lod([f1_dict, f2_dict])
-        print(msg)
+        self.assertTrue(msg['status'] == "success" )
+        datadocfields_repo = repos.DomainRepo("Datadocfield")
+        searh_filter = {"associated_doctype": {"name": "doctype2"} }
+        result = datadocfields_repo.list_domain_obj(**searh_filter)
+        self.assertTrue(result[0].name == "field1")
+        ###see doctype2 have the docdatafields
+        doctype2Obj_list = doctype_repo.list_domain_obj(**{"name": "doctype2"})
+        ###create doc once its fields are defined above        
+        doc_data3 = {"dk3": "dv3" }
+        wfdoc_dict3 = {"name": 'dk3',
+                       "associated_doctype": {"name": "doctype2"},
+                       "prev_status": "",
+                       "current_status": "Created",
+                       "doc_data": doc_data3,
+                        }
+        ###fail for field name mistach
+        try:
+            wfdoc3 = ent.Wfdoc.from_dict(wfdoc_dict3)
+        except rexc.UnknownFieldNameInDataDoc as e:
+            self.assertTrue(e.status == "UnknownFieldNameInDataDoc")
+        ##failure for field length larger than configured
+        doc_data3 = {"field1": "dv3" }
+        wfdoc_dict3.update({"doc_data": doc_data3})
+        try:
+            wfdoc3_updated = ent.Wfdoc.from_dict(wfdoc_dict3)
+        except rexc.DataLengthViolation as e:
+            self.assertTrue(e.status == "DataLengthViolation")
         
-    
+         
     def test_workflow(self):
         m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
@@ -321,8 +348,7 @@ class Tflask(FTestCase):
         ####WFDOC SHOULD HAVE actions_for_current_stattus
         actions_for_current_status = wfdocObj_list[0].actions_for_current_status
         self.assertTrue(actions_for_current_status == ['wfaction1'])
-        
-        
+     
     def _register_doctype_n_actions(self):
         doctype1 = ent.Doctype("doctype1", "dk1")
         doctype2 = ent.Doctype("doctype2", "dk2")
@@ -330,21 +356,21 @@ class Tflask(FTestCase):
         doctype_repo = DomainRepo("Doctype")
         doctype_repo.add_list_of_domain_obj(lodobj)
         wfaction1_dict=  {"name": "wfaction1",
-                         "assocated_doctype": {"name": "doctype2"},
+                         "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "",
                          "need_current_status": "Created",
                          "leads_to_status": "s1",
                          "permitted_to_roles": ["r1",]
                          }
         wfaction2_dict=  {"name": "wfaction2",
-                         "assocated_doctype": {"name": "doctype2"},
+                         "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "Created",
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
                          "permitted_to_roles": ["r2",]
                          }
         wfaction3_dict=  {"name": "wfaction3",
-                         "assocated_doctype": {"name": "doctype2"},
+                         "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "s1",
                          "need_current_status": "s2",
                          "leads_to_status": "s3",

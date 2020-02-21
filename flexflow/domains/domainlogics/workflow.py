@@ -26,7 +26,7 @@ class Workflow:
         ##TODO: check if the role permits for doc creation
         ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         wfdocObj = ent.Wfdoc(name=docid,
-                         assocated_doctype=doctyoeObj,
+                         associated_doctype=doctyoeObj,
                          prev_status="",
                          current_status="Created",
                          doc_data=data)
@@ -84,3 +84,5 @@ class Workflow:
         if  self.role  not in permitted_to_roles :
             raise rexc.RoleNotPermittedForThisAction(self.role, permitted_to_roles)
             
+    
+        

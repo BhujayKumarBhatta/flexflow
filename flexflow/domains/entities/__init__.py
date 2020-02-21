@@ -45,14 +45,18 @@ class Entities:
     @classmethod
     def from_dict(cls, data_dict):
         for k,v in data_dict.items():            
-            if k in cls.related_obj_map.keys():                
-                if not isinstance(v, dict ) :
+            if k in cls.related_obj_map.keys():
+                related_class = cls.related_obj_map.get(k).get('mapped_object')              
+                if not (isinstance(v, dict ) or  isinstance(v, related_class)):
                     raise rexc.InvalidObjTypeInInputParam(k, dict)
-                primary_key = cls.related_obj_map.get(k).get('primary_key') 
-                if not primary_key in v:
-                    raise rexc.PrimaryKeyNotPresentInSearch(primary_key, v)                
-                relobjname = cls.related_obj_map.get(k).get('mapped_object').__name__
-                relobjrepo = repos.DomainRepo(relobjname)
-                result_list = relobjrepo.list_domain_obj(**v)
-                data_dict.update({k: result_list[0]})        
+                if isinstance(v, dict ):
+                    primary_key = cls.related_obj_map.get(k).get('primary_key') 
+                    if not primary_key in v:
+                        raise rexc.PrimaryKeyNotPresentInSearch(primary_key, v)                
+                    relobjname = cls.related_obj_map.get(k).get('mapped_object').__name__
+                    relobjrepo = repos.DomainRepo(relobjname)
+                    result_list = relobjrepo.list_domain_obj(**v)
+                    data_dict.update({k: result_list[0]})
+                elif isinstance(v, related_class):
+                    data_dict.update({k: v})
         return cls(**data_dict) 

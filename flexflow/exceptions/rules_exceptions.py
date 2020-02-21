@@ -107,4 +107,40 @@ class RoleNotPermittedForThisAction(FlexFlowException):
         self.message = ("Your role: %s has not been granted permission for this action."
                         " only follwoing roles have the "
                         "permission:%s " %(self.your_role, self.permitted_roles))
-        super().__init__(self.status, self.message)       
+        super().__init__(self.status, self.message)
+        
+class UnknownFieldNameInDataDoc(FlexFlowException):
+    status = "UnknownFieldNameInDataDoc"    
+    def __init__(self, fname, supporetd_fields):
+        self.fname = fname        
+        self.supporetd_fields = supporetd_fields
+        self.message = ("Unknown field name: %s in data doc, it should be one of"
+                        ":%s " %(self.fname, self.supporetd_fields))
+        super().__init__(self.status, self.message)
+        
+class DataTypeViolation(FlexFlowException):
+    status = "DataTypeViolation"    
+    def __init__(self, fname, supplied_type, supported_type):
+        self.fname = fname        
+        self.supplied_type = supplied_type
+        self.supported_type = supported_type
+        self.message = ("data type: %s for field: %s is invalid, supported "
+                        "type is :%s " %(self.fname, self.supplied_type, self.supported_type))
+        super().__init__(self.status, self.message)
+        
+class DataLengthViolation(FlexFlowException):
+    status = "DataLengthViolation"    
+    def __init__(self, fname, supplied_length, supported_length):
+        self.fname = fname        
+        self.supplied_type = supplied_length
+        self.supported_type = supported_length
+        self.message = ("data length: %s for field: %s is invalid, supported "
+                        "length is :%s " %(self.fname, self.supplied_type, self.supported_type))
+        super().__init__(self.status, self.message)
+               
+class NoDataInDocument(FlexFlowException):
+    status = "NoDataInDocument"    
+    message = "Any operation in the document must be accompanied by at least one data"
+    
+    
+    
