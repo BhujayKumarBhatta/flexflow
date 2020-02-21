@@ -32,6 +32,7 @@ class Tflask(FTestCase):
         m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Datadocfield)
         m.dbdriver.delete(m.Doctype)                     
         docrepo = DomainRepo("Wfdoc")       
         ###########ADDING SINGLE RECORD 
@@ -61,6 +62,7 @@ class Tflask(FTestCase):
         m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Datadocfield)
         m.dbdriver.delete(m.Doctype)  
         #####INITIALIZE A REPO FOR DOMAIN ENTITY
         statrepo = repos.DomainRepo("Wfstatus")
@@ -119,6 +121,7 @@ class Tflask(FTestCase):
         m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Datadocfield)
         m.dbdriver.delete(m.Doctype) 
         api_route = '/add/Wfstatuswrong'
         ############WRONG OBJECT NAME   
@@ -173,6 +176,7 @@ class Tflask(FTestCase):
         m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Datadocfield)
         m.dbdriver.delete(m.Doctype)                     
         docrepo = DomainRepo("Wfdoc")
         ###########register doctype
@@ -267,12 +271,25 @@ class Tflask(FTestCase):
         wfdoc2 = ent.Wfdoc.from_dict(wfdoc_dict2)
         ###ADD THE DOMAIN OBJECT TO THE DOMAIN REPO
         msg = wfdoc_repo.add_list_of_domain_obj([wfdoc2])
-        self.assertTrue(msg['message'] == "has been registered" )       
+        self.assertTrue(msg['message'] == "has been registered" )
+        f1_dict = {"name": "field1",
+                   "assocated_doctype": {"name": "doctype2"},
+                   "ftype": "str",
+                   "flength": 2}
+        f2_dict = {"name": "field2",
+                   "assocated_doctype": {"name": "doctype2"},
+                   "ftype": "int",
+                   "flength": 2}
+        docf_repo = repos.DomainRepo("Datadocfield")
+        msg = docf_repo.add_form_lod([f1_dict, f2_dict])
+        print(msg)
+        
     
     def test_workflow(self):
         m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Datadocfield)
         m.dbdriver.delete(m.Doctype)
         self._register_doctype_n_actions()
         wf = Workflow('doctype2', 'r1')

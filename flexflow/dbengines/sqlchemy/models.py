@@ -43,7 +43,7 @@ class Datadocfield(db.Model):
         assocated_doctype = db.relationship('Doctype', backref='datadocfields')
         assocated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
         ftype = db.Column(db.String(120), nullable=False)
-        flength = db.Column(db.Integer(120), nullable=False)
+        flength = db.Column(db.Integer, nullable=False)
         
         def to_dict(self):
             return {"name": self.name,
