@@ -134,19 +134,20 @@ class Wfdoc(Entities):
     
     def _validate_docdata(self):
         if  self.doc_data:
-            datadocfield_list = self.associated_doctype.datadocfields
+            conf_fieldobj_lst = self.associated_doctype.datadocfields
+            conf_field_names = [item.name for item in conf_fieldobj_lst]
             for k, v in self.doc_data.items():
-                for fieldObj in datadocfield_list:
-                    if k != fieldObj.name:
-                        raise rexc.UnknownFieldNameInDataDoc(k,
-                                                             [item.name for item in datadocfield_list])
-                    ctype = fieldObj.ftype
-                    ctypeObj = self.docdata_field_type_map.get(ctype)
-                    if not isinstance(v, ctypeObj):
-                        raise rexc.DataTypeViolation(k, type(v), ctypeObj.__name__)
-                    flength = fieldObj.flength
-                    if not len(v) == flength:
-                        raise rexc.DataLengthViolation(k, len(v), flength)
+                if k not in conf_field_names:
+                        raise rexc.UnknownFieldNameInDataDoc(k, conf_field_names)
+                for fieldObj in conf_fieldobj_lst:
+                    if k == fieldObj.name:                    
+                        ctype = fieldObj.ftype
+                        ctypeObj = self.docdata_field_type_map.get(ctype)
+                        if not isinstance(v, ctypeObj):
+                            raise rexc.DataTypeViolation(k, type(v), ctypeObj.__name__)
+                        flength = fieldObj.flength
+                        if not len(v) <= flength:
+                            raise rexc.DataLengthViolation(k, len(v), flength)
 
 
 
