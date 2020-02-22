@@ -339,7 +339,7 @@ class Tflask(FTestCase):
         wfdocObj_list = doc_repo.list_domain_obj(name="dv2")
         self.assertTrue(wfdocObj_list[0].name == "dv2")
         ####UPDATE DOC STATUS AS PER THE ACTION RULE
-        msg = wf.action_change_status("dv2", "wfaction1")
+        msg = wf.action_change_status("dv2", "wfaction1", {"dk2": "dv2"})
         ### check that self._validate_editable_fields(wfdocObj, data) working
         self.assertTrue(msg['status'] =="success")
         ###wdoc should be able to understand that dk2 is editable and dk1 is not
@@ -363,7 +363,9 @@ class Tflask(FTestCase):
         ####WFDOC SHOULD HAVE actions_for_current_stattus
         actions_for_current_status = wfdocObj_list[0].actions_for_current_status
         self.assertTrue(actions_for_current_status == ['wfaction1'])
-        
+        ###fail due to data having non editable field dk1
+        #try , except and develop login to check if the data has actually changed 
+        msg = wf.action_change_status("dv2", "wfaction1", {"dk1": "dv1", "dk2": "dv2"})
       
     def _register_doctype_n_actions(self):
         doctype1 = ent.Doctype("doctype1", "dk1")
