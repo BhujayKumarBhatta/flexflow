@@ -142,5 +142,15 @@ class NoDataInDocument(FlexFlowException):
     status = "NoDataInDocument"    
     message = "Any operation in the document must be accompanied by at least one data"
     
+class EditNotAllowedForThisField(FlexFlowException):
+    status = "EditNotAllowedForThisField"    
+    def __init__(self, fname, supplied_role, supported_roles):
+        self.fname = fname        
+        self.supplied_role = supplied_role
+        self.supported_roles = supported_roles
+        self.message = ("your role as : %s is not allowed to edit field: %s, supported "
+                        "roles are :%s " %(self.fname, self.supplied_role, self.supported_roles))
+        super().__init__(self.status, self.message)
+    
     
     

@@ -144,7 +144,7 @@ class Wfdoc(Entities):
                 actions_for_current_status.append(actionObj.name)
         return actions_for_current_status
     
-    def _validate_docdata(self):
+    def _validate_docdata(self):        
         if  self.doc_data:
             conf_fieldobj_lst = self.associated_doctype.datadocfields
             conf_field_names = [item.name for item in conf_fieldobj_lst]
@@ -160,6 +160,7 @@ class Wfdoc(Entities):
                         flength = fieldObj.flength
                         if not len(str(v)) <= flength:
                             raise rexc.DataLengthViolation(k, len(v), flength)
+                        
 
 
 
