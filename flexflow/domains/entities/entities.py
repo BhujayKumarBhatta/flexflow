@@ -53,23 +53,35 @@ class Doctype(Entities):
         
 
 class Datadocfield(Entities):
-    ''' field types to be entered as string e.g "str", "int" and not as python str, int objects.
+    '''Doctype a.k.a document category defines what all fields will be present in the data
+    portion of the document e.g name of the field , type and length of the data each field can store.
+    Field types to be entered as string e.g "str", "int" 
+    For developers:
+    ==================
+    and not as python str, int objects.
     this will be mapped later in Wfdoc.docdata_field_type_map for checking the actual object type'''
     related_obj_map = {"associated_doctype": {"mapped_object": Doctype, 
                                              "primary_key": "name"},
                                              }
-    def __init__(self, name, associated_doctype, ftype, flength, **kwargs):
+    def __init__(self, name, associated_doctype, ftype:str, 
+                 flength:int, status_needed_edit:list, **kwargs):
         self.name = name
         self.associated_doctype = associated_doctype
         self.associated_doctype_name = self.associated_doctype.name   
         self.ftype = ftype
         self.flength = flength
+        self.status_needed_edit = status_needed_edit
         self._validate_relationship_param_values()
         super().__init__(**kwargs)
 
 
 class Wfaction(Entities):
-    '''every action will have relation to one doctype'''
+    '''every action will have relation to one doctype. Here we define the workflow action
+    and status changing rules for a document type. 
+    1. For an action to be performed,  the document must satisfy  previous_status and current_status 
+    as defined here 
+    2. Upon performing the action, the status of the doc will be changed as per "leads_to_status" definition
+    '''
     related_obj_map = {"associated_doctype": {"mapped_object": Doctype, 
                                              "primary_key": "name"},
                                              }

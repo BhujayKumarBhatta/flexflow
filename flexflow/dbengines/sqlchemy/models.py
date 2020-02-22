@@ -44,13 +44,15 @@ class Datadocfield(db.Model):
         associated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
         ftype = db.Column(db.String(120), nullable=False)
         flength = db.Column(db.Integer, nullable=False)
+        status_needed_edit = db.Column(JSON)
         
         def to_dict(self):
             return {"name": self.name,
                     "associated_doctype": {"name": self.associated_doctype.name},
                     "associated_doctype_name": self.associated_doctype_name,
                     "ftype": self.ftype,
-                    "flength": self.flength
+                    "flength": self.flength,
+                    "status_needed_edit": self.status_needed_edit
                 }
             
  
