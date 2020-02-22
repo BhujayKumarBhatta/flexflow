@@ -148,8 +148,8 @@ class EditNotAllowedForThisField(FlexFlowException):
         self.fname = fname        
         self.supplied_role = supplied_role
         self.supported_roles = supported_roles
-        self.message = ("your role as : %s is not allowed to edit field: %s, supported "
-                        "roles are :%s " %(self.fname, self.supplied_role, self.supported_roles))
+        self.message = ("Field : %s is not allowed to edited when current status is: %s, supported "
+                        "status for edit are :%s " %(self.fname, self.supplied_role, self.supported_roles))
         super().__init__(self.status, self.message)
     
     

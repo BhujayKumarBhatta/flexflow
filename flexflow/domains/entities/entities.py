@@ -122,7 +122,7 @@ class Wfdoc(Entities):
         self.current_status = current_status
         self.doc_data = doc_data
         self._validate_relationship_param_values()
-        self._validate_docdata()
+        self._validate_docdata()        
         super().__init__(**kwargs)
     
     @property
@@ -144,7 +144,12 @@ class Wfdoc(Entities):
                 actions_for_current_status.append(actionObj.name)
         return actions_for_current_status
     
-    def _validate_docdata(self):        
+    @property
+    def editable_fields_at_current_status(self):
+        return  self._validate_docdata()
+    
+    def _validate_docdata(self):
+        editable_fields_at_this_status = []       
         if  self.doc_data:
             conf_fieldobj_lst = self.associated_doctype.datadocfields
             conf_field_names = [item.name for item in conf_fieldobj_lst]
@@ -152,6 +157,7 @@ class Wfdoc(Entities):
                 if k not in conf_field_names:
                         raise rexc.UnknownFieldNameInDataDoc(k, conf_field_names)
                 for fieldObj in conf_fieldobj_lst:
+                    ##TODO: fieldObj should be checked to see it has all the attributes, otherwise exception that field is not configured properly
                     if k == fieldObj.name:                    
                         ctype = fieldObj.ftype
                         ctypeObj = self.docdata_field_type_map.get(ctype)
@@ -160,6 +166,11 @@ class Wfdoc(Entities):
                         flength = fieldObj.flength
                         if not len(str(v)) <= flength:
                             raise rexc.DataLengthViolation(k, len(v), flength)
+                        if self.current_status and \
+                        self.current_status in fieldObj.status_needed_edit:                            
+                            editable_fields_at_this_status.append(k)
+        return editable_fields_at_this_status
+                            
                         
 
 

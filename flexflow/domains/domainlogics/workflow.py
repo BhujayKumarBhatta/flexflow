@@ -43,7 +43,7 @@ class Workflow:
                 wfactionObj = item
                 break
         self._check_action_rules(wfdocObj, wfactionObj, intended_action)
-        self._check_editiable_fields(wfdocObj)
+        #self._check_editiable_fields(wfdocObj) #doing thsi during wdoc initialization
         #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
         wfdoc_repo = DomainRepo("Wfdoc")
         updated_data_dict = {"current_status": wfactionObj.leads_to_status,
@@ -86,13 +86,13 @@ class Workflow:
             raise rexc.RoleNotPermittedForThisAction(self.role, permitted_to_roles)
         
     def _check_editiable_fields(self, wfdocObj):
-        conf_fieldobj_lst = self.associated_doctype.datadocfields
+        conf_fieldobj_lst = wfdocObj.associated_doctype.datadocfields
         for k, v in wfdocObj.doc_data.items():
             for confObj in conf_fieldobj_lst:
-                if confObj.status_needed_edit == k and \
-                self.role not in confObj.status_needed_edit:
+                if confObj.name == k and \
+                wfdocObj.current_status not in confObj.status_needed_edit:
                     raise rexc.EditNotAllowedForThisField(k, 
-                                                          self.role,
+                                                          wfdocObj.current_status,
                                                           confObj.status_needed_edit)
                      
                 

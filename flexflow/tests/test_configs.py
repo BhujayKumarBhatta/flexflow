@@ -242,11 +242,13 @@ class Tflask(FTestCase):
         f1_dict = {"name": "field1",
                    "associated_doctype": {"name": "doctype2"},
                    "ftype": "str",
-                   "flength": 2}
+                   "flength": 2,
+                   "status_needed_edit": ["s3"]}
         f2_dict = {"name": "field2",
                    "associated_doctype": {"name": "doctype2"},
                    "ftype": "int",
-                   "flength": 2}
+                   "flength": 2,
+                   "status_needed_edit": [""]}
         docf_repo = repos.DomainRepo("Datadocfield")
         msg = docf_repo.add_form_lod([f1_dict, f2_dict])
         self.assertTrue(msg['status'] == "success" )
@@ -321,43 +323,47 @@ class Tflask(FTestCase):
         docobj = ent.Wfdoc.from_dict(wfdoc_dict3)
         self.assertTrue(docobj.name == "v3")
          
-#     def test_workflow(self):
-#         m.dbdriver.delete(m.Wfdoc) 
-#         m.dbdriver.delete(m.Wfaction)
-#         m.dbdriver.delete(m.Wfstatus)
-#         m.dbdriver.delete(m.Datadocfield)
-#         m.dbdriver.delete(m.Doctype)
-#         self._register_doctype_n_actions()
-#         wf = Workflow('doctype2', 'r1')        
-#         ### WORKFLOW IS ABLE TO CREATE DOC
-#         msg = wf.create_doc({"dk2": "dv2"})
-#         self.assertTrue(msg['message'] == "has been registered" )
-#         ####ABLE TO RETRIEVE THE BY THE PRIMKEY AS DEFINED IN THE DOCTYPE
-#         doc_repo = DomainRepo("Wfdoc")
-#         wfdocObj_list = doc_repo.list_domain_obj(name="dv2")
-#         self.assertTrue(wfdocObj_list[0].name == "dv2")
-#         ####UPDATE DOC STATUS AS PER THE ACTION RULE
-#         msg = wf.action_change_status("dv2", "wfaction1")
-#         self.assertTrue(msg['status'] =="success")
-#         ####SHOULD FAIL FOR INCORRECT ROLE
-#         wf = Workflow('doctype2', 'r1')
-#         try:
-#             msg = wf.action_change_status("dv2", "wfaction2")
-#         except rexc.RoleNotPermittedForThisAction as err:
-#             self.assertTrue(err.status == "RoleNotPermittedForThisAction")
-#         ###SHOULD PASS THE ROLE AND THE RULE 
-#         wf = Workflow('doctype2', 'r2')
-#         msg = wf.action_change_status("dv2", "wfaction2")
-#         self.assertTrue(msg['status'] =="success")
-#         ####HAVE A TEST FOR RULE STATUS VALIDATION FAILURE
-#         try:
-#             msg = wf.action_change_status("dv2", "wfaction1")
-#         except rexc.WorkflowActionRuleViolation as err:
-#             self.assertTrue(err.status == "WorkflowActionRuleViolation")
-#         ####WFDOC SHOULD HAVE actions_for_current_stattus
-#         actions_for_current_status = wfdocObj_list[0].actions_for_current_status
-#         self.assertTrue(actions_for_current_status == ['wfaction1'])
-#      
+    def test_workflow(self):
+        m.dbdriver.delete(m.Wfdoc) 
+        m.dbdriver.delete(m.Wfaction)
+        m.dbdriver.delete(m.Wfstatus)
+        m.dbdriver.delete(m.Datadocfield)
+        m.dbdriver.delete(m.Doctype)
+        self._register_doctype_n_actions()
+        wf = Workflow('doctype2', 'r1')        
+        ### WORKFLOW IS ABLE TO CREATE DOC
+        msg = wf.create_doc({"dk1": "dv1", "dk2": "dv2"})
+        self.assertTrue(msg['message'] == "has been registered" )
+        ####ABLE TO RETRIEVE THE BY THE PRIMKEY AS DEFINED IN THE DOCTYPE
+        doc_repo = DomainRepo("Wfdoc")
+        wfdocObj_list = doc_repo.list_domain_obj(name="dv2")
+        self.assertTrue(wfdocObj_list[0].name == "dv2")
+        ####UPDATE DOC STATUS AS PER THE ACTION RULE
+        msg = wf.action_change_status("dv2", "wfaction1")
+        self.assertTrue(msg['status'] =="success")
+        ###wdoc should be able to understand that dk2 is editable and dk1 is not
+        self.assertTrue("dk2" in wfdocObj_list[0].editable_fields_at_current_status)
+        self.assertTrue("dk1" not in wfdocObj_list[0].editable_fields_at_current_status)
+        ####SHOULD FAIL FOR INCORRECT ROLE
+        wf = Workflow('doctype2', 'r1')
+        try:
+            msg = wf.action_change_status("dv2", "wfaction2")
+        except rexc.RoleNotPermittedForThisAction as err:
+            self.assertTrue(err.status == "RoleNotPermittedForThisAction")
+        ###SHOULD PASS THE ROLE AND THE RULE 
+        wf = Workflow('doctype2', 'r2')
+        msg = wf.action_change_status("dv2", "wfaction2")
+        self.assertTrue(msg['status'] =="success")
+        ####HAVE A TEST FOR RULE STATUS VALIDATION FAILURE
+        try:
+            msg = wf.action_change_status("dv2", "wfaction1")
+        except rexc.WorkflowActionRuleViolation as err:
+            self.assertTrue(err.status == "WorkflowActionRuleViolation")
+        ####WFDOC SHOULD HAVE actions_for_current_stattus
+        actions_for_current_status = wfdocObj_list[0].actions_for_current_status
+        self.assertTrue(actions_for_current_status == ['wfaction1'])
+        
+      
     def _register_doctype_n_actions(self):
         doctype1 = ent.Doctype("doctype1", "dk1")
         doctype2 = ent.Doctype("doctype2", "dk2")
@@ -368,13 +374,15 @@ class Tflask(FTestCase):
         f1_dict = {"name": "dk1",
                    "associated_doctype": {"name": "doctype2"},
                    "ftype": "str",
-                   "flength": 10}
-        f2_dict = {"name": "field2",
-                   "associated_doctype": {"name": "dk2"},
+                   "flength": 10,
+                   "status_needed_edit": [""]} #this should be status not role
+        f2_dict = {"name": "dk2",
+                   "associated_doctype": {"name": "doctype2"},
                    "ftype": "str",
-                   "flength": 10}
+                   "flength": 10,
+                   "status_needed_edit": ["Created"]}
         docf_repo = repos.DomainRepo("Datadocfield")
-        msg = docf_repo.add_form_lod([f1_dict, f2_dict])
+        docf_repo.add_form_lod([f1_dict, f2_dict])
         wfaction1_dict=  {"name": "wfaction1",
                          "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "",
