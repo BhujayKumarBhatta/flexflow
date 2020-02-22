@@ -146,7 +146,7 @@ class Wfdoc(Entities):
                         if not isinstance(v, ctypeObj):
                             raise rexc.DataTypeViolation(k, type(v), ctypeObj.__name__)
                         flength = fieldObj.flength
-                        if not len(v) <= flength:
+                        if not len(str(v)) <= flength:
                             raise rexc.DataLengthViolation(k, len(v), flength)
 
 
