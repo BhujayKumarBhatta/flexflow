@@ -340,6 +340,7 @@ class Tflask(FTestCase):
         self.assertTrue(wfdocObj_list[0].name == "dv2")
         ####UPDATE DOC STATUS AS PER THE ACTION RULE
         msg = wf.action_change_status("dv2", "wfaction1")
+        ### check that self._validate_editable_fields(wfdocObj, data) working
         self.assertTrue(msg['status'] =="success")
         ###wdoc should be able to understand that dk2 is editable and dk1 is not
         self.assertTrue("dk2" in wfdocObj_list[0].editable_fields_at_current_status)

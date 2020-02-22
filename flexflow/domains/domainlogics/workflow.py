@@ -34,7 +34,7 @@ class Workflow:
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
         return msg
     
-    def action_change_status(self, wfdoc_name, intended_action):
+    def action_change_status(self, wfdoc_name, intended_action, data=None):
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         wfactions_list = wfdocObj.wfactions
         wfactionObj = None
@@ -43,7 +43,7 @@ class Workflow:
                 wfactionObj = item
                 break
         self._check_action_rules(wfdocObj, wfactionObj, intended_action)
-        #self._check_editiable_fields(wfdocObj) #doing thsi during wdoc initialization
+        self._validate_editable_fields(wfdocObj, data)
         #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
         wfdoc_repo = DomainRepo("Wfdoc")
         updated_data_dict = {"current_status": wfactionObj.leads_to_status,
@@ -86,6 +86,7 @@ class Workflow:
             raise rexc.RoleNotPermittedForThisAction(self.role, permitted_to_roles)
         
     def _check_editiable_fields(self, wfdocObj):
+        '''this is not required , just keeping in for future purpose sincee the logic is correctly developed'''
         conf_fieldobj_lst = wfdocObj.associated_doctype.datadocfields
         for k, v in wfdocObj.doc_data.items():
             for confObj in conf_fieldobj_lst:
@@ -94,7 +95,15 @@ class Workflow:
                     raise rexc.EditNotAllowedForThisField(k, 
                                                           wfdocObj.current_status,
                                                           confObj.status_needed_edit)
-                     
+    def _validate_editable_fields(self, wfdocObj, data:dict):
+        if data:
+            for k in data.keys():
+                efac = wfdocObj.editable_fields_at_current_status
+                if not k in efac:
+                    raise rexc.EditNotAllowedForThisField(k, 
+                                                          wfdocObj.current_status,
+                                                          efac)
+        
                 
         
             
