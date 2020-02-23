@@ -1,21 +1,21 @@
 import flexflow
 #from flexflow.configs.prodconf import flexflow_configs , prod_db_conf
-from flexflow.configs.testconf import testconf , test_db_conf
+from flexflow.configs.prodconf import flexflow_configs , prod_db_conf
+from flexflow.restapi.routes import bp1
 
 
-
-c = testconf.yml
+c = flexflow_configs.yml
 
 token_settings =  c.get('token')
 print(token_settings)
 
-conf_obj = {"conf": testconf}
+conf_obj = {"conf": flexflow_configs}
 
-config_list = [conf_obj, c , test_db_conf, token_settings]
+config_list = [conf_obj, c , prod_db_conf, token_settings]
 
 #DOn't import bp1 blueprint  it before all  conf and other  objects are initialized 
 # from linkInventory.restapi.routes import bp1
-bp_list = []
+bp_list = [bp1, ]
 
 app = flexflow.create_app(blue_print_list=bp_list , config_map_list = config_list)
 

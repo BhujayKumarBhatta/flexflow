@@ -169,7 +169,7 @@ class Tflask(FTestCase):
         ###########DELETE
         api_route = '/delete/Wfstatus'
         filter_data = {"name": "DEF"}
-        msg = self._delete_call(api_route, filter_data)        
+        msg = self._post_call(api_route, filter_data)        
         self.assertTrue("has been  deleted successfully" in msg)
     
     def test_entities(self):

@@ -1,5 +1,5 @@
 host_name: 0.0.0.0 # for docker this should 0.0.0.0 
-host_port: 5020 
+host_port: 5030 
 ssl: disabled # not required other than testing the flaks own ssl. ssl should be handled by apache
 ssl_settings: adhoc
 

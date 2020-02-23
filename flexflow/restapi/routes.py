@@ -69,8 +69,9 @@ def wfmaster_update(objname):
     return json.dumps(result)
 
 
-@bp1.route('/delete/<objname>', methods=['DELETE'])
+@bp1.route('/delete/<objname>', methods=['POST'])
 def wfmaster_delete(objname):
+    print("request.json in delete", request.json)
     try:
         repo = repos.DomainRepo(objname)        
         result = repo.delete(**request.json)#convert dict as name=value with **
