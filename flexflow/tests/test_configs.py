@@ -364,8 +364,12 @@ class Tflask(FTestCase):
         actions_for_current_status = wfdocObj_list[0].actions_for_current_status
         self.assertTrue(actions_for_current_status == ['wfaction1'])
         ###fail due to data having non editable field dk1
-        #try , except and develop login to check if the data has actually changed 
-        msg = wf.action_change_status("dv2", "wfaction1", {"dk1": "dv1", "dk2": "dv2"})
+        ###develop logic to check if the data has actually changed
+        wf = Workflow('doctype2', 'r3') 
+        try:
+            wf.action_change_status("dv2", "wfaction3", {"dk1": "dv1", "dk2": "dv2"})
+        except Exception as e:
+            self.assertTrue(e.status == "EditNotAllowedForThisField")
       
     def _register_doctype_n_actions(self):
         doctype1 = ent.Doctype("doctype1", "dk1")
