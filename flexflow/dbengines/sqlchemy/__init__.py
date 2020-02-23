@@ -181,11 +181,13 @@ class SqlalchemyDriver:
         Obj = target_class_obj
         if search_filters:        
             query_result = self.db.session.query(Obj).filter_by(**search_filters)
+            ##TODO: when search is wrong is it giving a  query_result?
             for record in query_result:
                 self.db.session.delete(record) 
         else:
             query_result = self.db.session.query(Obj).delete()    
         if  query_result:
+            #when search is worng how it is coming inside this condition???
             try:      
                 self.db.session.commit()             
                 status = "{} has been  deleted successfully".format(search_filters)

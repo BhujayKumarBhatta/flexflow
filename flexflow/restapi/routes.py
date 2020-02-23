@@ -2,12 +2,20 @@ import json
 from flask import Blueprint, request
 from flexflow.domains import repos
 from flexflow.exceptions import rules_exceptions  as rexc
+from tokenleaderclient.configs.config_handler import Configs    
+from  tokenleaderclient.client.client import Client 
+from tokenleaderclient.rbac.enforcer import Enforcer
 
+auth_config = Configs()
+tlclient = Client(auth_config)
+enforcer = Enforcer(tlclient)
 bp1 = Blueprint('bp1', __name__)
 
 
 @bp1.route('/add/<objname>', methods=['POST'])
-def wfmaster_add(objname):
+@enforcer.enforce_access_rule_with_token('striker.tspaction') 
+def wfmaster_add(objname, wfc):
+    print('''print wfc.....''', wfc.__dict__)
     try:
         repo = repos.DomainRepo(objname)
         result = repo.add_form_lod(request.json)
