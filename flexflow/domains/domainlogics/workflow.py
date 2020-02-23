@@ -51,9 +51,7 @@ class Workflow:
         target_doc_name = {"name": wfdocObj.name}
         msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
         return msg
-        
-        
-      
+   
     def _get_doctype_obj_from_name(self):
         '''search by primary key name, hence expected to get one object'''
         result = None
@@ -95,6 +93,7 @@ class Workflow:
                     raise rexc.EditNotAllowedForThisField(k, 
                                                           wfdocObj.current_status,
                                                           confObj.status_needed_edit)
+                    
     def _validate_editable_fields(self, wfdocObj, data:dict):
         if data:
             for k in data.keys():
