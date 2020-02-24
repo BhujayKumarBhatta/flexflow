@@ -1,4 +1,5 @@
 import json
+import inspect
 from flexflow.dbengines.sqlchemy import models as sqlm
 from flexflow.exceptions import rules_exceptions  as rexc
 from sqlalchemy.orm.relationships import RelationshipProperty
@@ -93,6 +94,22 @@ class DomainRepo:
         self._validate_input_data_dict(search_filters)
         delete_result = self.dbdriver.delete(self.sql_obj, **search_filters)
         return delete_result
+    
+    def get_wfmobj_keys(self):
+        obj_named_dict =  inspect.getfullargspec(self.domain_obj)
+        print(obj_named_dict)
+        for i, arg   in enumerate(obj_named_dict.args):
+            if arg == 'self' or arg.startswith('__') and arg.endswith('__'):
+                print('poping ........', arg)
+                obj_named_dict.args.pop(i)
+        print('after pop .......', obj_named_dict.args)
+        #########this block may not be required###
+        if hasattr(obj_named_dict, "keywords") and not obj_named_dict.keywords == "kwargs":
+            for kwd in obj_named_dict.keywords:
+                if kwd : obj_named_dict.args.append(kwd)
+        print( 'after adding keywords ...')
+        #############################################
+        return obj_named_dict.args
     
     def _create_domain_object(self, status_dict:dict):
         return self.domain_obj.from_dict(status_dict)

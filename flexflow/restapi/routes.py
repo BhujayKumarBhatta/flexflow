@@ -12,6 +12,12 @@ enforcer = Enforcer(tlclient)
 bp1 = Blueprint('bp1', __name__)
 
 
+@bp1.route('/get_wfmobj_keys/<objname>', methods=['GET'])
+def get_wfmobj_keys(objname):
+    repo = repos.DomainRepo(objname)
+    objkeys = repo.get_wfmobj_keys()
+    return json.dumps(objkeys)
+
 @bp1.route('/add/<objname>', methods=['POST'])
 @enforcer.enforce_access_rule_with_token('striker.tspaction') 
 def wfmaster_add(objname, wfc):

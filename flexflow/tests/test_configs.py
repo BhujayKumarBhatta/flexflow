@@ -82,6 +82,7 @@ class Tflask(FTestCase):
         msg = statrepo.update_from_dict(updated_data_dict, **searchf)
         self.assertTrue(msg['status'] == "success")
         ##########DELETE
+        ####delete on on existing document is also saying succress to be tested
         msg = statrepo.delete(name='Status222222')
         self.assertTrue("deleted successfully" in  msg)
         msg=statrepo.list_obj()
