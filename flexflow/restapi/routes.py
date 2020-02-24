@@ -83,6 +83,20 @@ def wfmaster_update(objname):
     return json.dumps(result)
 
 
+@bp1.route('/delete_by_name/<objname>/<unique_identifier>', methods=['DELETE'])
+def wfmaster_delete_by_name(objname, unique_identifier):    
+    try:
+        repo = repos.DomainRepo(objname)
+        filter = {"name": unique_identifier}        
+        result = repo.delete(**filter)#convert dict as name=value with **
+    except (rexc.InvalidWorkflowObject, rexc.InvalidInputDataDict,
+            rexc.InvalidKeysInData) as errObj:
+        result = errObj.ret_val
+    except Exception as err:
+            result = {'status': "unknown", 'msg': str(err)}
+    return json.dumps(result)
+
+
 @bp1.route('/delete/<objname>', methods=['POST'])
 def wfmaster_delete(objname):
     print("request.json in delete", request.json)
