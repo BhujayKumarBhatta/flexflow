@@ -331,14 +331,30 @@ class Tflask(FTestCase):
         m.dbdriver.delete(m.Datadocfield)
         m.dbdriver.delete(m.Doctype)
         self._register_doctype_n_actions()
-        wf = Workflow('doctype2', 'r1')        
+        wf = Workflow('doctype2', 'r1')    
+        
+        ##create should fail  when primary key fields in datadoc is not in rule
+        try:
+            wf.create_doc({"dk1": "dv1", "dk2-nonprim": "dv2", }, 'r1')
+        except Exception as e:
+            self.assertTrue(e.status == "PrimaryKeyNotPresentInDataDict")
+        ##Fail  when  fields dk1 is not string        
+        try:
+            wf.create_doc({"dk1": 100, "dk2": "dv2", }, 'r1')
+        except Exception as e:
+            self.assertTrue(e.status == "DataTypeViolation")
+        ##Fail  when  fields dk3 is not present in the rule at all        
+        try:
+            wf.create_doc({"dk3": "not defined in the rule", "dk2": "dv2", }, 'r1')
+        except Exception as e:
+            self.assertTrue(e.status == "UnknownFieldNameInDataDoc")
         ### WORKFLOW IS ABLE TO CREATE DOC
         msg = wf.create_doc({"dk1": "dv1", "dk2": "dv2", }, 'r1')
         self.assertTrue(msg['message'] == "has been registered" )
         ####ABLE TO RETRIEVE THE BY THE PRIMKEY AS DEFINED IN THE DOCTYPE
         doc_repo = DomainRepo("Wfdoc")
         wfdocObj_list = doc_repo.list_domain_obj(name="dv2")
-        self.assertTrue(wfdocObj_list[0].name == "dv2")
+        self.assertTrue(wfdocObj_list[0].name == "dv2")          
         ####UPDATE DOC STATUS AS PER THE ACTION RULE
         msg = wf.action_change_status("dv2", "wfaction1", {"dk2": "dv2"})
         ### check that self._validate_editable_fields(wfdocObj, data) working

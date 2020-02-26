@@ -18,16 +18,12 @@ class Workflow:
         '''
         doctyoeObj = self._get_doctype_obj_from_name()
         docid = self._get_primary_key_from_data_doc(doctyoeObj, data)
-        ##check if the role permits for doc creation
-        self._check_role_for_create_action(doctyoeObj, role)
-        ##TODO: check fields in datadoc
-        
-        ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
+        self._check_role_for_create_action(doctyoeObj, role) ## remeber fields validation in done during documents init method
         wfdocObj = ent.Wfdoc(name=docid,
                          associated_doctype=doctyoeObj,
                          prev_status="",
                          current_status="Created",
-                         doc_data=data)
+                         doc_data=data) ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         wfdoc_repo = DomainRepo("Wfdoc")
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
         return msg
@@ -77,6 +73,15 @@ class Workflow:
         if  len(lst) == 1 : result = lst[0]              
         return result
     
+#     def _validate_fields_during_create(self, doctypeObj, data:dict):
+#         if data:
+#             for k in data.keys():
+#                 efac = doctypeObj.datadocfields
+#                 if not k in efac:
+#                     raise rexc.EditNotAllowedForThisField(k, 
+#                                                           doctypeObj.current_status,
+#                                                           efac)
+    
     def _get_wfdoc_by_name(self, wfdoc_name):
         '''search by primary key id, hence expected to get one object'''
         result = None
@@ -118,6 +123,8 @@ class Workflow:
                     raise rexc.EditNotAllowedForThisField(k, 
                                                           wfdocObj.current_status,
                                                           efac)
+                    
+    
         
                 
         
