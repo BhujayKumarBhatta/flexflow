@@ -8,7 +8,7 @@ class Workflow:
         self.doctype_name = doctype_name
         self.role = role
     
-    def create_doc(self, data:dict, role=None):
+    def create_doc(self, data:dict, role):
         ''' a key from the data is treated as the primary key for the 
         document. The key name is defined in the doctype.
         for creation of the doc the condition is no such doc by the id(primary key)
@@ -23,15 +23,10 @@ class Workflow:
         docid = data.get(primkey_in_datadoc)
         if self._get_wfdoc_by_name(docid):
             raise rexc.DuplicateDocumentExists(docid)
-        ##TODO: check if the role permits for doc creation
-        for actionObj in doctyoeObj.wfactions:
-            if not actionObj.name == "Create": 
-                raise rexc.NoActionRuleForCreate
-            elif actionObj.name == "Create" and role not in actionObj.permitted_to_roles:
-                raise rexc.RoleNotPermittedForThisAction(role, actionObj.permitted_to_roles)
-                
-                
+        ##check if the role permits for doc creation
+        self._check_role_for_create_action(doctyoeObj, role)
         ##TODO: check fields in datadoc
+        
         ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         wfdocObj = ent.Wfdoc(name=docid,
                          associated_doctype=doctyoeObj,
@@ -59,6 +54,14 @@ class Workflow:
         target_doc_name = {"name": wfdocObj.name}
         msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
         return msg
+    
+    def _check_role_for_create_action(self, doctyoeObj, role):
+        Create_found = False
+        for actionObj in doctyoeObj.wfactions:
+            if actionObj.name == "Create": Create_found = True
+            if actionObj.name == "Create" and role not in actionObj.permitted_to_roles:
+                raise rexc.RoleNotPermittedForThisAction(role, actionObj.permitted_to_roles)
+        if Create_found is False: raise rexc.NoActionRuleForCreate
    
     def _get_doctype_obj_from_name(self):
         '''search by primary key name, hence expected to get one object'''

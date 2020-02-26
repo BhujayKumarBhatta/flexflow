@@ -333,7 +333,7 @@ class Tflask(FTestCase):
         self._register_doctype_n_actions()
         wf = Workflow('doctype2', 'r1')        
         ### WORKFLOW IS ABLE TO CREATE DOC
-        msg = wf.create_doc({"dk1": "dv1", "dk2": "dv2"})
+        msg = wf.create_doc({"dk1": "dv1", "dk2": "dv2", }, 'r1')
         self.assertTrue(msg['message'] == "has been registered" )
         ####ABLE TO RETRIEVE THE BY THE PRIMKEY AS DEFINED IN THE DOCTYPE
         doc_repo = DomainRepo("Wfdoc")
@@ -391,6 +391,13 @@ class Tflask(FTestCase):
                    "status_needed_edit": ["Created"]}
         docf_repo = repos.DomainRepo("Datadocfield")
         docf_repo.add_form_lod([f1_dict, f2_dict])
+        wfcaction_create = {"name": "Create",
+                         "associated_doctype": {"name": "doctype2"},
+                         "need_prev_status": "NewBorn",
+                         "need_current_status": "NewBorn",
+                         "leads_to_status": "Created",
+                         "permitted_to_roles": ["r1",]
+                         }
         wfaction1_dict=  {"name": "wfaction1",
                          "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "",
@@ -412,10 +419,11 @@ class Tflask(FTestCase):
                          "leads_to_status": "s3",
                          "permitted_to_roles": ["r3",]
                          }
+        wfactionCreate = ent.Wfaction.from_dict(wfcaction_create)
         wfaction1 = ent.Wfaction.from_dict(wfaction1_dict)
         wfaction2 = ent.Wfaction.from_dict(wfaction2_dict)
         wfaction3 = ent.Wfaction.from_dict(wfaction3_dict)
-        lodobj = [wfaction1, wfaction2, wfaction3]
+        lodobj = [wfactionCreate, wfaction1, wfaction2, wfaction3]
         action_repo = DomainRepo("Wfaction")
         action_repo.add_list_of_domain_obj(lodobj)
     
