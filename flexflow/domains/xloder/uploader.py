@@ -1,15 +1,16 @@
+import logging
 from  json import dumps
 from flexflow.domains.xloder.excelchecker import ExcelChecker
-from invoiceflow.penman.ops.mixed_actions import mixed_actions
+from flexflow.domains.domainlogics.workflow import Workflow
+from flexflow.domains.domainlogics.xloder import xluploader_exceptions as xlexc
 
-
+logger = logging.getLogger(__name__)
 #netstat -ano | findstr 5002 in windows
 
 class XLReceiver:
     ''' get xlfile from http request
     convert to list of dictionaries after validation
     '''
-    
         
     def __init__(self, conf, wfc, request=None, xlfile=None):
         if not request and not xlfile:
@@ -34,16 +35,8 @@ class XLReceiver:
                         'save_status': self.xl_chk_status.get('checking_message_list'),
                         'invoice_num': "excel-upload-%s" %self.wfc.request_id}
 #         self.json_message = json.dumps(self.message)
-        print(self.message)
-        
-    def notify(self):
-        result = None
-        if self.lod:
-            result = mixed_actions(self.conf, self.wfc, self.lod)
-        else:
-            result = {"response_list":[self.message]} #list because sucess results are in result_list
-        #print('xlloader calling mixed actions', result)
-        return result
+        print(self.message)        
+    
     
     def _lower_case_keys(self):
         lower_key_dict = {}
@@ -52,14 +45,19 @@ class XLReceiver:
             lower_key_dict.update({lowerk: v})
         return lower_key_dict
     
-    def action_from_lod(self):
-        if self.lower_key_dict:
-            for xl_dict in self.lower_key_dict:
-                if  xl_dict.get('action') == "Create":
-                    pass #call workfow create 
-                
-                
-                
+    def action_from_lod(self, role, doctype_name):
+        response_list = []
+        if not self.lower_key_dict:
+            raise xlexc.NoDataExtractedFromExcel        
+        for xl_dict in self.lower_key_dict:
+            if xl_dict.get('doctype'): doctype_name = xl_dict.get('doctype')                
+            if xl_dict.get('action') == "Create":
+                wf = Workflow(doctype_name)
+                status_msg_dict = wf.create_doc(xl_dict, role)
+                response_list.append(status_msg_dict)
+        logger.debug('got response list after calling the  the'
+                     ' workflow create_doc', status_msg_dict)       
+        return response_list                  
         
     def _get_xl_from_request(self):
         if self.request.method == 'POST' or self.request.method == 'PUT':
@@ -88,4 +86,13 @@ class XLReceiver:
         else:
             excel_to_dict_list = None
         return check_status, excel_to_dict_list
-  
+    
+#     def notify(self):
+#         result = None
+#         if self.lod:
+#             result = mixed_actions(self.conf, self.wfc, self.lod)
+#         else:
+#             result = {"response_list":[self.message]} #list because sucess results are in result_list
+#         #print('xlloader calling mixed actions', result)
+#         return result
+#   

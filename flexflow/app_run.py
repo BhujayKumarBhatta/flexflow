@@ -2,7 +2,7 @@ import flexflow
 #from flexflow.configs.prodconf import flexflow_configs , prod_db_conf
 from flexflow.configs.prodconf import flexflow_configs , prod_db_conf
 from flexflow.restapi.routes import bp1
-
+from flexflow.restapi.wfdoc_routes import wf_doc_bp
 
 c = flexflow_configs.yml
 
@@ -15,7 +15,7 @@ config_list = [conf_obj, c , prod_db_conf, token_settings]
 
 #DOn't import bp1 blueprint  it before all  conf and other  objects are initialized 
 # from linkInventory.restapi.routes import bp1
-bp_list = [bp1, ]
+bp_list = [bp1, wf_doc_bp]
 
 app = flexflow.create_app(blue_print_list=bp_list , config_map_list = config_list)
 

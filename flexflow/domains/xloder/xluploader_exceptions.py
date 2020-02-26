@@ -18,9 +18,9 @@ class XLUploaderException(Exception):
     def __repr__(self):
         return self.ret_val
     
-class InvalidInputDataDict(XLUploaderException):
-    status = "InvalidInputDataDict"  
-    message = "Data must be  dictionary(json object) type" 
+class NoDataExtractedFromExcel(XLUploaderException):
+    status = "NoDataExtractedFromExcel"  
+    message = "Conversion from Excel data to a 'None' or Blank  data dictionary " 
     
 class InvalidDocCategory(XLUploaderException):
     status = "InvalidDocCategory"    
