@@ -2,7 +2,7 @@ import logging
 from  json import dumps
 from flexflow.domains.xloder.excelchecker import ExcelChecker
 from flexflow.domains.domainlogics.workflow import Workflow
-from flexflow.domains.domainlogics.xloder import xluploader_exceptions as xlexc
+from flexflow.domains.xloder import xluploader_exceptions as xlexc
 
 logger = logging.getLogger(__name__)
 #netstat -ano | findstr 5002 in windows

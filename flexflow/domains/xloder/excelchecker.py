@@ -6,6 +6,7 @@ import pandas as pd
 from pandas.api import types as ptypes
 import deepdiff
 import re
+from flexflow.domains.xloder import xluploader_exceptions as xlexc
 
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ class ExcelChecker():
         self.rcvd_file = rcvd_file
 #         print(type(self.rcvd_file))
         self.yml = yml
+        if not self.yml.get('upload_excel'): raise xlexc.MissingExcelConfig
         self.excel_configs = self.yml.get('upload_excel')
         self.df = self.convert_excel_to_dataframe()
         
@@ -79,7 +81,7 @@ class ExcelChecker():
             self.check_result = False
             
             
-    def convert_to_proper_data_types(self, df):          
+    def convert_to_proper_data_types(self, df):         
         str_columns = [x.strip() for x in self.excel_configs.get('str_columns')]        
         int_columns = self.excel_configs.get('int_columns')        
         print('got str column configurations as %s , and int column as'

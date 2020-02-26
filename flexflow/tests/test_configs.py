@@ -115,63 +115,8 @@ class Tflask(FTestCase):
                          "permitted_to_roles": ["r1",]
                          }
         msg = actionrepo.update_from_dict(updated_data_dict, **searchf)
-        self.assertTrue(msg['status'] == "success")
-        
-    def test_routes(self):
-        pass
-        m.dbdriver.delete(m.Wfdoc) 
-        m.dbdriver.delete(m.Wfaction)
-        m.dbdriver.delete(m.Wfstatus)
-        m.dbdriver.delete(m.Datadocfield)
-        m.dbdriver.delete(m.Doctype) 
-        api_route = '/add/Wfstatuswrong'
-        ############WRONG OBJECT NAME   
-        data= [{"name1": "ABC"}]        
-        return_data = self._post_call(api_route, data)
-        self.assertTrue(return_data.get('status') == "InvalidWorkflowObject")
-        ############WRONG DATA , IS NOT LIST
-        api_route = '/add/Wfstatus'      
-        data= {"name1": "ABC"}      
-        return_data = self._post_call(api_route, data)        
-        self.assertTrue(return_data.get('status') == "InvalidInputDataList")
-        ############WRONG DATA, NOT DICTIONARY WITHIN THE LIST            
-        data= ["name1" ,  "ABC" ]     
-        return_data = self._post_call(api_route, data)        
-        self.assertTrue(return_data.get('status') == "InvalidInputDataDict")           
-        ############WRONG KEY IN DATA        
-        data= [{"name1": "ABC"}]        
-        return_data = self._post_call(api_route, data)        
-        self.assertTrue(return_data.get('status') == "InvalidKeysInData")
-        ############REGISTER WITH CORRECT DATA       
-        data= [{"name": "ABC"}]        
-        return_data = self._post_call(api_route, data)
-        #print(return_data)       
-        self.assertTrue(return_data['message'] == "has been registered" )
-        ###########LIST WITHOUT FILTER WITH GET METHOD
-        api_route = '/list/Wfstatus/all/all'
-        msg = self._get_call(api_route)
-        self.assertTrue(msg[0].get('name') == "ABC")
-        api_route = '/list/Wfstatus/name/ABC'
-        msg = self._get_call(api_route)
-        self.assertTrue(msg[0].get('name') == "ABC")
-        ###########LIST WITH FILTER WITH POST METHOD
-        api_route = '/list/Wfstatus'
-        filter_data = {"name": "ABC"}
-        msg = self._post_call(api_route, filter_data)        
-        self.assertTrue(msg[0].get('name') == "ABC")
-        ###########UPDATE THE DATA
-        api_route = '/update/Wfstatus'
-        data_dict = {"update_data_dict": {"name": "DEF"},
-                     "search_filter": {"name": "ABC"}
-                     }
-                              
-        msg = self._put_call(api_route, data_dict)
-        self.assertTrue(msg['status'] == "success")
-        ###########DELETE
-        api_route = '/delete/Wfstatus'
-        filter_data = {"name": "DEF"}
-        msg = self._post_call(api_route, filter_data)        
-        self.assertTrue("has been  deleted successfully" in msg)
+        self.assertTrue(msg['status'] == "success")        
+    
     
     def test_entities(self):
         m.dbdriver.delete(m.Wfdoc) 
@@ -443,40 +388,4 @@ class Tflask(FTestCase):
         action_repo = DomainRepo("Wfaction")
         action_repo.add_list_of_domain_obj(lodobj)
     
-    def _post_call(self, api_route, data):
-#       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
-        with self.client:
-            self.headers = {'X-Auth-Token': "token_in_byte"}
-            response = self.client.post(api_route, 
-                                        headers=self.headers,
-                                        data=json.dumps(data),
-                                        content_type='application/json')
-            return json.loads(response.data.decode())
-        
-    def _get_call(self, api_route):
-#       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
-        with self.client:
-            self.headers = {'X-Auth-Token': "token_in_byte"}
-            response = self.client.get(api_route, 
-                                        headers=self.headers,)
-            return json.loads(response.data.decode())
-
-    def _put_call(self, api_route, data):
-#       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
-        with self.client:
-            self.headers = {'X-Auth-Token': "token_in_byte"}
-            response = self.client.put(api_route, 
-                                        headers=self.headers,
-                                        data=json.dumps(data),
-                                        content_type='application/json')
-            return json.loads(response.data.decode())
-
-    def _delete_call(self, api_route, data):
-#       token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
-        with self.client:
-            self.headers = {'X-Auth-Token': "token_in_byte"}
-            response = self.client.delete(api_route, 
-                                        headers=self.headers,
-                                        data=json.dumps(data),
-                                        content_type='application/json')
-            return json.loads(response.data.decode())
+    

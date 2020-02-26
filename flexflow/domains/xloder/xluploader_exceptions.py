@@ -22,6 +22,12 @@ class NoDataExtractedFromExcel(XLUploaderException):
     status = "NoDataExtractedFromExcel"  
     message = "Conversion from Excel data to a 'None' or Blank  data dictionary " 
     
+class MissingExcelConfig(XLUploaderException):
+    status = "MissingExcelConfig" 
+    message = "'upload_excel' key and related configs are missing from the config file "
+
+        
+        
 class InvalidDocCategory(XLUploaderException):
     status = "InvalidDocCategory"    
     def __init__(self, status_doc_category, list_doc_category):
