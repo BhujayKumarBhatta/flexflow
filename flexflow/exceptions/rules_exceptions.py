@@ -153,4 +153,6 @@ class EditNotAllowedForThisField(FlexFlowException):
         super().__init__(self.status, self.message)
     
     
-    
+class NoActionRuleForCreate(FlexFlowException):
+    status = "NoActionRuleForCreate"    
+    message = "Ask admin to define a Action Rule (Wfaction) master  named as 'Create' with status leading to 'Created' and previous and current status as blank " 

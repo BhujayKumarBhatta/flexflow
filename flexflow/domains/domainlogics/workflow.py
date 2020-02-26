@@ -8,7 +8,7 @@ class Workflow:
         self.doctype_name = doctype_name
         self.role = role
     
-    def create_doc(self, data:dict):
+    def create_doc(self, data:dict, role=None):
         ''' a key from the data is treated as the primary key for the 
         document. The key name is defined in the doctype.
         for creation of the doc the condition is no such doc by the id(primary key)
@@ -24,6 +24,14 @@ class Workflow:
         if self._get_wfdoc_by_name(docid):
             raise rexc.DuplicateDocumentExists(docid)
         ##TODO: check if the role permits for doc creation
+        for actionObj in doctyoeObj.wfactions:
+            if not actionObj.name == "Create": 
+                raise rexc.NoActionRuleForCreate
+            elif actionObj.name == "Create" and role not in actionObj.permitted_to_roles:
+                raise rexc.RoleNotPermittedForThisAction(role, actionObj.permitted_to_roles)
+                
+                
+        ##TODO: check fields in datadoc
         ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         wfdocObj = ent.Wfdoc(name=docid,
                          associated_doctype=doctyoeObj,
