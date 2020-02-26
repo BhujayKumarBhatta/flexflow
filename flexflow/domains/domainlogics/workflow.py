@@ -17,12 +17,7 @@ class Workflow:
         Also see wfdocObj initialization. Earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         '''
         doctyoeObj = self._get_doctype_obj_from_name()
-        primkey_in_datadoc = doctyoeObj.primkey_in_datadoc
-        if not data.get(primkey_in_datadoc):
-            raise rexc.PrimaryKeyNotPresentInDataDict(primkey_in_datadoc)
-        docid = data.get(primkey_in_datadoc)
-        if self._get_wfdoc_by_name(docid):
-            raise rexc.DuplicateDocumentExists(docid)
+        docid = self._get_primary_key_from_data_doc(doctyoeObj, data)
         ##check if the role permits for doc creation
         self._check_role_for_create_action(doctyoeObj, role)
         ##TODO: check fields in datadoc
@@ -54,6 +49,16 @@ class Workflow:
         target_doc_name = {"name": wfdocObj.name}
         msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
         return msg
+    
+    def _get_primary_key_from_data_doc(self, doctyoeObj, data_doc):
+        docid = None
+        primkey_in_datadoc = doctyoeObj.primkey_in_datadoc
+        if not data_doc.get(primkey_in_datadoc):
+            raise rexc.PrimaryKeyNotPresentInDataDict(primkey_in_datadoc)
+        docid = data_doc.get(primkey_in_datadoc)
+        if self._get_wfdoc_by_name(docid):
+            raise rexc.DuplicateDocumentExists(docid)
+        return docid
     
     def _check_role_for_create_action(self, doctyoeObj, role):
         Create_found = False
