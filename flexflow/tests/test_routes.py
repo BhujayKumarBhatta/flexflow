@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 import jwt
+from io import BytesIO
 from flexflow.configs import testconf
 from flask_testing import TestCase as FTestCase
 import flexflow
@@ -9,15 +10,17 @@ from flexflow.dbengines.sqlchemy import models as m, SqlalchemyDriver
 from sqlalchemy import exc
 from flexflow.domains import repos
 from flexflow.restapi.routes import bp1
+from flexflow.restapi.wfdoc_routes import wf_doc_bp
 from flexflow.domains.repos import DomainRepo
 from flexflow.domains.entities import entities as ent
 from flexflow.domains.domainlogics.workflow import Workflow
 from flexflow.exceptions import rules_exceptions  as rexc
 
-
+from flexflow.configs.testconf import  test_data_path
+test_file = os.path.join(test_data_path, 'sample_inv_upload_v2.xlsx')
         
 app = flexflow.create_app(config_map_list = [testconf.yml, testconf.test_db_conf],
-                          blue_print_list = [bp1,])
+                          blue_print_list = [bp1, wf_doc_bp])
         
 class Tflask(FTestCase):
     
@@ -27,73 +30,85 @@ class Tflask(FTestCase):
         app.config['LIVESERVER_PORT'] = 0
         return app    
         
-    def test_routes(self):
-        pass
+#     def test_routes(self):
+#         pass
+#         m.dbdriver.delete(m.Wfdoc) 
+#         m.dbdriver.delete(m.Wfaction)
+#         m.dbdriver.delete(m.Wfstatus)
+#         m.dbdriver.delete(m.Datadocfield)
+#         m.dbdriver.delete(m.Doctype) 
+#         api_route = '/add/Wfstatuswrong'
+#         ############WRONG OBJECT NAME   
+#         data= [{"name1": "ABC"}]        
+#         return_data = self._post_call(api_route, data)
+#         self.assertTrue(return_data.get('status') == "InvalidWorkflowObject")
+#         ############WRONG DATA , IS NOT LIST
+#         api_route = '/add/Wfstatus'      
+#         data= {"name1": "ABC"}      
+#         return_data = self._post_call(api_route, data)        
+#         self.assertTrue(return_data.get('status') == "InvalidInputDataList")
+#         ############WRONG DATA, NOT DICTIONARY WITHIN THE LIST            
+#         data= ["name1" ,  "ABC" ]     
+#         return_data = self._post_call(api_route, data)        
+#         self.assertTrue(return_data.get('status') == "InvalidInputDataDict")           
+#         ############WRONG KEY IN DATA        
+#         data= [{"name1": "ABC"}]        
+#         return_data = self._post_call(api_route, data)        
+#         self.assertTrue(return_data.get('status') == "InvalidKeysInData")
+#         ############REGISTER WITH CORRECT DATA       
+#         data= [{"name": "ABC"}]        
+#         return_data = self._post_call(api_route, data)
+#         #print(return_data)       
+#         self.assertTrue(return_data['message'] == "has been registered" )
+#         ###########LIST WITHOUT FILTER WITH GET METHOD
+#         api_route = '/list/Wfstatus/all/all'
+#         msg = self._get_call(api_route)
+#         self.assertTrue(msg[0].get('name') == "ABC")
+#         api_route = '/list/Wfstatus/name/ABC'
+#         msg = self._get_call(api_route)
+#         self.assertTrue(msg[0].get('name') == "ABC")
+#         ###########LIST WITH FILTER WITH POST METHOD
+#         api_route = '/list/Wfstatus'
+#         filter_data = {"name": "ABC"}
+#         msg = self._post_call(api_route, filter_data)        
+#         self.assertTrue(msg[0].get('name') == "ABC")
+#         ###########UPDATE THE DATA
+#         api_route = '/update/Wfstatus'
+#         data_dict = {"update_data_dict": {"name": "DEF"},
+#                      "search_filter": {"name": "ABC"}
+#                      }
+#                               
+#         msg = self._put_call(api_route, data_dict)
+#         self.assertTrue(msg['status'] == "success")
+#         ###########DELETE
+#         api_route = '/delete/Wfstatus'
+#         filter_data = {"name": "DEF"}
+#         msg = self._post_call(api_route, filter_data)        
+#         self.assertTrue("has been  deleted successfully" in msg)  
+    
+    def test_upload_xl(self):
+        self._register_doctype_n_actions()
+        api_route = "/wfdoc/uploadxl/doctype2"
+        filepath = test_file
+        msg = self._file_upload_post(api_route, filepath)
+        print(msg)
+    
+    def _register_doctype_n_actions(self):
         m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
         m.dbdriver.delete(m.Datadocfield)
         m.dbdriver.delete(m.Doctype) 
-        api_route = '/add/Wfstatuswrong'
-        ############WRONG OBJECT NAME   
-        data= [{"name1": "ABC"}]        
-        return_data = self._post_call(api_route, data)
-        self.assertTrue(return_data.get('status') == "InvalidWorkflowObject")
-        ############WRONG DATA , IS NOT LIST
-        api_route = '/add/Wfstatus'      
-        data= {"name1": "ABC"}      
-        return_data = self._post_call(api_route, data)        
-        self.assertTrue(return_data.get('status') == "InvalidInputDataList")
-        ############WRONG DATA, NOT DICTIONARY WITHIN THE LIST            
-        data= ["name1" ,  "ABC" ]     
-        return_data = self._post_call(api_route, data)        
-        self.assertTrue(return_data.get('status') == "InvalidInputDataDict")           
-        ############WRONG KEY IN DATA        
-        data= [{"name1": "ABC"}]        
-        return_data = self._post_call(api_route, data)        
-        self.assertTrue(return_data.get('status') == "InvalidKeysInData")
-        ############REGISTER WITH CORRECT DATA       
-        data= [{"name": "ABC"}]        
-        return_data = self._post_call(api_route, data)
-        #print(return_data)       
-        self.assertTrue(return_data['message'] == "has been registered" )
-        ###########LIST WITHOUT FILTER WITH GET METHOD
-        api_route = '/list/Wfstatus/all/all'
-        msg = self._get_call(api_route)
-        self.assertTrue(msg[0].get('name') == "ABC")
-        api_route = '/list/Wfstatus/name/ABC'
-        msg = self._get_call(api_route)
-        self.assertTrue(msg[0].get('name') == "ABC")
-        ###########LIST WITH FILTER WITH POST METHOD
-        api_route = '/list/Wfstatus'
-        filter_data = {"name": "ABC"}
-        msg = self._post_call(api_route, filter_data)        
-        self.assertTrue(msg[0].get('name') == "ABC")
-        ###########UPDATE THE DATA
-        api_route = '/update/Wfstatus'
-        data_dict = {"update_data_dict": {"name": "DEF"},
-                     "search_filter": {"name": "ABC"}
-                     }
-                              
-        msg = self._put_call(api_route, data_dict)
-        self.assertTrue(msg['status'] == "success")
-        ###########DELETE
-        api_route = '/delete/Wfstatus'
-        filter_data = {"name": "DEF"}
-        msg = self._post_call(api_route, filter_data)        
-        self.assertTrue("has been  deleted successfully" in msg)  
-      
-    def _register_doctype_n_actions(self):
         doctype1 = ent.Doctype("doctype1", "dk1")
-        doctype2 = ent.Doctype("doctype2", "dk2")
+        doctype2 = ent.Doctype("doctype2", "invoiceno")
         lodobj = [doctype1, doctype2]
         doctype_repo = DomainRepo("Doctype")
         doctype_repo.add_list_of_domain_obj(lodobj)
         ####DEFINING FIELDS FOR DOCTYPE2
-        f1_dict = {"name": "dk1",
+        f1_dict = {"name": "invoiceno",
                    "associated_doctype": {"name": "doctype2"},
                    "ftype": "str",
-                   "flength": 10,
+                   "flength": 100,
                    "status_needed_edit": [""]} #this should be status not role
         f2_dict = {"name": "dk2",
                    "associated_doctype": {"name": "doctype2"},
@@ -107,7 +122,7 @@ class Tflask(FTestCase):
                          "need_prev_status": "NewBorn",
                          "need_current_status": "NewBorn",
                          "leads_to_status": "Created",
-                         "permitted_to_roles": ["r1",]
+                         "permitted_to_roles": ["role1",]
                          }
         wfaction1_dict=  {"name": "wfaction1",
                          "associated_doctype": {"name": "doctype2"},
@@ -138,7 +153,7 @@ class Tflask(FTestCase):
         action_repo = DomainRepo("Wfaction")
         action_repo.add_list_of_domain_obj(lodobj)
     
-    def _post_call(self, api_route, data):
+    def _post_call(self, api_route, data):                                        
         token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
         with self.client:
             self.headers = {'X-Auth-Token': token_in_byte}
@@ -147,6 +162,32 @@ class Tflask(FTestCase):
                                         data=json.dumps(data),
                                         content_type='application/json')
             return json.loads(response.data.decode())
+     
+    def _file_upload_post(self, api_route, filepath):
+        token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
+        #{'file': (BytesIO(b'my file contents'), "work_order.123"), }
+        
+        
+#         files = {'file': ( os.path.basename(filepath), 
+#                           open(filepath, 'rb'), 
+#                           'application/vnd.ms-excel', 
+#                           {'Expires': '0'})}
+
+        files = {'file':  open(filepath, 'rb'),}
+        
+        
+        with self.client:
+            self.headers = {'X-Auth-Token': token_in_byte}
+            response = self.client.post(api_route, 
+                                        headers=self.headers,
+                                        data=files,
+                                        #content_type='application/json')
+                                        content_type='multipart/form-data')
+            return json.loads(response.data.decode())
+                 
+        #r = self.client.post(service_endpoint, headers=headers, 
+        #                     files=files, verify=self.ssl_verify)
+        
         
     def _get_call(self, api_route):
         token_in_byte = self.get_auth_token_with_actual_rsa_keys_fake_user()
@@ -177,10 +218,10 @@ class Tflask(FTestCase):
             return json.loads(response.data.decode())
            
     def get_auth_token_with_actual_rsa_keys_fake_user(self, wfc={'department': 'dept1',
-                                'name': 'wfc1',
-                                'orgunit': 'ITSS',
+                                'name': 'TATAWFC',
+                                'orgunit': 'TATA',
                                 'id': 1, 
-                                'org': 'ITC'}):          
+                                'org': 'TATA'}):          
         user_from_db = {'id': 1,
                         'username': 'u1', 
                         'email': 'u1@abc.com', 

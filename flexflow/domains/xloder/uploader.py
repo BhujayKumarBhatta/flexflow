@@ -26,7 +26,7 @@ class XLReceiver:
             _, self.xlfile = self._get_xl_from_request()
         #bypassing the chk_result to get only lod
         _, self.lod = self._get_lod_from_xl_after_validate()
-        self.lower_key_dict = self._lower_case_keys(self.lod)
+        self.lower_key_dict = self._convert_dict_in_lod_with_lower_key(self.lod)
         #bypass lod and get chk result
         self.xl_chk_status, _ = self._get_lod_from_xl_after_validate()
         self.message = {'wfcdict': self.wfc.to_dict(),
@@ -36,14 +36,23 @@ class XLReceiver:
                         'invoice_num': "excel-upload-%s" %self.wfc.request_id}
 #         self.json_message = json.dumps(self.message)
         print(self.message)        
+        logger.debug('initialization result ', self.message )
     
-    
-    def _lower_case_keys(self):
+    def _lower_case_keys(self, input_dict):
         lower_key_dict = {}
-        for k, v in self.lod.item():
+        for k, v in input_dict.items():
             lowerk = k.lower()
             lower_key_dict.update({lowerk: v})
         return lower_key_dict
+    
+    def _convert_dict_in_lod_with_lower_key(self, lod):
+#         new_lod = []
+#         for d in lod:
+#             new_d = self._lower_case_keys(d)
+#             new_lod.append(new_d)
+#         return new_lod                  
+        return [self._lower_case_keys(d) for d in lod]
+            
     
     def action_from_lod(self, role, doctype_name):
         response_list = []
@@ -51,7 +60,7 @@ class XLReceiver:
             raise xlexc.NoDataExtractedFromExcel        
         for xl_dict in self.lower_key_dict:
             if xl_dict.get('doctype'): doctype_name = xl_dict.get('doctype')                
-            if xl_dict.get('action') == "Create":
+            if xl_dict.get('action').lower() == "create":
                 wf = Workflow(doctype_name)
                 status_msg_dict = wf.create_doc(xl_dict, role)
                 response_list.append(status_msg_dict)

@@ -8,7 +8,7 @@ class Workflow:
         self.doctype_name = doctype_name
         self.role = role
     
-    def create_doc(self, data:dict, role):
+    def create_doc(self, data:dict, roles):
         ''' a key from the data is treated as the primary key for the 
         document. The key name is defined in the doctype.
         for creation of the doc the condition is no such doc by the id(primary key)
@@ -18,7 +18,7 @@ class Workflow:
         '''
         doctyoeObj = self._get_doctype_obj_from_name()
         docid = self._get_primary_key_from_data_doc(doctyoeObj, data)
-        self._check_role_for_create_action(doctyoeObj, role) ## remeber fields validation in done during documents init method
+        self._check_role_for_create_action(doctyoeObj, roles) ## remeber fields validation in done during documents init method
         wfdocObj = ent.Wfdoc(name=docid,
                          associated_doctype=doctyoeObj,
                          prev_status="",
@@ -56,13 +56,24 @@ class Workflow:
             raise rexc.DuplicateDocumentExists(docid)
         return docid
     
-    def _check_role_for_create_action(self, doctyoeObj, role):
-        Create_found = False
-        for actionObj in doctyoeObj.wfactions:
-            if actionObj.name == "Create": Create_found = True
-            if actionObj.name == "Create" and role not in actionObj.permitted_to_roles:
-                raise rexc.RoleNotPermittedForThisAction(role, actionObj.permitted_to_roles)
-        if Create_found is False: raise rexc.NoActionRuleForCreate
+    def _check_role_for_create_action(self, doctyoeObj, roles):
+        for actionObj in doctyoeObj.wfactions:           
+            if actionObj.name == "Create":
+                for  role in roles:
+                    if role in actionObj.permitted_to_roles:
+                        role_not_found = False
+                        break
+                    else: 
+                        role_not_found = True                       
+                action_not_found = False
+                break
+            else:
+                action_not_found = True                
+        if action_not_found is True: raise rexc.NoActionRuleForCreate
+        if role_not_found is True:
+            raise rexc.RoleNotPermittedForThisAction(role, 
+                                                      actionObj.permitted_to_roles)
+        
    
     def _get_doctype_obj_from_name(self):
         '''search by primary key name, hence expected to get one object'''
