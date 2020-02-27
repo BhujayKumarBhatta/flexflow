@@ -58,20 +58,24 @@ class Workflow:
     
     def _check_role_for_create_action(self, doctyoeObj, roles):
         for actionObj in doctyoeObj.wfactions:           
-            if actionObj.name == "Create":
+            if actionObj.name.lower() == "create":
                 for  role in roles:
+                    print("role checking before create", roles, actionObj.permitted_to_roles)
                     if role in actionObj.permitted_to_roles:
+                        print('role matched, hence setitnf role_not_found as false')
                         role_not_found = False
                         break
-                    else: 
-                        role_not_found = True                       
+                    else:
+                        print('role not found is true')
+                        role_not_found = True
                 action_not_found = False
                 break
             else:
-                action_not_found = True                
+                action_not_found = True
+        print('status of role_not_found', role_not_found)         
         if action_not_found is True: raise rexc.NoActionRuleForCreate
         if role_not_found is True:
-            raise rexc.RoleNotPermittedForThisAction(role, 
+            raise rexc.RoleNotPermittedForThisAction(role,
                                                       actionObj.permitted_to_roles)
         
    

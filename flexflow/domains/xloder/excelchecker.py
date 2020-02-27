@@ -84,8 +84,8 @@ class ExcelChecker():
     def convert_to_proper_data_types(self, df):         
         str_columns = [x.strip() for x in self.excel_configs.get('str_columns')]        
         int_columns = self.excel_configs.get('int_columns')        
-        print('got str column configurations as %s , and int column as'
-              '  %s' % (str_columns, int_columns))
+        #print('got str column configurations as %s , and int column as'
+        #      '  %s' % (str_columns, int_columns))
         try:            
             df.rename(columns=lambda x: x.strip(), inplace=True)                                       
             df[str_columns] = df[str_columns].astype(str)             
