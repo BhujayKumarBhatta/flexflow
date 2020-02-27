@@ -20,13 +20,20 @@ def upload_excel(doctype, wfc):
     try:
         xlreceiver = XLReceiver(flexflow_configs, wfc, request=request)
         msg = xlreceiver.action_from_lod(wfc.roles, doctype)
-#     except (xlexc.InvalidDocCategory, xlexc.NoDataExtractedFromExcel,
-#             xlexc.MissingExcelConfig, rexc.RoleNotPermittedForThisAction,
-#             rexc.UnknownFieldNameInDataDoc, rexc.DataTypeViolation,
-#             rexc.DataLengthViolation, rexc.NoActionRuleForCreate) as e:
     except (xlexc.FlexFlowException, rexc.FlexFlowException) as e:
         msg = e.ret_val
     except Exception as e:
         msg = {"status": "Failed", "message": str(e)}
     return jsonify(msg)
+
+
+
+
+
+
+
+#     except (xlexc.InvalidDocCategory, xlexc.NoDataExtractedFromExcel,
+#             xlexc.MissingExcelConfig, rexc.RoleNotPermittedForThisAction,
+#             rexc.UnknownFieldNameInDataDoc, rexc.DataTypeViolation,
+#             rexc.DataLengthViolation, rexc.NoActionRuleForCreate) as e:
 
