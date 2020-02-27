@@ -7,7 +7,17 @@ class InvalidInputDataList(FlexFlowException):
 class InvalidInputDataDict(FlexFlowException):
     status = "InvalidInputDataDict"  
     message = "Data must be  dictionary(json object) type" 
-    
+
+class DocCategoryNotConfigured(FlexFlowException):
+    status = "DocCategoryNotConfigured"    
+    def __init__(self, your_doc_category, configred_doc_cats):
+        self.your_doc_category = your_doc_category
+        self.configred_doc_cats = [c.name for c in configred_doc_cats]
+        self.message = ("Your document type:  '%s' is not "
+                        "in the list of configured document types: %s."
+                        "Contact felxflow administrator for updating configurations" 
+                        %(self.your_doc_category, self.configred_doc_cats))
+        super().__init__(self.status, self.message)   
         
 class InvalidDocCategory(FlexFlowException):
     status = "InvalidDocCategory"    

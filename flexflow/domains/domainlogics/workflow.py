@@ -81,6 +81,9 @@ class Workflow:
         search_dict = {"name": self.doctype_name}
         doctype_repo = DomainRepo("Doctype")
         lst = doctype_repo.list_domain_obj(**search_dict)
+        if not lst:
+            conf_lst = doctype_repo.list_domain_obj()
+            raise rexc.DocCategoryNotConfigured(self.doctype_name, conf_lst)
         if  len(lst) == 1 : result = lst[0]              
         return result
     
