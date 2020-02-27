@@ -51,7 +51,7 @@ class ExcelChecker():
             message = "only follwoing format can be uploaded {}".format(
                 self.ALLOWED_EXTENSIONS)  
             result = False              
-        print(self.check_result_list)
+        #print(self.check_result_list)
         self.check_result_list.append(result)
         self.message_list.append(message)        
         return result    
@@ -60,13 +60,13 @@ class ExcelChecker():
     def convert_excel_to_dataframe(self):
         if self.check_file_extension():
             try:
-                print('trying to read the xl', self.rcvd_file ) 
+                #print('trying to read the xl', self.rcvd_file ) 
                 df = pd.read_excel(self.rcvd_file, sheet_name='Sheet1')
-                print('read excel of', df) 
+                #print('read excel of', df) 
                 df.rename(columns=lambda x: x.strip(), inplace=True)                
-                print('renaming columns done',df.columns)            
+                #print('renaming columns done',df.columns)            
                 df = self.convert_to_proper_data_types(df)
-                print('converting proper data type')               
+                #print('converting proper data type')               
                 return df             
             except Exception as e:
                 self.message_list.append("the file doesn't look like excel  or may be corrupted {} "
@@ -100,7 +100,7 @@ class ExcelChecker():
                      "note the error {}" .format(
                                          str_columns, int_columns, e))
             self.message_list.append(msg) 
-            print(msg)              
+            #print(msg)              
             self.check_result = False
             
           
@@ -125,7 +125,7 @@ class ExcelChecker():
         else:
             result = False
             message = ("blank value is not accepted in the column")                     
-            print(message)
+            #print(message)
                                 
         self.check_result_list.append(result)
         self.message_list.append(message)        
@@ -136,7 +136,7 @@ class ExcelChecker():
         if len(self.df) > self.excel_configs.get('max_row'):
             message = ("excel format not correct, number of rows must be within {}".format(
                self.excel_configs.get('max_row')))
-            print(message)
+            #print(message)
             result = False
         else:
             result = True   
@@ -152,7 +152,7 @@ class ExcelChecker():
         pass
         if  ptypes.is_datetime64_any_dtype(self.df['InvoiceDate']):
             message = "Invoice Date column is not date type and data not in dd-mm-yyyy format"
-            print(message)
+            #print(message)
             result = False
         else:
             result = True   
@@ -198,7 +198,7 @@ class ExcelChecker():
             positions = ",".join(nl)
             result = False
             message = ("Duplicate rows not allowed, check row {}".format(positions))
-            print(message)
+            #print(message)
             
         else:
             message = "check_no_duplicate_invoice_no=passed"
@@ -221,7 +221,7 @@ class ExcelChecker():
             positions = ",".join(nl)
             result = False
             message = ("check_tsp_name=TSP name should be your login domain name, check row {}".format(positions))
-            print(message)
+            #print(message)
             logger.error(message)
         self.check_result_list.append(result)
         self.message_list.append(message)        
@@ -244,7 +244,7 @@ class ExcelChecker():
                     result = False
                     message = ("{} length should be less or equal to {}, check row {}"
                                .format(conf_field, conf_f_len, str(count)))
-                    print(message)
+                    #print(message)
                     logger.error(message)
                     break
         self.check_result_list.append(result)

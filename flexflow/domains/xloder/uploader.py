@@ -35,7 +35,7 @@ class XLReceiver:
                         'save_status': self.xl_chk_status.get('checking_message_list'),
                         'invoice_num': "excel-upload-%s" %self.wfc.request_id}
 #         self.json_message = json.dumps(self.message)
-        print(self.message)        
+        #print(self.message)        
         logger.debug('initialization result ', self.message )
     
     def _lower_case_keys(self, input_dict):
