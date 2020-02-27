@@ -154,12 +154,12 @@ class Wfdoc(Entities):
             conf_fieldobj_lst = self.associated_doctype.datadocfields
             conf_field_names = [item.name.lower() for item in conf_fieldobj_lst]
             for k, v in self.doc_data.items():
-                if k not in conf_field_names:
+                if k.lower() not in conf_field_names:
                         raise rexc.UnknownFieldNameInDataDoc(k, conf_field_names)
                 for fieldObj in conf_fieldobj_lst:
                     ##TODO: fieldObj should be checked to see it has all the attributes, otherwise exception that field is not configured properly
-                    if k == fieldObj.name.lower():                    
-                        ctype = fieldObj.ftype
+                    if k.lower() == fieldObj.name.lower():                    
+                        ctype = fieldObj.ftype.lower()
                         ctypeObj = self.docdata_field_type_map.get(ctype)
                         if not isinstance(v, ctypeObj):
                             raise rexc.DataTypeViolation(k, type(v), ctypeObj.__name__)
