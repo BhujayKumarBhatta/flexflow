@@ -46,11 +46,6 @@ class XLReceiver:
         return lower_key_dict
     
     def _convert_dict_in_lod_with_lower_key(self, lod):
-#         new_lod = []
-#         for d in lod:
-#             new_d = self._lower_case_keys(d)
-#             new_lod.append(new_d)
-#         return new_lod                  
         return [self._lower_case_keys(d) for d in lod]
             
     
@@ -88,7 +83,7 @@ class XLReceiver:
         c.check_all_checks()        
         check_status = {"checking_result_list": c.check_result_list,
                 "checking_message_list": c.message_list }
-        
+        if not all(c.check_result_list): raise xlexc.ExcelCheckFailed(c.message_list)        
         df = c.df        
         if df is not None and all(c.check_result_list):
             excel_to_dict_list = df.to_dict('records')

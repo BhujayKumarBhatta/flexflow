@@ -29,13 +29,12 @@ class MissingExcelConfig(FlexFlowException):
 
         
         
-class InvalidDocCategory(FlexFlowException):
-    status = "InvalidDocCategory"    
-    def __init__(self, status_doc_category, list_doc_category):
-        self.status_doc_category = status_doc_category
-        self.list_doc_category = list_doc_category
-        self.message = ("Cant add status for doctype  %s in the %s status list."
-                        "" %(self.status_doc_category, self.list_doc_category))
+class ExcelCheckFailed(FlexFlowException):
+    status = "ExcelCheckFailed"    
+    def __init__(self, excel_check_result):
+        self.excel_check_result = excel_check_result       
+        self.message = ("Note the failed test and rectify. The test result is :  %s "
+                        "" %(self.excel_check_result))
         super().__init__(self.status, self.message)
         
     
