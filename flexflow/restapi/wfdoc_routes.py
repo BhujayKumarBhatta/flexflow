@@ -27,12 +27,29 @@ def upload_excel(doctype, wfc):
         msg = {"status": "Failed", "message": str(e)}
     return jsonify(msg)
 
+
 @wf_doc_bp.route('/wfdoc/get_fulldetail/<uniquename>', methods=['GET'])
 @enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
 def wfdoc_fulldetial(uniquename, wfc):
     try:
         wf = Workflow('Wfdoc')
         msg = wf.get_full_wfdoc_as_dict(uniquename)
+    except (rexc.FlexFlowException) as e:
+        msg = e.ret_val
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+    return jsonify(msg)
+
+
+@wf_doc_bp.route('/wfdoc/update', methods=['POST'])
+@enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
+def wfdoc_update(wfc):
+    try:
+        wfdoc_name = request.json.get('wfdoc_name')
+        intended_action = request.json.get('intended_action')
+        doc_data = request.json.get('doc_data')
+        wf = Workflow('Wfdoc')
+        msg = wf.action_change_status(wfdoc_name, intended_action, wfc.roles, doc_data)
     except (rexc.FlexFlowException) as e:
         msg = e.ret_val
     except Exception as e:

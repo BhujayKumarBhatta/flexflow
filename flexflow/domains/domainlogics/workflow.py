@@ -20,8 +20,8 @@ class Workflow:
         docid = self._get_primary_key_from_data_doc(doctyoeObj, data)
         self._check_role_for_create_action(doctyoeObj, roles) ## remeber fields validation in done during documents init method
         wfdocObj = ent.Wfdoc(name=docid,
-                         associated_doctype=doctyoeObj,
-                         prev_status="",
+                         associated_doctype=doctyoeObj,                         
+                         prev_status="NewBorn",
                          current_status="Created",
                          doc_data=data) ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         wfdoc_repo = DomainRepo("Wfdoc")
@@ -38,7 +38,7 @@ class Workflow:
         return wfdoc_dict
         
     
-    def action_change_status(self, wfdoc_name, intended_action, data=None):
+    def action_change_status(self, wfdoc_name, intended_action, roles:list, data=None):
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         wfactions_list = wfdocObj.wfactions
         wfactionObj = None
@@ -46,7 +46,7 @@ class Workflow:
             if item.name == intended_action:
                 wfactionObj = item
                 break
-        self._check_action_rules(wfdocObj, wfactionObj, intended_action)
+        self._check_action_rules(wfdocObj, wfactionObj, intended_action, roles)
         self._validate_editable_fields(wfdocObj, data)
         #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
         wfdoc_repo = DomainRepo("Wfdoc")
@@ -55,6 +55,8 @@ class Workflow:
         target_doc_name = {"name": wfdocObj.name}
         msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
         return msg
+    
+    
     
     def _get_primary_key_from_data_doc(self, doctyoeObj, data_doc):
         docid = None
@@ -119,18 +121,25 @@ class Workflow:
         if  len(lst) == 1 : result = lst[0]              
         return result
     
-    def _check_action_rules(self, wfdocObj,  wfactionObj, intended_action):
+    def _check_action_rules(self, wfdocObj, wfactionObj, intended_action, roles:list):
         if not wfactionObj:
             raise rexc.NoWorkFlowRuleFound
+        default_roles = [None, "admin",] 
+        permitted_to_roles = default_roles + wfactionObj.permitted_to_roles
+        for role in roles:
+            if  role in permitted_to_roles: 
+                role_matched = True
+                break
+            else:
+                role_matched = False
+        if role_matched is False:
+                raise rexc.RoleNotPermittedForThisAction(roles, permitted_to_roles)
         if not ( wfactionObj.need_prev_status == wfdocObj.prev_status and 
                  wfactionObj.need_current_status == wfdocObj.current_status):
             raise rexc.WorkflowActionRuleViolation(intended_action, 
                                                    wfactionObj.need_prev_status,        
                                                  wfactionObj.need_current_status)
-        default_roles = [None, "admin",] 
-        permitted_to_roles = default_roles + wfactionObj.permitted_to_roles
-        if  self.role  not in permitted_to_roles :
-            raise rexc.RoleNotPermittedForThisAction(self.role, permitted_to_roles)
+        
         
     def _check_editiable_fields(self, wfdocObj):
         '''this is not required , just keeping in for future purpose sincee the logic is correctly developed'''
