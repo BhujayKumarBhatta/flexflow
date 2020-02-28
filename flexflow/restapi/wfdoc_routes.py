@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify
 from flexflow.domains import repos
 from flexflow.configs.prodconf import flexflow_configs
 from flexflow.domains.xloder.uploader import XLReceiver
+from flexflow.domains.domainlogics.workflow import Workflow
 from flexflow.domains.xloder import xluploader_exceptions  as xlexc
 from flexflow.exceptions import rules_exceptions  as rexc
 from tokenleaderclient.configs.config_handler import Configs    
@@ -21,6 +22,18 @@ def upload_excel(doctype, wfc):
         xlreceiver = XLReceiver(flexflow_configs, wfc, request=request)
         msg = xlreceiver.action_from_lod(wfc.roles, doctype)
     except (xlexc.FlexFlowException, rexc.FlexFlowException) as e:
+        msg = e.ret_val
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+    return jsonify(msg)
+
+@wf_doc_bp.route('/wfdoc/get_fulldetail/<uniquename>', methods=['GET'])
+@enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
+def wfdoc_fulldetial(uniquename, wfc):
+    try:
+        wf = Workflow('Wfdoc')
+        msg = wf.get_full_wfdoc_as_dict(uniquename)
+    except (rexc.FlexFlowException) as e:
         msg = e.ret_val
     except Exception as e:
         msg = {"status": "Failed", "message": str(e)}

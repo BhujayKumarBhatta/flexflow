@@ -108,12 +108,12 @@ class ExcelChecker():
         if self.df is not None:
             self.check_no_empty_cell_within_data_area()
             self.check_within_max_row()
-            self.check_date_format()
+            #self.check_date_format()
             self.check_cloumn_heading()
             self.check_no_duplicate_invoice_no()
             if self.wfc:            
                 self.check_tsp_name_matches_user_org_name()
-            self.check_field_length()
+            #self.check_field_length()
         else:
             return self.check_result
         

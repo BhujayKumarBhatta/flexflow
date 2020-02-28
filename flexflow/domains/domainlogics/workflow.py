@@ -28,6 +28,16 @@ class Workflow:
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
         return msg
     
+    def get_full_wfdoc_as_dict(self, wfdoc_name):
+        wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
+        current_actions = [actionObj for actionObj in wfdocObj.actions_for_current_status]
+        current_edit_fields = [fname for fname in wfdocObj.editable_fields_at_current_status]
+        wfdoc_dict = wfdocObj.to_dict()
+        wfdoc_dict.update({"current_actions": current_actions,
+                           "current_edit_fields": current_edit_fields})
+        return wfdoc_dict
+        
+    
     def action_change_status(self, wfdoc_name, intended_action, data=None):
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         wfactions_list = wfdocObj.wfactions
