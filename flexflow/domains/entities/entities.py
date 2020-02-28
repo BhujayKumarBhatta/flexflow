@@ -141,7 +141,7 @@ class Wfdoc(Entities):
         actions_for_current_status = []
         for actionObj in self.wfactions:
             if self.current_status == actionObj.need_current_status:
-                actions_for_current_status.append(actionObj.name)
+                actions_for_current_status.append(actionObj)
         return actions_for_current_status
     
     @property

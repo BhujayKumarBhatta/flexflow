@@ -28,9 +28,13 @@ class Workflow:
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
         return msg
     
-    def get_full_wfdoc_as_dict(self, wfdoc_name):
+    def get_full_wfdoc_as_dict(self, wfdoc_name, roles:list):
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
-        current_actions = [actionObj for actionObj in wfdocObj.actions_for_current_status]
+        current_actions = []
+        for actionObj in wfdocObj.actions_for_current_status:
+            for role in roles:
+                if role in actionObj.permitted_to_roles:
+                    current_actions.append(actionObj.name)
         current_edit_fields = [fname for fname in wfdocObj.editable_fields_at_current_status]
         wfdoc_dict = wfdocObj.to_dict()
         wfdoc_dict.update({"current_actions": current_actions,

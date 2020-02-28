@@ -33,7 +33,7 @@ def upload_excel(doctype, wfc):
 def wfdoc_fulldetial(uniquename, wfc):
     try:
         wf = Workflow('Wfdoc')
-        msg = wf.get_full_wfdoc_as_dict(uniquename)
+        msg = wf.get_full_wfdoc_as_dict(uniquename, wfc.roles)
     except (rexc.FlexFlowException) as e:
         msg = e.ret_val
     except Exception as e:
