@@ -29,6 +29,7 @@ class Workflow:
         return msg
     
     def get_full_wfdoc_as_dict(self, wfdoc_name, roles:list):
+        '''in workflow role is avilable , hence , wfdocObj.actions_for_current_status gets further filtered by roles before presenting in dict format'''
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         current_actions = []
         for actionObj in wfdocObj.actions_for_current_status:
@@ -42,7 +43,7 @@ class Workflow:
         return wfdoc_dict
         
     
-    def action_change_status(self, wfdoc_name, intended_action, roles:list, data=None):
+    def action_change_status(self, wfdoc_name, intended_action, roles:list, input_data=None):
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         wfactions_list = wfdocObj.wfactions
         wfactionObj = None
@@ -51,11 +52,16 @@ class Workflow:
                 wfactionObj = item
                 break
         self._check_action_rules(wfdocObj, wfactionObj, intended_action, roles)
-        self._validate_editable_fields(wfdocObj, data)
+        self._validate_editable_fields(wfdocObj, input_data)
         #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
         wfdoc_repo = DomainRepo("Wfdoc")
         updated_data_dict = {"current_status": wfactionObj.leads_to_status,
                              "prev_status": wfdocObj.current_status}
+        if input_data:
+            existing_data = wfdocObj.doc_data
+            existing_data.update(input_data)
+            updated_data_dict.update({"doc_data": existing_data})
+            
         target_doc_name = {"name": wfdocObj.name}
         msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
         return msg
