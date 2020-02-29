@@ -2,6 +2,7 @@ from datetime import datetime
 import uuid
 from sqlalchemy.dialects.mysql import JSON
 from flexflow.dbengines.sqlchemy import SqlalchemyDriver
+from pip._internal import self_outdated_check
 
 dbdriver = SqlalchemyDriver()
 db = dbdriver.db
@@ -21,7 +22,7 @@ class Wfstatus(db.Model):
     name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
     
     def to_dict(self):
-        return {"name": self.name}
+        return {"name": name}
         
     
 class Doctype(db.Model):
@@ -96,9 +97,40 @@ class Wfdoc(db.Model):
     def to_dict(self):
         return {"name": self.name,
                 "associated_doctype": {"name": self.associated_doctype.name},
-                "associated_doctypename": self.associated_doctype_name,
+                "associated_doctype_name": self.associated_doctype_name,
                 "prev_status": self.prev_status,
                 "current_status": self.current_status,
                 "doc_data": self.doc_data}
+        
+
+class Wfdocaudit(db.Model):
+    name = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
+    wfdoc = db.relationship('Wfdoc', backref='wfdocaudit')
+    wfdoc_name = db.Column(db.String(120), db.ForeignKey('wfdoc.name'))
+    username = db.Column(db.String(120))
+    email = db.Column(db.String(120))
+    time_stamp = db.Column(db.String(120))
+    client_address = db.Column(db.String(120))
+    org = db.Column(db.String(120))
+    orgunit = db.Column(db.String(120))
+    department = db.Column(db.String(120))
+    roles = db.Column(JSON)
+    data = db.Column(JSON)
+    
+    def to_dict(self):
+        return {"name": self.name,
+                "wfdoc": {"name": self.wfdoc.name},
+                "wfdoc_name": self.wfdoc_name,
+                "username": self.username,
+                "email": self.email,
+                "time_stamp": self.time_stamp,
+                "client_address": self.client_address,
+                "org": self.org,
+                "orgunit": self.orgunit,
+                "department": self.department,
+                "roles": self.roles,
+                "data": self.data }
+                
+        
     
     

@@ -152,9 +152,9 @@ class Wfdoc(Entities):
         return  self._validate_docdata()
     
     @property
-    def audittrails(self):
+    def wfdocaudits(self):
         wfdocaudit_repo = repos.DomainRepo('Wfdocaudit')
-        searh_filter = {"associated_doctype": {"name": self.associated_doctype_name} }
+        searh_filter = {"wfdoc": {"name": self.name} }
         result = wfdocaudit_repo.list_domain_obj(**searh_filter)
         return result
     
@@ -186,14 +186,17 @@ class Wfdoc(Entities):
 
 class Wfdocaudit(Entities):
     ''' a record here should be reated by the workflow whenever wfdoc is created or changed'''
+    related_obj_map = {"wfdoc": {"mapped_object": Wfdoc, 
+                                             "primary_key": "name"},
+                                             }
     
-    def __init__(self, request_id, wfdoc:Wfdoc, username, email, time_stamp, client_address, org, orgunit, department, roles, data, **kwargs):
-        self.name = request_id
+    def __init__(self, name, wfdoc:Wfdoc, username, email, time_stamp, client_address, org, orgunit, department, roles, data, **kwargs):
+        self.name = name
         self.wfdoc = wfdoc
         self.username = username
         self.email = email
         self.time_stamp = time_stamp
-        self.client_address = self.get_client_address()
+        self.client_address = client_address
         self.org = org
         self.orgunit = orgunit
         self.department = department

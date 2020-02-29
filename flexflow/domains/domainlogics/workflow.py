@@ -29,6 +29,12 @@ class Workflow:
         self._validate_editable_fields(wfdocObj, data, new_born=True) #Bypasss edit control checking during creation. aprt from  length validtion, data type is converted as per the conf 
         wfdoc_repo = DomainRepo("Wfdoc")
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
+        try:
+            msg = self._create_audit_record(wfdocObj, data)
+        except (rexc.FlexFlowException, Exception)  as e:
+            status = wfdoc_repo.delete(**{"name": docid})
+            msg = {"status": status, "message": str(e) }
+            raise rexc.FlexFlowException
         return msg
     
     def get_full_wfdoc_as_dict(self, wfdoc_name):
@@ -40,9 +46,16 @@ class Workflow:
                 if role in actionObj.permitted_to_roles:
                     current_actions.append(actionObj.name)
         current_edit_fields = [fObj.name.lower() for fObj in wfdocObj.editable_fields_at_current_status]
+        audittrails = [] 
+        for auditObj in wfdocObj.wfdocaudits:
+            d1 = auditObj.to_dict()
+            d1.pop('wfdoc')
+            audittrails.append(d1)
         wfdoc_dict = wfdocObj.to_dict()
         wfdoc_dict.update({"current_actions": current_actions,
-                           "current_edit_fields": current_edit_fields})
+                           "current_edit_fields": current_edit_fields,
+                           "audittrails": audittrails, })
+        #print('full wfdoc.....', wfdoc_dict)
         return wfdoc_dict
         
     
@@ -116,15 +129,6 @@ class Workflow:
         if  len(lst) == 1 : result = lst[0]              
         return result
     
-#     def _validate_fields_during_create(self, doctypeObj, data:dict):
-#         if data:
-#             for k in data.keys():
-#                 efac = doctypeObj.datadocfields
-#                 if not k in efac:
-#                     raise rexc.EditNotAllowedForThisField(k, 
-#                                                           doctypeObj.current_status,
-#                                                           efac)
-    
     def _get_wfdoc_by_name(self, wfdoc_name):
         '''search by primary key id, hence expected to get one object'''
         result = None
@@ -173,7 +177,7 @@ class Workflow:
                         
     
     def _create_audit_record(self, wfdocObj, input_data:dict):
-        WfdocauditObj = ent.Wfdocaudit(request_id=self.wfc.request_id,
+        WfdocauditObj = ent.Wfdocaudit(name=self.wfc.request_id,
                                        wfdoc=wfdocObj, 
                                        username=self.wfc.username, 
                                        email=self.wfc.email, 
@@ -185,7 +189,9 @@ class Workflow:
                                        roles=self.wfc.roles, 
                                        data=input_data,)
         wfdocaudit_repo = DomainRepo('Wfdocaudit')
-        wfdocaudit_repo.add_list_of_domain_obj([WfdocauditObj])
+        msg = wfdocaudit_repo.add_list_of_domain_obj([WfdocauditObj])
+        #print(msg)
+        return msg
         
                     
                             
