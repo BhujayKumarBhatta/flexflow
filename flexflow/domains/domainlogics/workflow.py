@@ -1,6 +1,7 @@
 from flexflow.domains.entities import entities as ent
 from flexflow.domains.repos import DomainRepo
 from flexflow.exceptions import rules_exceptions  as rexc
+from backports.configparser.helpers import str
 
 class Workflow:
     
@@ -36,7 +37,7 @@ class Workflow:
             for role in roles:
                 if role in actionObj.permitted_to_roles:
                     current_actions.append(actionObj.name)
-        current_edit_fields = [fname for fname in wfdocObj.editable_fields_at_current_status]
+        current_edit_fields = [fObj.name.lower() for fObj in wfdocObj.editable_fields_at_current_status]
         wfdoc_dict = wfdocObj.to_dict()
         wfdoc_dict.update({"current_actions": current_actions,
                            "current_edit_fields": current_edit_fields})
@@ -164,12 +165,44 @@ class Workflow:
                     
     def _validate_editable_fields(self, wfdocObj, data:dict):
         if data:
-            for k in data.keys():
-                efac = wfdocObj.editable_fields_at_current_status
-                if not k in efac:
-                    raise rexc.EditNotAllowedForThisField(k, 
+            efacs_list = wfdocObj.editable_fields_at_current_status
+            efacs_names = [fObj.name.lower() for fObj in efacs_list]  
+            for k, v in data.items():
+                if k.lower() not in efacs_names:
+                        raise rexc.EditNotAllowedForThisField(k, 
                                                           wfdocObj.current_status,
-                                                          efac)
+                                                          efacs_names)
+                for fieldObj in efacs_list:
+                    ##TODO: fieldObj should be checked to see it has all the attributes, otherwise exception that field is not configured properly
+                    if k.lower() == fieldObj.name.lower():
+                        #check field length
+                        flength = fieldObj.flength
+                        if not len(str(v)) <= flength:
+                            raise rexc.DataLengthViolation(k, len(v), flength)
+                        #convert data type                  
+                        ctype = fieldObj.ftype.lower()
+                        if ctype == 'int' and not isinstance(v, int):
+                            v = int(v)
+                            data.update({k: v})
+                            print('data type converted', data)
+                        if ctype == 'str'and not isinstance(v, str): 
+                            v = str(v)
+                            data.update({k: v})
+                            print('data type converted', data)
+                        #if ctype == 'date' and not isinstance(v, date): convert to str
+                        #if ctype == 'date' and  isinstance(v, str): check dd-mm-yyyy format     
+        return data
+                        
+                        
+                            
+#     def _validate_editable_fields(self, wfdocObj, data:dict):
+#         if data:
+#             for k in data.keys():
+#                 efac = [fObj.name for fObj in wfdocObj.editable_fields_at_current_status]
+#                 if not k in efac:
+#                     raise rexc.EditNotAllowedForThisField(k, 
+#                                                           wfdocObj.current_status,
+#                                                           efac)
                     
     
         

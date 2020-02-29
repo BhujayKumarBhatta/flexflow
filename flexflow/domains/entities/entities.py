@@ -168,7 +168,7 @@ class Wfdoc(Entities):
                             raise rexc.DataLengthViolation(k, len(v), flength)
                         if self.current_status and \
                         self.current_status in fieldObj.status_needed_edit:                            
-                            editable_fields_at_this_status.append(k)
+                            editable_fields_at_this_status.append(fieldObj)
         return editable_fields_at_this_status
                             
                         
