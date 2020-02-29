@@ -2,6 +2,7 @@ from flexflow.domains.entities import entities as ent
 from flexflow.domains.repos import DomainRepo
 from flexflow.exceptions import rules_exceptions  as rexc
 from backports.configparser.helpers import str
+from flexflow.domains import utils
 
 class Workflow:
     
@@ -19,12 +20,13 @@ class Workflow:
         '''
         doctyoeObj = self._get_doctype_obj_from_name()
         docid = self._get_primary_key_from_data_doc(doctyoeObj, data)
-        self._check_role_for_create_action(doctyoeObj, roles) ## remeber fields validation in done during documents init method
+        self._check_role_for_create_action(doctyoeObj, roles) ## remeber fields validation is done during documents init method
         wfdocObj = ent.Wfdoc(name=docid,
                          associated_doctype=doctyoeObj,                         
                          prev_status="NewBorn",
                          current_status="Created",
                          doc_data=data) ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
+        self._validate_editable_fields(wfdocObj, data) #aprt from edit and length validtion, data type is converted as per the conf 
         wfdoc_repo = DomainRepo("Wfdoc")
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
         return msg
@@ -169,28 +171,14 @@ class Workflow:
             efacs_names = [fObj.name.lower() for fObj in efacs_list]  
             for k, v in data.items():
                 if k.lower() not in efacs_names:
-                        raise rexc.EditNotAllowedForThisField(k, 
-                                                          wfdocObj.current_status,
-                                                          efacs_names)
+                        raise rexc.EditNotAllowedForThisField(k, wfdocObj.current_status, efacs_names)
                 for fieldObj in efacs_list:
-                    ##TODO: fieldObj should be checked to see it has all the attributes, otherwise exception that field is not configured properly
                     if k.lower() == fieldObj.name.lower():
-                        #check field length
                         flength = fieldObj.flength
                         if not len(str(v)) <= flength:
                             raise rexc.DataLengthViolation(k, len(v), flength)
-                        #convert data type                  
                         ctype = fieldObj.ftype.lower()
-                        if ctype == 'int' and not isinstance(v, int):
-                            v = int(v)
-                            data.update({k: v})
-                            print('data type converted', data)
-                        if ctype == 'str'and not isinstance(v, str): 
-                            v = str(v)
-                            data.update({k: v})
-                            print('data type converted', data)
-                        #if ctype == 'date' and not isinstance(v, date): convert to str
-                        #if ctype == 'date' and  isinstance(v, str): check dd-mm-yyyy format     
+                        utils.convert_data_values_as_per_conf(ctype, data, k, v)
         return data
                         
                         
