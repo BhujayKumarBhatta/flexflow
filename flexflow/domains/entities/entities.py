@@ -3,6 +3,7 @@ from flexflow.exceptions import rules_exceptions  as rexc
 from flexflow.domains import repos 
 from flexflow.domains.entities import Entities
 from sqlalchemy.orm.relationships import RelationshipProperty
+from sqlalchemy.ext.serializer import our_ids
 
 class Wfstatus(Entities):
     '''workflow status master'''
@@ -101,6 +102,25 @@ class Wfaction(Entities):
         self.permitted_to_roles = permitted_to_roles
         self._validate_relationship_param_values()
         super().__init__(**kwargs)
+        
+        
+class Wfdocaudit(Entities):
+    ''' a record here should be reated by the workflow whenever wfdoc is created or changed'''
+    
+    def __init__(self, request_id, wfdoc:Wfdoc, username, email, time_stamp, client_address, org, orgunit, department, roles, data, **kwargs):
+        self.name = request_id
+        self.wfdoc = wfdoc
+        self.username = username
+        self.email = email
+        self.time_stamp = time_stamp
+        self.client_address = self.get_client_address()
+        self.org = org
+        self.orgunit = orgunit
+        self.department = department
+        self.roles = roles
+        self.data = data
+        super().__init__(**kwargs)
+        
  
   
 class Wfdoc(Entities):
@@ -148,8 +168,15 @@ class Wfdoc(Entities):
     def editable_fields_at_current_status(self):
         return  self._validate_docdata()
     
+    @property
+    def audittrails(self):
+        wfdocaudit_repo = repos.DomainRepo('Wfdocaudit')
+        searh_filter = {"associated_doctype": {"name": self.associated_doctype_name} }
+        result = wfdocaudit_repo.list_domain_obj(**searh_filter)
+        return result
+    
     def _validate_docdata(self):
-        editable_fields_at_this_status = []       
+        editable_fields_at_this_status = []
         if  self.doc_data:
             conf_fieldobj_lst = self.associated_doctype.datadocfields
             conf_field_names = [item.name.lower() for item in conf_fieldobj_lst]

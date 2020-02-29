@@ -6,8 +6,9 @@ from flexflow.domains import utils
 
 class Workflow:
     
-    def __init__(self, doctype_name:str, role=None):
+    def __init__(self, doctype_name:str, role=None, wfc=None):
         self.doctype_name = doctype_name
+        self.wfc = wfc
         self.role = role
     
     def create_doc(self, data:dict, roles):
@@ -181,7 +182,23 @@ class Workflow:
                         utils.convert_data_values_as_per_conf(ctype, data, k, v)
         return data
                         
-                        
+    
+    def _create_audit_record(self, wfdocObj, input_data:dict):
+        WfdocauditObj = ent.Wfdocaudit(request_id=self.wfc.request_id,
+                                       wfdoc=wfdocObj, 
+                                       username=self.wfc.username, 
+                                       email=self.wfc.email, 
+                                       time_stamp=self.wfc.time_stamp, 
+                                       client_address=self.wfc.client_address, 
+                                       org=self.wfc.org, 
+                                       orgunit=self.wfc.orgunit, 
+                                       department=self.wfc.department, 
+                                       roles=self.wfc.roles, 
+                                       data=input_data,)
+        wfdocaudit_repo = DomainRepo('Wfdocaudit')
+        wfdocaudit_repo.add_list_of_domain_obj(list_of_domain_obj)
+        
+                    
                             
 #     def _validate_editable_fields(self, wfdocObj, data:dict):
 #         if data:

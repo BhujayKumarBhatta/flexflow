@@ -48,7 +48,7 @@ def wfdoc_update(wfc):
         wfdoc_name = request.json.get('wfdoc_name')
         intended_action = request.json.get('intended_action')
         doc_data = request.json.get('doc_data')
-        wf = Workflow('Wfdoc')
+        wf = Workflow('Wfdoc', wfc=wfc)
         msg = wf.action_change_status(wfdoc_name, intended_action, wfc.roles, doc_data)
     except (rexc.FlexFlowException) as e:
         msg = e.ret_val
