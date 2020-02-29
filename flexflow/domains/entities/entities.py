@@ -104,24 +104,7 @@ class Wfaction(Entities):
         super().__init__(**kwargs)
         
         
-class Wfdocaudit(Entities):
-    ''' a record here should be reated by the workflow whenever wfdoc is created or changed'''
-    
-    def __init__(self, request_id, wfdoc:Wfdoc, username, email, time_stamp, client_address, org, orgunit, department, roles, data, **kwargs):
-        self.name = request_id
-        self.wfdoc = wfdoc
-        self.username = username
-        self.email = email
-        self.time_stamp = time_stamp
-        self.client_address = self.get_client_address()
-        self.org = org
-        self.orgunit = orgunit
-        self.department = department
-        self.roles = roles
-        self.data = data
-        super().__init__(**kwargs)
-        
- 
+
   
 class Wfdoc(Entities):
     
@@ -201,7 +184,24 @@ class Wfdoc(Entities):
                         
 
 
-
+class Wfdocaudit(Entities):
+    ''' a record here should be reated by the workflow whenever wfdoc is created or changed'''
+    
+    def __init__(self, request_id, wfdoc:Wfdoc, username, email, time_stamp, client_address, org, orgunit, department, roles, data, **kwargs):
+        self.name = request_id
+        self.wfdoc = wfdoc
+        self.username = username
+        self.email = email
+        self.time_stamp = time_stamp
+        self.client_address = self.get_client_address()
+        self.org = org
+        self.orgunit = orgunit
+        self.department = department
+        self.roles = roles
+        self.data = data
+        super().__init__(**kwargs)
+        
+ 
  
 ###########AT TIMES THE SUPER CLASS TO_DICT IS NOT WOROKING
 ########POSSIBLY THE RELATED_OBJECT_MAP CLASS VARIABLE IS NOT GETTIGN

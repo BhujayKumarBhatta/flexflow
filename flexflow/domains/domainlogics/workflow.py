@@ -6,12 +6,11 @@ from flexflow.domains import utils
 
 class Workflow:
     
-    def __init__(self, doctype_name:str, role=None, wfc=None):
+    def __init__(self, doctype_name:str, wfc=None):
         self.doctype_name = doctype_name
         self.wfc = wfc
-        self.role = role
     
-    def create_doc(self, data:dict, roles):
+    def create_doc(self, data:dict):
         ''' a key from the data is treated as the primary key for the 
         document. The key name is defined in the doctype.
         for creation of the doc the condition is no such doc by the id(primary key)
@@ -21,23 +20,23 @@ class Workflow:
         '''
         doctyoeObj = self._get_doctype_obj_from_name()
         docid = self._get_primary_key_from_data_doc(doctyoeObj, data)
-        self._check_role_for_create_action(doctyoeObj, roles) ## remeber fields validation is done during documents init method
+        self._check_role_for_create_action(doctyoeObj, self.wfc.roles) ## remeber fields validation is done during documents init method
         wfdocObj = ent.Wfdoc(name=docid,
                          associated_doctype=doctyoeObj,                         
                          prev_status="NewBorn",
                          current_status="Created",
                          doc_data=data) ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
-        self._validate_editable_fields(wfdocObj, data) #aprt from edit and length validtion, data type is converted as per the conf 
+        self._validate_editable_fields(wfdocObj, data, new_born=True) #Bypasss edit control checking during creation. aprt from  length validtion, data type is converted as per the conf 
         wfdoc_repo = DomainRepo("Wfdoc")
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
         return msg
     
-    def get_full_wfdoc_as_dict(self, wfdoc_name, roles:list):
+    def get_full_wfdoc_as_dict(self, wfdoc_name):
         '''in workflow role is avilable , hence , wfdocObj.actions_for_current_status gets further filtered by roles before presenting in dict format'''
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         current_actions = []
         for actionObj in wfdocObj.actions_for_current_status:
-            for role in roles:
+            for role in self.wfc.roles:
                 if role in actionObj.permitted_to_roles:
                     current_actions.append(actionObj.name)
         current_edit_fields = [fObj.name.lower() for fObj in wfdocObj.editable_fields_at_current_status]
@@ -47,7 +46,7 @@ class Workflow:
         return wfdoc_dict
         
     
-    def action_change_status(self, wfdoc_name, intended_action, roles:list, input_data=None):
+    def action_change_status(self, wfdoc_name, intended_action, input_data=None):
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         wfactions_list = wfdocObj.wfactions
         wfactionObj = None
@@ -55,7 +54,7 @@ class Workflow:
             if item.name == intended_action:
                 wfactionObj = item
                 break
-        self._check_action_rules(wfdocObj, wfactionObj, intended_action, roles)
+        self._check_action_rules(wfdocObj, wfactionObj, intended_action, self.wfc.roles)
         self._validate_editable_fields(wfdocObj, input_data)
         #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
         wfdoc_repo = DomainRepo("Wfdoc")
@@ -155,23 +154,13 @@ class Workflow:
                                                  wfactionObj.need_current_status)
         
         
-    def _check_editiable_fields(self, wfdocObj):
-        '''this is not required , just keeping in for future purpose sincee the logic is correctly developed'''
-        conf_fieldobj_lst = wfdocObj.associated_doctype.datadocfields
-        for k, v in wfdocObj.doc_data.items():
-            for confObj in conf_fieldobj_lst:
-                if confObj.name == k and \
-                wfdocObj.current_status not in confObj.status_needed_edit:
-                    raise rexc.EditNotAllowedForThisField(k, 
-                                                          wfdocObj.current_status,
-                                                          confObj.status_needed_edit)
-                    
-    def _validate_editable_fields(self, wfdocObj, data:dict):
+                        
+    def _validate_editable_fields(self, wfdocObj, data:dict, new_born=False):
         if data:
             efacs_list = wfdocObj.editable_fields_at_current_status
             efacs_names = [fObj.name.lower() for fObj in efacs_list]  
             for k, v in data.items():
-                if k.lower() not in efacs_names:
+                if k.lower() not in efacs_names and new_born is False :
                         raise rexc.EditNotAllowedForThisField(k, wfdocObj.current_status, efacs_names)
                 for fieldObj in efacs_list:
                     if k.lower() == fieldObj.name.lower():
@@ -196,7 +185,7 @@ class Workflow:
                                        roles=self.wfc.roles, 
                                        data=input_data,)
         wfdocaudit_repo = DomainRepo('Wfdocaudit')
-        wfdocaudit_repo.add_list_of_domain_obj(list_of_domain_obj)
+        wfdocaudit_repo.add_list_of_domain_obj([WfdocauditObj])
         
                     
                             

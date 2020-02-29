@@ -57,7 +57,7 @@ class XLReceiver:
             if xl_dict.get('doctype'): doctype_name = xl_dict.get('doctype')                
             if xl_dict.get('action').lower() == "create":
                 wf = Workflow(doctype_name, wfc=self.wfc)
-                status_msg_dict = wf.create_doc(xl_dict, role, )
+                status_msg_dict = wf.create_doc(xl_dict )
                 response_list.append(status_msg_dict)
         logger.debug('got response list after calling the  the'
                      ' workflow create_doc', status_msg_dict)       
