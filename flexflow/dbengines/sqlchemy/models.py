@@ -22,7 +22,7 @@ class Wfstatus(db.Model):
     name = db.Column(db.String(120), primary_key=True, unique=True, nullable=False)
     
     def to_dict(self):
-        return {"name": name}
+        return {"name": self.name}
         
     
 class Doctype(db.Model):
