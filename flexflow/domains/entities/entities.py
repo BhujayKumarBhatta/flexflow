@@ -114,7 +114,7 @@ class Wfdoc(Entities):
     docdata_field_type_map = {"str": str, "int": int}
     
     def __init__(self, name:str, associated_doctype:Doctype, 
-                 prev_status:str, current_status:str, 
+                 prev_status:str, current_status:str,
                  doc_data:dict, **kwargs):
         '''id should be one of the value from the doc_data e.g. invoice_number'''
         self.name = name
@@ -122,7 +122,7 @@ class Wfdoc(Entities):
         self.associated_doctype = associated_doctype
         self.associated_doctype_name = self.associated_doctype.name
         self.prev_status = prev_status
-        self.current_status = current_status
+        self.current_status = current_status        
         self.doc_data = doc_data
         self._validate_relationship_param_values()
         self._validate_docdata()        
@@ -190,7 +190,7 @@ class Wfdocaudit(Entities):
                                              "primary_key": "name"},
                                              }
     
-    def __init__(self, name, wfdoc:Wfdoc, username, email, time_stamp, client_address, org, orgunit, department, roles, data, **kwargs):
+    def __init__(self, name, wfdoc:Wfdoc, username, email, time_stamp, client_address, org, orgunit, department, roles, action, data, **kwargs):
         self.name = name
         self.wfdoc = wfdoc
         self.username = username
@@ -201,6 +201,7 @@ class Wfdocaudit(Entities):
         self.orgunit = orgunit
         self.department = department
         self.roles = roles
+        self.action = action
         self.data = data
         super().__init__(**kwargs)
         

@@ -30,7 +30,7 @@ class Workflow:
         wfdoc_repo = DomainRepo("Wfdoc")
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
         try:
-            msg = self._create_audit_record(wfdocObj, data)
+            msg = self._create_audit_record(wfdocObj, 'Create', data)
         except (rexc.FlexFlowException, Exception)  as e:
             status = wfdoc_repo.delete(**{"name": docid})
             msg = {"status": status, "message": str(e) }
@@ -81,7 +81,7 @@ class Workflow:
         target_doc_name = {"name": wfdocObj.name}
         msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
         try:
-            msg = self._create_audit_record(wfdocObj, updated_data_dict)
+            msg = self._create_audit_record(wfdocObj, intended_action,  updated_data_dict)
         except Exception:
             updated_data_dict = {"current_status": wfdocObj.current_status,
                                  "prev_status": wfdocObj.prev_status,
@@ -184,7 +184,7 @@ class Workflow:
         return data
                         
     
-    def _create_audit_record(self, wfdocObj, input_data:dict):
+    def _create_audit_record(self, wfdocObj, intended_action, input_data:dict):
         WfdocauditObj = ent.Wfdocaudit(name=self.wfc.request_id,
                                        wfdoc=wfdocObj, 
                                        username=self.wfc.username, 
@@ -193,9 +193,10 @@ class Workflow:
                                        client_address=self.wfc.client_address, 
                                        org=self.wfc.org, 
                                        orgunit=self.wfc.orgunit, 
-                                       department=self.wfc.department, 
+                                       department=self.wfc.department,                                       
                                        roles=self.wfc.roles, 
-                                       data=input_data,)
+                                       action=intended_action,
+                                       data=input_data)
         wfdocaudit_repo = DomainRepo('Wfdocaudit')
         msg = wfdocaudit_repo.add_list_of_domain_obj([WfdocauditObj])
         #print(msg)

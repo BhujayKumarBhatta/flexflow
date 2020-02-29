@@ -114,6 +114,7 @@ class Wfdocaudit(db.Model):
     org = db.Column(db.String(120))
     orgunit = db.Column(db.String(120))
     department = db.Column(db.String(120))
+    action = db.Column(db.String(120))
     roles = db.Column(JSON)
     data = db.Column(JSON)
     
@@ -128,6 +129,7 @@ class Wfdocaudit(db.Model):
                 "org": self.org,
                 "orgunit": self.orgunit,
                 "department": self.department,
+                "action": self.action,
                 "roles": self.roles,
                 "data": self.data }
                 
