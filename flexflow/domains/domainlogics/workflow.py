@@ -80,6 +80,14 @@ class Workflow:
             
         target_doc_name = {"name": wfdocObj.name}
         msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
+        try:
+            msg = self._create_audit_record(wfdocObj, updated_data_dict)
+        except Exception:
+            updated_data_dict = {"current_status": wfdocObj.current_status,
+                                 "prev_status": wfdocObj.prev_status,
+                                 "doc_data": wfdocObj.doc_data}
+            msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
+            raise Exception
         return msg
     
     
