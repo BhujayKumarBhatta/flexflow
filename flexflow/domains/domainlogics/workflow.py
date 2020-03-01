@@ -54,8 +54,9 @@ class Workflow:
         wfdoc_dict = wfdocObj.to_dict()
         wfdoc_dict.update({"current_actions": current_actions,
                            "current_edit_fields": current_edit_fields,
-                           "audittrails": audittrails, })
-        #print('full wfdoc.....', wfdoc_dict)
+                           "audittrails": audittrails,
+                           "roles_to_view_audit": wfdocObj.roles_to_view_audit })
+        print('full wfdoc.....', wfdoc_dict)
         return wfdoc_dict
         
     

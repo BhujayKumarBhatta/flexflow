@@ -26,9 +26,10 @@ class Doctype(Entities):
     One such condition is:  the data should have a key whose name 
     is same as primkey_in_datadoc defined in Doctyoe
     '''
-    def __init__(self, name, primkey_in_datadoc, **kwargs):
+    def __init__(self, name, primkey_in_datadoc, roles_to_view_audit, **kwargs):
         self.name = name
         self.primkey_in_datadoc = primkey_in_datadoc
+        self.roles_to_view_audit = roles_to_view_audit
         super().__init__(**kwargs)
         
     @property
@@ -157,6 +158,11 @@ class Wfdoc(Entities):
         searh_filter = {"wfdoc": {"name": self.name} }
         result = wfdocaudit_repo.list_domain_obj(**searh_filter)
         return result
+    
+    @property
+    def roles_to_view_audit(self):
+        roles_to_view_audit = self.associated_doctype.roles_to_view_audit
+        return roles_to_view_audit
     
     def _validate_docdata(self):
         editable_fields_at_this_status = []
