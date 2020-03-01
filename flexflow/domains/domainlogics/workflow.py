@@ -46,16 +46,19 @@ class Workflow:
                 if role in actionObj.permitted_to_roles:
                     current_actions.append(actionObj.name)
         current_edit_fields = [fObj.name.lower() for fObj in wfdocObj.editable_fields_at_current_status]
-        audittrails = [] 
+        audittrails = []
+        roles_to_view_audit = wfdocObj.roles_to_view_audit
         for auditObj in wfdocObj.wfdocaudits:
             d1 = auditObj.to_dict()
             d1.pop('wfdoc')
-            audittrails.append(d1)
+            for role in self.wfc.roles:
+                if role in roles_to_view_audit:
+                    audittrails.append(d1)
         wfdoc_dict = wfdocObj.to_dict()
         wfdoc_dict.update({"current_actions": current_actions,
                            "current_edit_fields": current_edit_fields,
                            "audittrails": audittrails,
-                           "roles_to_view_audit": wfdocObj.roles_to_view_audit })
+                           "roles_to_view_audit": roles_to_view_audit })
         print('full wfdoc.....', wfdoc_dict)
         return wfdoc_dict
         
