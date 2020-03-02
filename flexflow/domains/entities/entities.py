@@ -177,8 +177,9 @@ class Wfdoc(Entities):
                     if k.lower() == fieldObj.name.lower():                    
                         ctype = fieldObj.ftype.lower()
                         ctypeObj = self.docdata_field_type_map.get(ctype)
-                        if not isinstance(v, ctypeObj):
-                            raise rexc.DataTypeViolation(k, type(v), ctypeObj.__name__)
+                        #data type is getting converted by the workflow, hence no need to validate and raise exception
+#                         if not isinstance(v, ctypeObj):
+#                             raise rexc.DataTypeViolation(k, type(v), ctypeObj.__name__)
                         flength = fieldObj.flength
                         if not len(str(v)) <= flength:
                             raise rexc.DataLengthViolation(k, len(v), flength)
