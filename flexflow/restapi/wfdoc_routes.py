@@ -32,7 +32,8 @@ def wfdoctype_fulldetial(doctype, wfc):
 @enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
 def wfdoc_create(doctype, wfc):
     try:           
-        doc_data = request.json.get('doc_data')
+        doc_data = request.json
+        #print('data posted.................',doc_data)
         wf = Workflow(doctype, wfc=wfc)
         msg = wf.create_doc(doc_data)
     except (rexc.FlexFlowException) as e:
