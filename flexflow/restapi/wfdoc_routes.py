@@ -15,6 +15,21 @@ tlclient = Client(auth_config)
 enforcer = Enforcer(tlclient)
 wf_doc_bp = Blueprint('wf_doc_bp', __name__)
 
+
+
+@wf_doc_bp.route('/wfdoc/create/<doctype>', methods=['POST'])
+@enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
+def wfdoc_create(doctype, wfc):
+    try:           
+        doc_data = request.json.get('doc_data')
+        wf = Workflow(doctype, wfc=wfc)
+        msg = wf.create_doc(doc_data)
+    except (rexc.FlexFlowException) as e:
+        msg = e.ret_val
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+    return jsonify(msg)
+
 @wf_doc_bp.route('/wfdoc/uploadxl/<doctype>', methods=['POST'])
 @enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
 def upload_excel(doctype, wfc):
@@ -41,14 +56,14 @@ def wfdoc_fulldetial(uniquename, wfc):
     return jsonify(msg)
 
 
-@wf_doc_bp.route('/wfdoc/update', methods=['POST'])
+@wf_doc_bp.route('/wfdoc/update', methods=['POST'])#TODO:we should have doctype as parameter here
 @enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
 def wfdoc_update(wfc):
     try:
         wfdoc_name = request.json.get('wfdoc_name')
         intended_action = request.json.get('intended_action')
         doc_data = request.json.get('doc_data')
-        wf = Workflow('Wfdoc', wfc=wfc)
+        wf = Workflow('Wfdoc', wfc=wfc)# TODO: doctype param shoikd be passed here. 'Wfdoc' was passed  worongly here , howere we were saved since the change is not dependent on the Doctyoe
         msg = wf.action_change_status(wfdoc_name, intended_action, doc_data)
     except (rexc.FlexFlowException) as e:
         msg = e.ret_val
