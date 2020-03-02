@@ -174,6 +174,8 @@ class Wfdoc(Entities):
                         raise rexc.UnknownFieldNameInDataDoc(k, conf_field_names)
                 for fieldObj in conf_fieldobj_lst:
                     ##TODO: fieldObj should be checked to see it has all the attributes, otherwise exception that field is not configured properly
+                    if fieldObj.name.lower() not in self.doc_data.keys():
+                        raise rexc.KeyIsMissingInData(fieldObj.name, fieldObj.name.lower())
                     if k.lower() == fieldObj.name.lower():                    
                         ctype = fieldObj.ftype.lower()
                         ctypeObj = self.docdata_field_type_map.get(ctype)

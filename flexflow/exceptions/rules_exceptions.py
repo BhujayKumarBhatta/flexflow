@@ -165,4 +165,15 @@ class EditNotAllowedForThisField(FlexFlowException):
     
 class NoActionRuleForCreate(FlexFlowException):
     status = "NoActionRuleForCreate"    
-    message = "Ask admin to define a Action Rule (Wfaction) master  named as 'Create' with status leading to 'Created' and previous and current status as 'NewBorn' " 
+    message = "Ask admin to define a Action Rule (Wfaction) master  named as 'Create' with status leading to 'Created' and previous and current status as 'NewBorn' "
+    
+    
+class KeyIsMissingInData(FlexFlowException):
+    status = "KeyIsMissingInData"    
+    def __init__(self, fname, fnamelower):
+        self.fname = fname
+        self.fnamelower = fnamelower
+        self.message = ('Field : "%s" or "%s"  is missing in input data'
+                         %(self.fname, self.fnamelower))
+        super().__init__(self.status, self.message)
+         

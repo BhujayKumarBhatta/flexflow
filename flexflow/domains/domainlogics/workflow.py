@@ -76,7 +76,7 @@ class Workflow:
                            "current_edit_fields": current_edit_fields,
                            "audittrails": audittrails,
                            "roles_to_view_audit": roles_to_view_audit })
-        print('full wfdoc.....', wfdoc_dict)
+        #print('full wfdoc.....', wfdoc_dict)
         return wfdoc_dict
         
     
