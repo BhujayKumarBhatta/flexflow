@@ -16,6 +16,17 @@ enforcer = Enforcer(tlclient)
 wf_doc_bp = Blueprint('wf_doc_bp', __name__)
 
 
+@wf_doc_bp.route('/wfdoctype/get_fulldetail/<doctype>', methods=['GET'])
+@enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
+def wfdoctype_fulldetial(doctype, wfc):
+    try:
+        wf = Workflow(doctype, wfc=wfc)
+        msg = wf.get_full_wfdoctype_as_dict()
+    except (rexc.FlexFlowException) as e:
+        msg = e.ret_val
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+    return jsonify(msg)
 
 @wf_doc_bp.route('/wfdoc/create/<doctype>', methods=['POST'])
 @enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 

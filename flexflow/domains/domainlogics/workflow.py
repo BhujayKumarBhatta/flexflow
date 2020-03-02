@@ -4,6 +4,7 @@ from flexflow.exceptions import rules_exceptions  as rexc
 from backports.configparser.helpers import str
 from flexflow.domains import utils
 
+
 class Workflow:
     
     def __init__(self, doctype_name:str, wfc=None):
@@ -36,6 +37,22 @@ class Workflow:
             msg = {"status": status, "message": str(e) }
             raise rexc.FlexFlowException
         return msg
+    
+    def get_full_wfdoctype_as_dict(self):
+        wfdoctypeObj = None
+        wfdoctype_repo = DomainRepo('Doctype')
+        wfdoctypeObj = wfdoctype_repo.list_domain_obj(**{"name": self.doctype_name})       
+        if wfdoctypeObj: wfdoctypeObj = wfdoctypeObj[0]
+        datadocfields = []
+        for fObj in wfdoctypeObj.datadocfields:
+            fdict = fObj.to_dict()
+            fdict.pop('associated_doctype')
+            fdict.pop('associated_doctype_name')            
+            datadocfields.append(fdict)
+        wfdoctype_dict = wfdoctypeObj.to_dict()
+        wfdoctype_dict.update({"datadocfields": datadocfields})
+        return utils.lower_case_keys(wfdoctype_dict)
+        
     
     def get_full_wfdoc_as_dict(self, wfdoc_name):
         '''in workflow role is avilable , hence , wfdocObj.actions_for_current_status gets further filtered by roles before presenting in dict format'''
