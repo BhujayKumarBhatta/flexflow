@@ -21,11 +21,12 @@ class Workflow:
         '''
         doctyoeObj = self._get_doctype_obj_from_name()
         docid = self._get_primary_key_from_data_doc(doctyoeObj, data)
-        self._check_role_for_create_action(doctyoeObj, self.wfc.roles) ## remeber fields validation is done during documents init method
+        lead_to_status = self._check_role_for_create_action(doctyoeObj, self.wfc.roles) ## remeber fields validation is done during documents init method
+        print('got the lead to status ', lead_to_status )
         wfdocObj = ent.Wfdoc(name=docid,
                          associated_doctype=doctyoeObj,                         
                          prev_status="NewBorn",
-                         current_status="Created",
+                         current_status=lead_to_status,
                          doc_data=data) ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         self._validate_editable_fields(wfdocObj, data, new_born=True) #Bypasss edit control checking during creation. aprt from  length validtion, data type is converted as per the conf 
         wfdoc_repo = DomainRepo("Wfdoc")
@@ -78,6 +79,13 @@ class Workflow:
                            "roles_to_view_audit": roles_to_view_audit })
         #print('full wfdoc.....', wfdoc_dict)
         return wfdoc_dict
+    
+    def list_wfdoc(self):
+        wfdoctype_repo = DomainRepo('Wfdoc')
+        search_f = {"associated_doctype_name": self.doctype_name}
+        #wfdoctypeObj_lst = wfdoctype_repo.list_domain_obj()
+        lst = wfdoctype_repo.list_dict(**search_f)
+        return lst
         
     
     def action_change_status(self, wfdoc_name, intended_action, input_data=None):
@@ -124,11 +132,18 @@ class Workflow:
         return docid
     
     def _check_role_for_create_action(self, doctyoeObj, roles):
-        for actionObj in doctyoeObj.wfactions:           
-            if actionObj.name.lower() == "create":
-                for  role in roles:
-                    print("role checking before create", roles, actionObj.permitted_to_roles)
-                    if role in actionObj.permitted_to_roles:
+        role_not_found = False
+        lead_to_status = None
+        for actionObj in doctyoeObj.wfactions:
+            acptstatus = ["newborn", ""]  
+            striped_roles = [ role.strip() for role in actionObj.permitted_to_roles]        
+            if ( actionObj.need_current_status.lower() in acptstatus  and 
+                 actionObj.need_prev_status.lower() in acptstatus):
+                lead_to_status = actionObj.leads_to_status.lower()
+                print('got the initial stauts..................', lead_to_status)
+                for role in roles:
+                    print("after removing whitesace , role checking before create", roles, actionObj.permitted_to_roles)
+                    if role.strip() in striped_roles:
                         print('role matched, hence setitnf role_not_found as false')
                         role_not_found = False
                         break
@@ -144,6 +159,7 @@ class Workflow:
         if role_not_found is True:
             raise rexc.RoleNotPermittedForThisAction(role,
                                                       actionObj.permitted_to_roles)
+        return lead_to_status
         
    
     def _get_doctype_obj_from_name(self):

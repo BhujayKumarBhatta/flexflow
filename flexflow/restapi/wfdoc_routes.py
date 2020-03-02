@@ -42,6 +42,20 @@ def wfdoc_create(doctype, wfc):
         msg = {"status": "Failed", "message": str(e)}
     return jsonify(msg)
 
+
+@wf_doc_bp.route('/wfdoc/listbydoctype/<doctype>', methods=['GET'])
+@enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
+def list_wfdoc_by_doctype(doctype, wfc):
+    try:
+        wf = Workflow(doctype, wfc=wfc)
+        msg = wf.list_wfdoc()
+    except (rexc.FlexFlowException) as e:
+        msg = e.ret_val
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+    return jsonify(msg)
+
+
 @wf_doc_bp.route('/wfdoc/uploadxl/<doctype>', methods=['POST'])
 @enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
 def upload_excel(doctype, wfc):
