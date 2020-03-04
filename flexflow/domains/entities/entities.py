@@ -90,7 +90,7 @@ class Wfaction(Entities):
     
     def __init__(self, name:str, associated_doctype:Doctype,                 
                  need_prev_status:str, need_current_status:str,
-                 leads_to_status:str, permitted_to_roles:list, **kwargs ):
+                 leads_to_status:str, permitted_to_roles:list, hide_to_roles, **kwargs ):
         
         self.name = name        
         self.associated_doctype = associated_doctype
@@ -101,6 +101,8 @@ class Wfaction(Entities):
 #         if not isinstance(permitted_to_roles, list): 
 #             raise rexc.InvalidObjTypeInInputParam("permitted_to_roles", list )
         self.permitted_to_roles = permitted_to_roles
+        self.hide_to_roles = hide_to_roles
+        
         self._validate_relationship_param_values()
         super().__init__(**kwargs)
         

@@ -73,7 +73,7 @@ class Wfaction(db.Model):
     leads_to_status = db.Column(db.String(120), nullable=False)    
     #############
     permitted_to_roles = db.Column(JSON)
-    
+    hide_to_roles = db.Column(JSON)
     def to_dict(self):
         return {"name": self.name, 
                 "associated_doctype": {"name": self.associated_doctype.name},
@@ -81,7 +81,8 @@ class Wfaction(db.Model):
                 "need_prev_status": self.need_prev_status,
                 "need_current_status": self.need_current_status,
                 "leads_to_status": self.leads_to_status,
-                "permitted_to_roles": self.permitted_to_roles}
+                "permitted_to_roles": self.permitted_to_roles,
+                "hide_to_roles": self.hide_to_roles}
     
    
 

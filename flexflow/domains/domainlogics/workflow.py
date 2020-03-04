@@ -53,8 +53,7 @@ class Workflow:
         wfdoctype_dict = wfdoctypeObj.to_dict()
         wfdoctype_dict.update({"datadocfields": datadocfields})
         return utils.lower_case_keys(wfdoctype_dict)
-        
-    
+
     def get_full_wfdoc_as_dict(self, wfdoc_name):
         '''in workflow role is avilable , hence , wfdocObj.actions_for_current_status gets further filtered by roles before presenting in dict format'''
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
@@ -86,31 +85,22 @@ class Workflow:
         #wfdoctypeObj_lst = wfdoctype_repo.list_domain_obj()
         lst = wfdoctype_repo.list_dict(**search_f)
         return lst
-        
-    
+ 
     def action_change_status(self, wfdoc_name, intended_action, input_data=None):
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
-        wfactions_list = wfdocObj.wfactions
-        wfactionObj = None
-        for item in wfactions_list:
-            if item.name == intended_action:
-                wfactionObj = item
-                break
+        wfactionObj = self._get_wfactionObj(wfdocObj, intended_action)        
         self._check_action_rules(wfdocObj, wfactionObj, intended_action, self.wfc.roles)
         self._validate_editable_fields(wfdocObj, input_data)
-        #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
+        changed_data = self._create_changed_data(input_data, wfdocObj, wfactionObj)
+        result = self._update_wfdoc(wfdocObj, changed_data)
+        result = self._create_audit_record(wfdocObj, intended_action, input_data)
+        return result
+        
+    def _create_or_audit_doc(self, wfdocObj, intended_action, changed_data ):
         wfdoc_repo = DomainRepo("Wfdoc")
-        updated_data_dict = {"current_status": wfactionObj.leads_to_status,
-                             "prev_status": wfdocObj.current_status}
-        if input_data:
-            existing_data = wfdocObj.doc_data
-            existing_data.update(input_data)
-            updated_data_dict.update({"doc_data": existing_data})
-            
         target_doc_name = {"name": wfdocObj.name}
-        msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
         try:
-            msg = self._create_audit_record(wfdocObj, intended_action,  updated_data_dict)
+            msg = self._create_audit_record(wfdocObj, intended_action,  changed_data)
         except Exception:
             updated_data_dict = {"current_status": wfdocObj.current_status,
                                  "prev_status": wfdocObj.prev_status,
@@ -118,6 +108,32 @@ class Workflow:
             msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
             raise Exception
         return msg
+    
+    def _update_wfdoc(self, wfdocObj, changed_data ):
+        wfdoc_repo = DomainRepo("Wfdoc")
+        target_doc_name = {"name": wfdocObj.name}
+        msg = wfdoc_repo.update_from_dict(changed_data, **target_doc_name)
+    
+    
+    def _create_changed_data(self, input_data, wfdocObj, wfactionObj):
+        #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
+        updated_data_dict = {"current_status": wfactionObj.leads_to_status,
+                             "prev_status": wfdocObj.current_status}
+        if input_data:
+            existing_data = wfdocObj.doc_data
+            existing_data.update(input_data)
+            updated_data_dict.update({"doc_data": existing_data})
+            return updated_data_dict
+            
+    
+    def _get_wfactionObj(self, wfdocObj, intended_action):
+        wfactionObj = None
+        wfactions_list = wfdocObj.wfactions        ,  
+        for item in wfactions_list:
+            if item.name == intended_action:
+                wfactionObj = item
+                break
+        return wfactionObj
     
     
     
