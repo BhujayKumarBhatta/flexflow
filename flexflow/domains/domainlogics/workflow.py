@@ -125,15 +125,16 @@ class Workflow:
             existing_data = wfdocObj.doc_data
             existing_data.update(input_data)
             updated_data_dict.update({"doc_data": existing_data})
-            return updated_data_dict
+        return updated_data_dict
     
     def _get_wfactionObj(self, wfdocObj, intended_action):
         wfactionObj = None
-        wfactions_list = wfdocObj.wfactions        ,  
-        for item in wfactions_list:
-            if item.name == intended_action:
-                wfactionObj = item
-                break
+        wfactions_list = wfdocObj.wfactions
+        if wfactions_list:  
+            for item in wfactions_list:
+                if item.name == intended_action:
+                    wfactionObj = item
+                    break
         return wfactionObj
        
     def _get_primary_key_from_data_doc(self, doctyoeObj, data_doc):

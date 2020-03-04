@@ -27,6 +27,8 @@ class Tflask(FTestCase):
     
     
     def test_entities(self):
+        m.dbdriver.delete(m.Holddoc) 
+        m.dbdriver.delete(m.Wfdocaudit) 
         m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
@@ -46,21 +48,24 @@ class Tflask(FTestCase):
                          "need_prev_status": "s0",
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
-                         "permitted_to_roles": ["r1",]
+                         "permitted_to_roles": ["r1",],
+                         "hide_to_roles": ["r5",]
                          }
         wfaction2_dict=  {"name": "wfaction2",
                          "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "s1",
                          "need_current_status": "s2",
                          "leads_to_status": "s3",
-                         "permitted_to_roles": ["r2",]
+                         "permitted_to_roles": ["r2",],
+                         "hide_to_roles": ["r5",]
                          }
         wfaction3_dict=  {"name": "wfaction3",
                          "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "s2",
                          "need_current_status": "s3",
                          "leads_to_status": "s4",
-                         "permitted_to_roles": ["r3",]
+                         "permitted_to_roles": ["r3",],
+                         "hide_to_roles": ["r5",]
                          }
         wfaction1 = ent.Wfaction.from_dict(wfaction1_dict)
         wfaction2 = ent.Wfaction.from_dict(wfaction2_dict)
