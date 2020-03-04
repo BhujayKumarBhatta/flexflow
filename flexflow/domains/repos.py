@@ -17,6 +17,7 @@ class DomainRepo:
                    "Wfdoc": sqlm.Wfdoc,
                    "Datadocfield": sqlm.Datadocfield,
                    "Wfdocaudit": sqlm.Wfdocaudit,
+                   "Holddoc": sqlm.Holddoc,
                    }
     
     domain_obj_map = {"Wfstatus": ent.Wfstatus,
@@ -25,6 +26,7 @@ class DomainRepo:
                       "Wfdoc": ent.Wfdoc,
                       "Datadocfield": ent.Datadocfield,
                       "Wfdocaudit": ent.Wfdocaudit,
+                      "Holddoc": ent.Holddoc,
                    }
     
     def __init__(self, objname:str, dbdriver=sqlm.dbdriver):        

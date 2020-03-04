@@ -83,6 +83,7 @@ class Wfaction(db.Model):
                 "leads_to_status": self.leads_to_status,
                 "permitted_to_roles": self.permitted_to_roles}
     
+   
 
 class Wfdoc(db.Model):
     name = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
@@ -100,6 +101,27 @@ class Wfdoc(db.Model):
         return {"name": self.name,
                 "associated_doctype": {"name": self.associated_doctype.name},
                 "associated_doctype_name": self.associated_doctype_name,
+                "prev_status": self.prev_status,
+                "current_status": self.current_status,
+                "doc_data": self.doc_data}
+   
+     
+class Holddoc(db.Model):
+    name = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
+    target_role = db.Column(db.String(120))
+    reason = db.Column(db.String(120))
+    wfdoc = db.relationship('Wfdoc', backref='holddocs')
+    wfdoc_name = db.Column(db.String(120), db.ForeignKey('wfdoc.name'))
+    prev_status = db.Column(db.String(120))
+    current_status = db.Column(db.String(120))
+    doc_data = db.Column(JSON)
+    
+    def to_dict(self):
+        return {"name": self.name,
+                "target_role": self.target_role,
+                "reason": self.reason,
+                "wfdoc": {"name": self.wfdoc.name},
+                "wfdoc_name": self.wfdoc_name,
                 "prev_status": self.prev_status,
                 "current_status": self.current_status,
                 "doc_data": self.doc_data}
