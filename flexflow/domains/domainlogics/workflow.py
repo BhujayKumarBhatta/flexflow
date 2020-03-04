@@ -11,7 +11,7 @@ class Workflow:
         self.doctype_name = doctype_name
         self.wfc = wfc
     
-    def create_doc(self, data:dict):
+    def create_doc(self, input_data:dict):
         ''' a key from the data is treated as the primary key for the 
         document. The key name is defined in the doctype.
         for creation of the doc the condition is no such doc by the id(primary key)
@@ -20,24 +20,17 @@ class Workflow:
         Also see wfdocObj initialization. Earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         '''
         doctyoeObj = self._get_doctype_obj_from_name()
-        docid = self._get_primary_key_from_data_doc(doctyoeObj, data)
+        docid = self._get_primary_key_from_data_doc(doctyoeObj, input_data)
         lead_to_status = self._check_role_for_create_action(doctyoeObj, self.wfc.roles) ## remeber fields validation is done during documents init method
         print('got the lead to status ', lead_to_status )
         wfdocObj = ent.Wfdoc(name=docid,
                          associated_doctype=doctyoeObj,                         
                          prev_status="NewBorn",
                          current_status=lead_to_status,
-                         doc_data=data) ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
-        self._validate_editable_fields(wfdocObj, data, new_born=True) #Bypasss edit control checking during creation. aprt from  length validtion, data type is converted as per the conf 
-        wfdoc_repo = DomainRepo("Wfdoc")
-        msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
-        try:
-            msg = self._create_audit_record(wfdocObj, 'Create', data)
-        except (rexc.FlexFlowException, Exception)  as e:
-            status = wfdoc_repo.delete(**{"name": docid})
-            msg = {"status": status, "message": str(e) }
-            raise rexc.FlexFlowException
-        return msg
+                         doc_data=input_data) ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
+        self._validate_editable_fields(wfdocObj, input_data, new_born=True) #Bypasss edit control checking during creation. aprt from  length validtion, data type is converted as per the conf 
+        result = self._create_with_audit(wfdocObj, docid, input_data)
+        return result
     
     def get_full_wfdoctype_as_dict(self):
         wfdoctypeObj = None
@@ -92,28 +85,37 @@ class Workflow:
         self._check_action_rules(wfdocObj, wfactionObj, intended_action, self.wfc.roles)
         self._validate_editable_fields(wfdocObj, input_data)
         changed_data = self._create_changed_data(input_data, wfdocObj, wfactionObj)
-        result = self._update_wfdoc(wfdocObj, changed_data)
-        result = self._create_audit_record(wfdocObj, intended_action, input_data)
+        result = self._updadate_with_audit(wfdocObj, intended_action, changed_data)
         return result
+    
+    def _create_with_audit(self, wfdocObj, docid, input_data):
+        wfdoc_repo = DomainRepo("Wfdoc")
+        msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
+        try:
+            audit_msg = self._create_audit_record(wfdocObj, 'Create', input_data)
+            msg.update({"audit_msg": audit_msg})
+        except (rexc.FlexFlowException, Exception)  as e:
+            status = wfdoc_repo.delete(**{"name": docid})
+            rollback_msg = {"status": status, "message": str(e) }
+            msg.update({"rollback_msg": rollback_msg})
+            raise rexc.FlexFlowException
+        return msg
         
-    def _create_or_audit_doc(self, wfdocObj, intended_action, changed_data ):
+    def _updadate_with_audit(self, wfdocObj, intended_action, changed_data ):
         wfdoc_repo = DomainRepo("Wfdoc")
         target_doc_name = {"name": wfdocObj.name}
+        msg = wfdoc_repo.update_from_dict(changed_data, **target_doc_name)
         try:
-            msg = self._create_audit_record(wfdocObj, intended_action,  changed_data)
+            audit_msg = self._create_audit_record(wfdocObj, intended_action,  changed_data)
+            msg.update({"audit_msg": audit_msg})
         except Exception:
             updated_data_dict = {"current_status": wfdocObj.current_status,
                                  "prev_status": wfdocObj.prev_status,
                                  "doc_data": wfdocObj.doc_data}
-            msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
+            rollback_msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
+            msg.update({"rollback_msg": rollback_msg})
             raise Exception
-        return msg
-    
-    def _update_wfdoc(self, wfdocObj, changed_data ):
-        wfdoc_repo = DomainRepo("Wfdoc")
-        target_doc_name = {"name": wfdocObj.name}
-        msg = wfdoc_repo.update_from_dict(changed_data, **target_doc_name)
-    
+        return msg    
     
     def _create_changed_data(self, input_data, wfdocObj, wfactionObj):
         #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
@@ -124,7 +126,6 @@ class Workflow:
             existing_data.update(input_data)
             updated_data_dict.update({"doc_data": existing_data})
             return updated_data_dict
-            
     
     def _get_wfactionObj(self, wfdocObj, intended_action):
         wfactionObj = None
@@ -134,9 +135,7 @@ class Workflow:
                 wfactionObj = item
                 break
         return wfactionObj
-    
-    
-    
+       
     def _get_primary_key_from_data_doc(self, doctyoeObj, data_doc):
         docid = None
         primkey_in_datadoc = doctyoeObj.primkey_in_datadoc
@@ -176,8 +175,7 @@ class Workflow:
             raise rexc.RoleNotPermittedForThisAction(role,
                                                       actionObj.permitted_to_roles)
         return lead_to_status
-        
-   
+    
     def _get_doctype_obj_from_name(self):
         '''search by primary key name, hence expected to get one object'''
         result = None
@@ -217,9 +215,7 @@ class Workflow:
             raise rexc.WorkflowActionRuleViolation(intended_action, 
                                                    wfactionObj.need_prev_status,        
                                                  wfactionObj.need_current_status)
-        
-        
-                        
+                 
     def _validate_editable_fields(self, wfdocObj, data:dict, new_born=False):
         if data:
             efacs_list = wfdocObj.editable_fields_at_current_status
@@ -235,7 +231,6 @@ class Workflow:
                         ctype = fieldObj.ftype.lower()
                         utils.convert_data_values_as_per_conf(ctype, data, k, v)
         return data
-                        
     
     def _create_audit_record(self, wfdocObj, intended_action, input_data:dict):
         WfdocauditObj = ent.Wfdocaudit(name=self.wfc.request_id,
