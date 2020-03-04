@@ -196,8 +196,8 @@ class Workflow:
                 role_matched = False
         if role_matched is False:
                 raise rexc.RoleNotPermittedForThisAction(roles, permitted_to_roles)
-        if not ( wfactionObj.need_prev_status == wfdocObj.prev_status and 
-                 wfactionObj.need_current_status == wfdocObj.current_status):
+        if not ( wfactionObj.need_prev_status.lower().strip() == wfdocObj.prev_status.lower().strip() and 
+                 wfactionObj.need_current_status.lower().strip() == wfdocObj.current_status.lower().strip()):
             raise rexc.WorkflowActionRuleViolation(intended_action, 
                                                    wfactionObj.need_prev_status,        
                                                  wfactionObj.need_current_status)
@@ -207,9 +207,9 @@ class Workflow:
     def _validate_editable_fields(self, wfdocObj, data:dict, new_born=False):
         if data:
             efacs_list = wfdocObj.editable_fields_at_current_status
-            efacs_names = [fObj.name.lower() for fObj in efacs_list]  
+            efacs_names = [fObj.name.lower().strip() for fObj in efacs_list]  
             for k, v in data.items():
-                if k.lower() not in efacs_names and new_born is False :
+                if k.lower().strip() not in efacs_names and new_born is False :
                         raise rexc.EditNotAllowedForThisField(k, wfdocObj.current_status, efacs_names)
                 for fieldObj in efacs_list:
                     if k.lower() == fieldObj.name.lower():

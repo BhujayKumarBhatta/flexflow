@@ -144,7 +144,7 @@ class Wfdoc(Entities):
     def actions_for_current_status(self):
         actions_for_current_status = []
         for actionObj in self.wfactions:
-            if self.current_status == actionObj.need_current_status:
+            if self.current_status.lower().strip() == actionObj.need_current_status.lower().strip():
                 actions_for_current_status.append(actionObj)
         return actions_for_current_status
     
@@ -168,16 +168,16 @@ class Wfdoc(Entities):
         editable_fields_at_this_status = []
         if  self.doc_data:
             conf_fieldobj_lst = self.associated_doctype.datadocfields
-            conf_field_names = [item.name.lower() for item in conf_fieldobj_lst]
+            conf_field_names = [item.name.lower().strip() for item in conf_fieldobj_lst]
             for k, v in self.doc_data.items():
-                if k.lower() not in conf_field_names:
+                if k.lower().strip() not in conf_field_names:
                         raise rexc.UnknownFieldNameInDataDoc(k, conf_field_names)
                 for fieldObj in conf_fieldobj_lst:
                     ##TODO: fieldObj should be checked to see it has all the attributes, otherwise exception that field is not configured properly
                     if fieldObj.name.lower() not in self.doc_data.keys():
                         raise rexc.KeyIsMissingInData(fieldObj.name, fieldObj.name.lower())
-                    if k.lower() == fieldObj.name.lower():                    
-                        ctype = fieldObj.ftype.lower()
+                    if k.lower().strip() == fieldObj.name.lower().strip():                    
+                        ctype = fieldObj.ftype.lower().strip()
                         ctypeObj = self.docdata_field_type_map.get(ctype)
                         #data type is getting converted by the workflow, hence no need to validate and raise exception
 #                         if not isinstance(v, ctypeObj):
@@ -186,7 +186,7 @@ class Wfdoc(Entities):
                         if not len(str(v)) <= flength:
                             raise rexc.DataLengthViolation(k, len(v), flength)
                         if self.current_status and \
-                        self.current_status in fieldObj.status_needed_edit:                            
+                        self.current_status.lower().strip() in [sne.lower().strip() for sne in fieldObj.status_needed_edit]:                            
                             editable_fields_at_this_status.append(fieldObj)
         return editable_fields_at_this_status
                             

@@ -14,7 +14,7 @@ storage_drivers:
     mysql:
       Server: localhost
       Port: 3306
-      Database: test_flexflow
+      Database: unittest_flexflow
       UID: root
       db_pwd_key_map: db_pwd
   
