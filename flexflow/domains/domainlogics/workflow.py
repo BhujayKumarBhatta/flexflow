@@ -73,12 +73,35 @@ class Workflow:
         return wfdoc_dict
     
     def list_wfdoc(self):
-        wfdoctype_repo = DomainRepo('Wfdoc')
+        wfdoc_list = self._list_from_wfdoc()
+        holddoc_lis = self._list_from_holddoc_filtered_by_logged_in_user_roles()
+        list_with_hold = self._superimpose_holddoc_on_wfdoc(wfdoc_list, holddoc_lis)
+        return list_with_hold
+        
+    def _list_from_wfdoc(self):
+        wfdoc_repo = DomainRepo('Wfdoc')
         search_f = {"associated_doctype_name": self.doctype_name}
-        #wfdoctypeObj_lst = wfdoctype_repo.list_domain_obj()
-        lst = wfdoctype_repo.list_dict(**search_f)
+        lst = wfdoc_repo.list_dict(**search_f)
         return lst
- 
+    
+    def _list_from_holddoc_filtered_by_logged_in_user_roles(self):
+        wfdoctype_repo = DomainRepo('Holddoc')
+        search_f = {"associated_doctype_name": self.doctype_name}
+        lst = wfdoctype_repo.list_dict(**search_f)
+        holddocs_filter_by_role = []
+        for urole in self.wfc.roles:
+            for hold_doc in lst:
+                if urole == hold_doc.get('target_role'):
+                    holddocs_filter_by_role.append(hold_doc)                
+        return holddocs_filter_by_role
+    
+    def _superimpose_holddoc_on_wfdoc(self, wfdoc_list, holddoc_lis):
+        for wfd in wfdoc_list:
+            for hld in holddoc_lis:
+                if wfd.get('name') == hld.get('wfdoc_name'):
+                    wfd.update(hld)
+        return wfdoc_list
+    
     def action_change_status(self, wfdoc_name, intended_action, input_data=None):
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         wfactionObj = self._get_wfactionObj(wfdocObj, intended_action)        
@@ -96,21 +119,20 @@ class Workflow:
         holddoc_repo = DomainRepo("Holddoc")
         result = holddoc_repo.delete(**search_string)#TODO: should be no doc found when not present
         return result
-        
     
     def _hide_action_to_roles(self, wfdocObj, intended_action):
         hide_to_roles = self._get_hide_to_roles_from_wfdoc(wfdocObj, intended_action)
         self._delete_holddoc_for_role(wfdocObj)
         for urole in hide_to_roles:            
             self._create_holddoc_for_current_role(urole, intended_action, wfdocObj)
-                
-                
+       
     def _create_holddoc_for_current_role(self, urole, intended_action, wfdocObj):
         unique_id = urole+wfdocObj.name
         holddocObj = ent.Holddoc(name=unique_id,
                                  target_role=urole,
                                  reason=intended_action,
                                  wfdoc=wfdocObj,
+                                 associated_doctype = wfdocObj.associated_doctype,
                                  prev_status=wfdocObj.prev_status,
                                  current_status=wfdocObj.current_status,
                                  doc_data=wfdocObj.doc_data)
@@ -125,8 +147,7 @@ class Workflow:
                 hide_to_roles = actionObj.hide_to_roles
                 break
         return hide_to_roles            
-                
-    
+     
     def _create_with_audit(self, wfdocObj, docid, input_data):
         wfdoc_repo = DomainRepo("Wfdoc")
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])

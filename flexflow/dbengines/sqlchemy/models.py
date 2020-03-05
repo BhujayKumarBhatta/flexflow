@@ -113,6 +113,8 @@ class Holddoc(db.Model):
     reason = db.Column(db.String(120))
     wfdoc = db.relationship('Wfdoc', backref='holddocs')
     wfdoc_name = db.Column(db.String(120), db.ForeignKey('wfdoc.name'))
+    associated_doctype = db.relationship('Doctype', backref='holddocs')
+    associated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
     prev_status = db.Column(db.String(120))
     current_status = db.Column(db.String(120))
     doc_data = db.Column(JSON)
@@ -123,6 +125,8 @@ class Holddoc(db.Model):
                 "reason": self.reason,
                 "wfdoc": {"name": self.wfdoc.name},
                 "wfdoc_name": self.wfdoc_name,
+                "associated_doctype": self.associated_doctype.name,
+                "associated_doctype_name": self.associated_doctype_name,
                 "prev_status": self.prev_status,
                 "current_status": self.current_status,
                 "doc_data": self.doc_data}

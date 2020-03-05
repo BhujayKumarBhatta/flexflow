@@ -56,15 +56,34 @@ class Tflask(FTestCase):
         doc_repo = DomainRepo("Wfdoc")
         wfdocObj_list = doc_repo.list_domain_obj(name="dv22")
         self.assertTrue(wfdocObj_list[0].name == "dv22")          
-        ####UPDATE DOC STATUS AS PER THE ACTION RULE
+        ####UPDATE DOC STATUS AS PER THE ACTION RULE, 
         testconf.testwfc.request_id = str(uuid.uuid4())
         wf = Workflow('doctype2', wfc=testconf.testwfc)
-        msg = wf.action_change_status("dv22", "wfaction1", {"dk2": "dv22"})
+        msg = wf.action_change_status("dv22", "wfaction1", {"dk1": "changed_data_on_action1"})
         ### check that self._validate_editable_fields(wfdocObj, data) working
         self.assertTrue(msg['status'] =="success")
         ###wdoc should be able to understand that dk2 is editable and dk1 is not
-        self.assertTrue("dk2" in [f.name for f in wfdocObj_list[0].editable_fields_at_current_status])
-        self.assertTrue("dk1" not in [f.name for f in wfdocObj_list[0].editable_fields_at_current_status])
+        self.assertTrue("dk2" not in [f.name for f in wfdocObj_list[0].editable_fields_at_current_status])
+        self.assertTrue("dk1" in [f.name for f in wfdocObj_list[0].editable_fields_at_current_status])
+        ###USE ROLE "hide_to_roles": ["r4", "r5"] to see that data is showing from holddoc
+        #data still should show previous data {"dk1": "dv1", "dk2": "dv22", }
+        testconf.testwfc.roles= ['r4']
+        testconf.testwfc.request_id = str(uuid.uuid4())
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        result = wf.list_wfdoc()
+        self.assertTrue(result[0].get('doc_data').get('dk1') == 'dv1') # data is showing from holddoc for role r4
+        ####same for r5 
+        testconf.testwfc.roles= ['r5']
+        testconf.testwfc.request_id = str(uuid.uuid4())
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        result = wf.list_wfdoc()
+        self.assertTrue(result[0].get('doc_data').get('dk1') == 'dv1')
+        #########FOR R6 AND R1 THE UPDATED DATA IS VISIBLE 
+        testconf.testwfc.roles= ['r1', 'r6']
+        testconf.testwfc.request_id = str(uuid.uuid4())
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        result = wf.list_wfdoc()
+        self.assertTrue(result[0].get('doc_data').get('dk1') == 'changed_data_on_action1')
         ####SHOULD FAIL FOR INCORRECT ROLE
         testconf.testwfc.roles= ['r1']
         testconf.testwfc.request_id = str(uuid.uuid4())
@@ -101,7 +120,7 @@ class Tflask(FTestCase):
             self.assertTrue(e.status == "EditNotAllowedForThisField")
         ###get full wfdoc dict including current action list and editable field list
         msg = wf.get_full_wfdoc_as_dict('dv22')
-        self.assertTrue('dk2' in msg.get('current_edit_fields'))
+        self.assertTrue('dk1' in msg.get('current_edit_fields'))
         self.assertTrue('wfaction3' in msg.get('current_actions'))
         ###WITH R5 ROLE SEE HOLDDOC IS CREATED
         testconf.testwfc.request_id = str(uuid.uuid4())
@@ -119,13 +138,13 @@ class Tflask(FTestCase):
         f1_dict = {"name": "dk1",
                    "associated_doctype": {"name": "doctype2"},
                    "ftype": "str",
-                   "flength": 10,
-                   "status_needed_edit": [""]} #this should be status not role
+                   "flength": 25,
+                   "status_needed_edit": ["s1", "Created", "s2"]} #this should be status not role
         f2_dict = {"name": "dk2",
                    "associated_doctype": {"name": "doctype2"},
                    "ftype": "str",
                    "flength": 10,
-                   "status_needed_edit": ["s1", "Created", "s2"]}
+                   "status_needed_edit": [""]}
         docf_repo = repos.DomainRepo("Datadocfield")
         docf_repo.add_form_lod([f1_dict, f2_dict])
         wfcaction_create = {"name": "Create",

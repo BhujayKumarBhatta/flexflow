@@ -219,13 +219,19 @@ class Wfdocaudit(Entities):
  
 class Holddoc(Entities):
     related_obj_map = {"wfdoc": {"mapped_object": Wfdoc, 
-                                 "primary_key": "name"}, }
-    def __init__(self, name, target_role, reason, wfdoc, prev_status, current_status, doc_data):
+                                 "primary_key": "name"}, 
+                       "associated_doctype": {"mapped_object": Doctype, 
+                                             "primary_key": "name"},
+                       }
+    def __init__(self, name, target_role, reason, wfdoc, associated_doctype:Doctype, 
+                 prev_status, current_status, doc_data):
         self.name = name
         self.target_role = target_role
         self.reason = reason
         self.wfdoc = wfdoc
         self.wfdoc_name = self.wfdoc.name
+        self.associated_doctype = associated_doctype
+        self.associated_doctype_name = self.associated_doctype.name        
         self.prev_status = prev_status
         self.current_status = current_status
         self.doc_data = doc_data
