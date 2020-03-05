@@ -27,6 +27,7 @@ class Tflask(FTestCase):
     
       
     def test_workflow(self):
+        m.dbdriver.delete(m.Holddoc)
         m.dbdriver.delete(m.Wfdocaudit)
         m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)

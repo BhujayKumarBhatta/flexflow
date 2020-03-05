@@ -88,6 +88,35 @@ class Workflow:
         result = self._updadate_with_audit(wfdocObj, intended_action, changed_data)
         return result
     
+    def _hide_action_to_roles(self, wfdocObj, intended_action):
+        hide_to_roles = self._get_hide_to_roles_from_wfdoc(wfdocObj, intended_action)
+        for urole in self.wfc.roles:
+            self._delete_holddoc_for_role(urole, wfdocObj)
+            if urole in hide_to_roles:
+                self._create_holddoc_for_current_role(urole, intended_action, wfdocObj)
+                
+                
+    def _create_holddoc_for_current_role(self, urole, intended_action, wfdocObj):
+        unique_id = urole+wfdocObj.name
+        holddocObj = ent.Holddoc(name=unique_id,
+                                 target_role=urole,
+                                 reason=intended_action,
+                                 wfdoc=wfdocObj,
+                                 prev_status=wfdocObj.prev_status,
+                                 current_status=wfdocObj.current_status,
+                                 doc_data=wfdocObj.doc_data)
+        wfdoc_repo = DomainRepo("Holddoc")
+        result = wfdoc_repo.add_list_of_domain_obj([holddocObj])
+        return result
+    
+    def _get_hide_to_roles_from_wfdoc(self, wfdocObj, intended_action):
+        hide_to_roles = []
+        for actionObj in wfdocObj.wfactions:
+            if actionObj.name == intended_action:
+                hide_to_roles = actionObj.hide_to_roles
+        return hide_to_roles            
+                
+    
     def _create_with_audit(self, wfdocObj, docid, input_data):
         wfdoc_repo = DomainRepo("Wfdoc")
         msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
@@ -96,6 +125,7 @@ class Workflow:
             msg.update({"audit_msg": audit_msg})
         except (rexc.FlexFlowException, Exception)  as e:
             status = wfdoc_repo.delete(**{"name": docid})
+            #status_roll_back_holddoc = holddoc_repo.delete(**search_filter)
             rollback_msg = {"status": status, "message": str(e) }
             msg.update({"rollback_msg": rollback_msg})
             raise rexc.FlexFlowException
