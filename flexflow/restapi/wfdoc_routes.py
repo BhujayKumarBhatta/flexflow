@@ -17,7 +17,7 @@ wf_doc_bp = Blueprint('wf_doc_bp', __name__)
 
 
 @wf_doc_bp.route('/wfdoctype/get_fulldetail/<doctype>', methods=['GET'])
-@enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
+@enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
 def wfdoctype_fulldetial(doctype, wfc):
     try:
         wf = Workflow(doctype, wfc=wfc)
@@ -44,7 +44,7 @@ def wfdoc_create(doctype, wfc):
 
 
 @wf_doc_bp.route('/wfdoc/listbydoctype/<doctype>', methods=['GET'])
-@enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
+@enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
 def list_wfdoc_by_doctype(doctype, wfc):
     try:
         wf = Workflow(doctype, wfc=wfc)
@@ -70,7 +70,7 @@ def upload_excel(doctype, wfc):
 
 
 @wf_doc_bp.route('/wfdoc/get_fulldetail/<uniquename>', methods=['GET'])
-@enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
+@enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
 def wfdoc_fulldetial(uniquename, wfc):
     try:
         wf = Workflow('Wfdoc', wfc=wfc)
@@ -83,7 +83,7 @@ def wfdoc_fulldetial(uniquename, wfc):
 
 
 @wf_doc_bp.route('/wfdoc/update', methods=['POST'])#TODO:we should have doctype as parameter here
-@enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
+@enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
 def wfdoc_update(wfc):
     try:
         wfdoc_name = request.json.get('wfdoc_name')
