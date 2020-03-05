@@ -84,16 +84,25 @@ class Workflow:
         wfactionObj = self._get_wfactionObj(wfdocObj, intended_action)        
         self._check_action_rules(wfdocObj, wfactionObj, intended_action, self.wfc.roles)
         self._validate_editable_fields(wfdocObj, input_data)
+        self._hide_action_to_roles(wfdocObj, intended_action)
         changed_data = self._create_changed_data(input_data, wfdocObj, wfactionObj)
         result = self._updadate_with_audit(wfdocObj, intended_action, changed_data)
         return result
     
+    def _delete_holddoc_for_role(self, wfdocObj):
+        search_string = {"wfdoc_name": wfdocObj.name}
+        #uniquie_id = urole+wfdocObj.name
+        #search_string = {"name": uniquie_id}
+        holddoc_repo = DomainRepo("Holddoc")
+        result = holddoc_repo.delete(**search_string)#TODO: should be no doc found when not present
+        return result
+        
+    
     def _hide_action_to_roles(self, wfdocObj, intended_action):
         hide_to_roles = self._get_hide_to_roles_from_wfdoc(wfdocObj, intended_action)
-        for urole in self.wfc.roles:
-            self._delete_holddoc_for_role(urole, wfdocObj)
-            if urole in hide_to_roles:
-                self._create_holddoc_for_current_role(urole, intended_action, wfdocObj)
+        self._delete_holddoc_for_role(wfdocObj)
+        for urole in hide_to_roles:            
+            self._create_holddoc_for_current_role(urole, intended_action, wfdocObj)
                 
                 
     def _create_holddoc_for_current_role(self, urole, intended_action, wfdocObj):
@@ -114,6 +123,7 @@ class Workflow:
         for actionObj in wfdocObj.wfactions:
             if actionObj.name == intended_action:
                 hide_to_roles = actionObj.hide_to_roles
+                break
         return hide_to_roles            
                 
     

@@ -103,6 +103,11 @@ class Tflask(FTestCase):
         msg = wf.get_full_wfdoc_as_dict('dv22')
         self.assertTrue('dk2' in msg.get('current_edit_fields'))
         self.assertTrue('wfaction3' in msg.get('current_actions'))
+        ###WITH R5 ROLE SEE HOLDDOC IS CREATED
+        testconf.testwfc.request_id = str(uuid.uuid4())
+        testconf.testwfc.roles= ['r3']
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        
       
     def _register_doctype_n_actions(self):
         doctype1 = ent.Doctype("doctype1", "dk1", ['role1'])
@@ -129,15 +134,15 @@ class Tflask(FTestCase):
                          "need_current_status": "NewBorn",
                          "leads_to_status": "Created",
                          "permitted_to_roles": ["r1",],
-                         "hide_to_roles": ["r5",]
+                         "hide_to_roles": ["r3", "r4"]
                          }
         wfaction1_dict=  {"name": "wfaction1",
                          "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "NewBorn",
                          "need_current_status": "Created",
                          "leads_to_status": "s1",
-                         "permitted_to_roles": ["r1",],
-                         "hide_to_roles": ["r5",]
+                         "permitted_to_roles": ["r1",], 
+                         "hide_to_roles": ["r4", "r5"]
                          }
         wfaction2_dict=  {"name": "wfaction2",
                          "associated_doctype": {"name": "doctype2"},
@@ -145,13 +150,21 @@ class Tflask(FTestCase):
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
                          "permitted_to_roles": ["r2",],
-                         "hide_to_roles": ["r5",]
+                         "hide_to_roles": ["r5", "r6"]
                          }
         wfaction3_dict=  {"name": "wfaction3",
                          "associated_doctype": {"name": "doctype2"},
                          "need_prev_status": "s1",
                          "need_current_status": "s2",
                          "leads_to_status": "s3",
+                         "permitted_to_roles": ["r3",],
+                         "hide_to_roles": ["r1",]
+                         }
+        wfaction4_dict=  {"name": "wfaction4",
+                         "associated_doctype": {"name": "doctype2"},
+                         "need_prev_status": "s2",
+                         "need_current_status": "s3",
+                         "leads_to_status": "s4",
                          "permitted_to_roles": ["r3",],
                          "hide_to_roles": ["r5",]
                          }
