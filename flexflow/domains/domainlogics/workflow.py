@@ -32,6 +32,67 @@ class Workflow:
         result = self._create_with_audit(wfdocObj, docid, input_data)
         return result
     
+    def list_wfdoc(self):
+        wfdoc_list = self._list_from_wfdoc()
+        holddoc_lis = self._list_from_holddoc_filtered_by_logged_in_user_roles()
+        list_with_hold = self._superimpose_holddoc_on_wfdoc(wfdoc_list, holddoc_lis)
+        return list_with_hold
+    
+    def get_full_wfdoc_as_dict(self, wfdoc_name):
+        '''in workflow role is avilable , hence 
+        wfdocObj.actions_for_current_status gets further filtered by 
+        roles before presenting in dict format'''
+        wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
+        current_actions = self._get_current_actions_for_the_doc(wfdocObj)
+        current_edit_fields = [fObj.name.lower() for fObj in 
+                               wfdocObj.editable_fields_at_current_status]
+        roles_to_view_audit = wfdocObj.roles_to_view_audit
+        audittrails = self._get_audit_trails_for_allowed_roles(wfdocObj, roles_to_view_audit)
+        wfdoc_dict = wfdocObj.to_dict()
+        hodl_doc_dict = self._get_detail_holddoc_for_a_wfdoc(wfdoc_dict)
+        if hodl_doc_dict and isinstance(hodl_doc_dict, dict): wfdoc_dict.update(hodl_doc_dict)
+        wfdoc_dict.update({"current_actions": current_actions,
+                           "current_edit_fields": current_edit_fields,
+                           "audittrails": audittrails,
+                           "roles_to_view_audit": roles_to_view_audit })
+        return wfdoc_dict
+    
+    def _get_detail_holddoc_for_a_wfdoc(self, wfdoc_dict):
+        hodl_doc_dict = None
+        holddoc_repo = DomainRepo('Holddoc')
+        for urole in self.wfc.roles: #for multiple roles, only the first match is considered
+            search_f = {#"associated_doctype_name": self.doctype_name, #TODO: reinforce once update restapi takes <doctype> as param
+                    "wfdoc_name": wfdoc_dict.get('name'),
+                    "target_role": urole, 
+                    "name": urole+wfdoc_dict.get('name')}
+            print('serach string ...........', search_f)
+            result = holddoc_repo.list_dict(**search_f)
+            if result: 
+                hodl_doc_dict = result[0]
+                print('got result from holddoc...........', hodl_doc_dict)
+                break
+        return hodl_doc_dict
+        
+#serach string ........... {'wfdoc_name': '1111', 'associated_doctype_name': 'Wfdoc', 'name': 'MIS1111', 'target_role': 'MIS'}
+    
+    def _get_audit_trails_for_allowed_roles(self, wfdocObj, roles_to_view_audit):
+        audittrails = []
+        for auditObj in wfdocObj.wfdocaudits:
+            d1 = auditObj.to_dict()
+            d1.pop('wfdoc')
+            for role in self.wfc.roles:
+                if role in roles_to_view_audit:
+                    audittrails.append(d1)
+        return audittrails
+    
+    def _get_current_actions_for_the_doc(self, wfdocObj):
+        current_actions = []
+        for actionObj in wfdocObj.actions_for_current_status:
+            for role in self.wfc.roles:
+                if role in actionObj.permitted_to_roles:
+                    current_actions.append(actionObj.name)
+        return current_actions        
+        
     def get_full_wfdoctype_as_dict(self):
         wfdoctypeObj = None
         wfdoctype_repo = DomainRepo('Doctype')
@@ -46,37 +107,6 @@ class Workflow:
         wfdoctype_dict = wfdoctypeObj.to_dict()
         wfdoctype_dict.update({"datadocfields": datadocfields})
         return utils.lower_case_keys(wfdoctype_dict)
-
-    def get_full_wfdoc_as_dict(self, wfdoc_name):
-        '''in workflow role is avilable , hence , wfdocObj.actions_for_current_status gets further filtered by roles before presenting in dict format'''
-        wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
-        current_actions = []
-        for actionObj in wfdocObj.actions_for_current_status:
-            for role in self.wfc.roles:
-                if role in actionObj.permitted_to_roles:
-                    current_actions.append(actionObj.name)
-        current_edit_fields = [fObj.name.lower() for fObj in wfdocObj.editable_fields_at_current_status]
-        audittrails = []
-        roles_to_view_audit = wfdocObj.roles_to_view_audit
-        for auditObj in wfdocObj.wfdocaudits:
-            d1 = auditObj.to_dict()
-            d1.pop('wfdoc')
-            for role in self.wfc.roles:
-                if role in roles_to_view_audit:
-                    audittrails.append(d1)
-        wfdoc_dict = wfdocObj.to_dict()
-        wfdoc_dict.update({"current_actions": current_actions,
-                           "current_edit_fields": current_edit_fields,
-                           "audittrails": audittrails,
-                           "roles_to_view_audit": roles_to_view_audit })
-        #print('full wfdoc.....', wfdoc_dict)
-        return wfdoc_dict
-    
-    def list_wfdoc(self):
-        wfdoc_list = self._list_from_wfdoc()
-        holddoc_lis = self._list_from_holddoc_filtered_by_logged_in_user_roles()
-        list_with_hold = self._superimpose_holddoc_on_wfdoc(wfdoc_list, holddoc_lis)
-        return list_with_hold
         
     def _list_from_wfdoc(self):
         wfdoc_repo = DomainRepo('Wfdoc')
@@ -98,7 +128,8 @@ class Workflow:
     def _superimpose_holddoc_on_wfdoc(self, wfdoc_list, holddoc_lis):
         for wfd in wfdoc_list:
             for hld in holddoc_lis:
-                if wfd.get('name') == hld.get('wfdoc_name'):
+                if wfd.get('name') == hld.get('wfdoc_name'):                    
+                    hld['name'] = wfd.get('name')#othewise it will show holddoc name = role+docname and fail to retrive it during detial view
                     wfd.update(hld)
         return wfdoc_list
     
