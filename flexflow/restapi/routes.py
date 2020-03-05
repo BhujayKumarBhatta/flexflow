@@ -21,7 +21,7 @@ def get_wfmobj_keys(objname):
 @bp1.route('/add/<objname>', methods=['POST'])
 @enforcer.enforce_access_rule_with_token('striker.tspaction') 
 def wfmaster_add(objname, wfc):
-    print('''print wfc.....''', wfc.__dict__)
+    #print('''print wfc.....''', wfc.__dict__)
     try:
         repo = repos.DomainRepo(objname)
         result = repo.add_form_lod(request.json)

@@ -30,7 +30,7 @@ class Workflow:
                          doc_data=input_data) ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         self._validate_editable_fields(wfdocObj, input_data, new_born=True) #Bypasss edit control checking during creation. aprt from  length validtion, data type is converted as per the conf 
         result = self._create_with_audit(wfdocObj, docid, input_data)
-        return result
+        return result    
     
     def list_wfdoc(self):
         wfdoc_list = self._list_from_wfdoc()
@@ -72,8 +72,6 @@ class Workflow:
                 print('got result from holddoc...........', hodl_doc_dict)
                 break
         return hodl_doc_dict
-        
-#serach string ........... {'wfdoc_name': '1111', 'associated_doctype_name': 'Wfdoc', 'name': 'MIS1111', 'target_role': 'MIS'}
     
     def _get_audit_trails_for_allowed_roles(self, wfdocObj, roles_to_view_audit):
         audittrails = []

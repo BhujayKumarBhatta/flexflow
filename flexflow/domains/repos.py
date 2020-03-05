@@ -5,6 +5,7 @@ from flexflow.exceptions import rules_exceptions  as rexc
 from sqlalchemy.orm.relationships import RelationshipProperty
 from sqlalchemy.orm.properties import ColumnProperty
 from flexflow.domains.entities import entities as ent
+from flexflow.domains import utils
         
 class DomainRepo:
     '''bridge between domain entities  and storage layer
@@ -43,6 +44,7 @@ class DomainRepo:
         return db_save_result
     
     def add_form_lod(self, data_lod:list):
+        data_lod = utils.sanitize_lod(data_lod)
         self._validate_input_data_lod(data_lod)
         data_lobj = self._convert_lod_to_lobj(data_lod)
         db_save_result = self.dbdriver.add_from_lobj(data_lobj)
@@ -89,6 +91,7 @@ class DomainRepo:
     
     def update_from_dict(self, updated_data_dict, **search_filters):
         ''' SAFE : if no search_filter if provided it will change all the records '''
+        updated_data_dict = utils.sanitize_input_dict(updated_data_dict)
         self._validate_input_data_dict(updated_data_dict)
         dict_to_obj = self._convert_relational_text_to_obj_in_dict(updated_data_dict)
         result = self.dbdriver.update(self.sql_obj, dict_to_obj, **search_filters)
@@ -118,14 +121,17 @@ class DomainRepo:
     def _create_domain_object(self, status_dict:dict):
         return self.domain_obj.from_dict(status_dict)
     
-    def _validate_input_data_lod(self, data_lod):
-        if not isinstance(data_lod, list):
+    def _validate_input_data_lod(self, input_data_lod):
+        data_lod = input_data_lod        
+        if not isinstance(input_data_lod, list):
             raise rexc.InvalidInputDataList
+        #data_lod = utils.sanitize_lod(input_data_lod)
         for data_dict in data_lod:
             self._validate_input_data_dict(data_dict)
             
-    def _validate_input_data_dict(self, data_dict):        
-        if not isinstance(data_dict, dict):
+    def _validate_input_data_dict(self, input_data_dict):
+        data_dict = input_data_dict                
+        if not isinstance(input_data_dict, dict):
             raise rexc.InvalidInputDataDict
         for k in  data_dict.keys():
                 if k not in  self.sql_obj.__dict__.keys():
