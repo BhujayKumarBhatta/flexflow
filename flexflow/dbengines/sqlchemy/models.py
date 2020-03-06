@@ -66,9 +66,9 @@ class Wfaction(db.Model):
     associated_doctype = db.relationship('Doctype', backref='wfactions')
     associated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
     ###########       
-    need_prev_status = db.Column(db.String(120), nullable=False)    
+    #need_prev_status = db.Column(db.String(120), nullable=False)    
     ####################
-    need_current_status = db.Column(db.String(120), nullable=False)    
+    need_current_status = db.Column(JSON)   
     ####################
     leads_to_status = db.Column(db.String(120), nullable=False)    
     #############
@@ -79,7 +79,7 @@ class Wfaction(db.Model):
         return {"name": self.name, 
                 "associated_doctype": {"name": self.associated_doctype.name},
                 "associated_doctype_name": self.associated_doctype_name,
-                "need_prev_status": self.need_prev_status,
+                #"need_prev_status": self.need_prev_status,
                 "need_current_status": self.need_current_status,
                 "leads_to_status": self.leads_to_status,
                 "permitted_to_roles": self.permitted_to_roles,

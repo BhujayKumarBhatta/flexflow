@@ -92,12 +92,12 @@ class DuplicateDocumentExists(FlexFlowException):
         
 class WorkflowActionRuleViolation(FlexFlowException):
     status = "WorkflowActionRuleViolation"    
-    def __init__(self, intended_action, need_previous_status, need_current_status):
-        self.need_previous_status = need_previous_status
+    def __init__(self, intended_action, need_current_status):
+        #self.need_previous_status = need_previous_status
         self.need_current_status = need_current_status
         self.intended_action = intended_action
-        self.message = ("Action: %s need previous status to be: %s and current status to be: "
-                        "%s " %(self.intended_action, self.need_previous_status,
+        self.message = ("Action: %s need  current status to be: "
+                        "%s " %(self.intended_action, #self.need_previous_status,
                                 self.need_current_status))
         super().__init__(self.status, self.message)
         

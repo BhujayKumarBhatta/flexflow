@@ -1,9 +1,10 @@
+import itertools
 from flexflow.domains.entities import entities as ent
 from flexflow.domains.repos import DomainRepo
 from flexflow.exceptions import rules_exceptions  as rexc
 from backports.configparser.helpers import str
 from flexflow.domains import utils
-from numpy import isin
+
 
 
 class Workflow:
@@ -265,8 +266,13 @@ class Workflow:
         for actionObj in doctyoeObj.wfactions:
             acptstatus = ["newborn", ""]  
             striped_roles = [ role.strip() for role in actionObj.permitted_to_roles]        
-            if ( actionObj.need_current_status.lower() in acptstatus  and 
-                 actionObj.need_prev_status.lower() in acptstatus):
+#             if ( actionObj.need_current_status.lower() in acptstatus  and 
+#                  actionObj.need_prev_status.lower() in acptstatus):
+            need_current_status_list = \
+                [ncs.lower().strip() for ncs in actionObj.need_current_status]
+            cartesian_product = itertools.product(acptstatus,need_current_status_list)
+            comp_result = list(map(lambda x: x[0] == x[1], cartesian_product))
+            if any(comp_result):
                 lead_to_status = actionObj.leads_to_status.lower()
                 print('got the initial stauts..................', lead_to_status)
                 for role in roles:
@@ -323,11 +329,14 @@ class Workflow:
                 role_matched = False
         if role_matched is False:
                 raise rexc.RoleNotPermittedForThisAction(roles, permitted_to_roles)
-        if not ( wfactionObj.need_prev_status.lower().strip() == wfdocObj.prev_status.lower().strip() and 
-                 wfactionObj.need_current_status.lower().strip() == wfdocObj.current_status.lower().strip()):
+#         if not ( wfactionObj.need_prev_status.lower().strip() == wfdocObj.prev_status.lower().strip() and 
+#                  wfactionObj.need_current_status.lower().strip() == wfdocObj.current_status.lower().strip()):
+        need_current_status_list = \
+                [ncs.lower().strip() for ncs in wfactionObj.need_current_status]
+        if not wfdocObj.current_status.lower().strip() in need_current_status_list:    
             raise rexc.WorkflowActionRuleViolation(intended_action, 
-                                                   wfactionObj.need_prev_status,        
-                                                 wfactionObj.need_current_status)
+                                                   #wfactionObj.need_prev_status,        
+                                                   wfactionObj.need_current_status)
                  
     def _validate_editable_fields(self, wfdocObj, data:dict, new_born=False):
         if data:

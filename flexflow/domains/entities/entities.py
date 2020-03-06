@@ -89,14 +89,15 @@ class Wfaction(Entities):
                                              }
     
     def __init__(self, name:str, associated_doctype:Doctype,                 
-                 need_prev_status:str, need_current_status:str,
-                 leads_to_status:str, permitted_to_roles:list, hide_to_roles, 
-                 undo_prev_hide_for, **kwargs ):
+                 #need_prev_status:str, 
+                 need_current_status:list,
+                 leads_to_status:str, permitted_to_roles:list, hide_to_roles:list, 
+                 undo_prev_hide_for:list, **kwargs ):
         
         self.name = name        
         self.associated_doctype = associated_doctype
         self.associated_doctype_name = self.associated_doctype.name   
-        self.need_prev_status = need_prev_status
+        #self.need_prev_status = need_prev_status
         self.need_current_status = need_current_status
         self.leads_to_status = leads_to_status
 #         if not isinstance(permitted_to_roles, list): 
@@ -148,7 +149,9 @@ class Wfdoc(Entities):
     def actions_for_current_status(self):
         actions_for_current_status = []
         for actionObj in self.wfactions:
-            if self.current_status.lower().strip() == actionObj.need_current_status.lower().strip():
+            need_current_status_list = \
+                [ncs.lower().strip() for ncs in actionObj.need_current_status]
+            if self.current_status.lower().strip() in need_current_status_list:
                 actions_for_current_status.append(actionObj)
         return actions_for_current_status
     

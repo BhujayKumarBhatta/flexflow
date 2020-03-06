@@ -25,6 +25,8 @@ class Tflask(FTestCase):
         return app
         
     def test_repos(self):
+        m.dbdriver.delete(m.Holddoc)
+        m.dbdriver.delete(m.Wfdocaudit)
         m.dbdriver.delete(m.Wfdoc) 
         m.dbdriver.delete(m.Wfaction)
         m.dbdriver.delete(m.Wfstatus)
@@ -60,11 +62,12 @@ class Tflask(FTestCase):
         msg = doctype_repo.add_form_lod(Doctype_lod)
         self.assertTrue(msg['message'] == "has been registered" )
         Wfaction_lod = [{"name": "name1",
-                         "associated_doctype": {"name": "doctype1"},
-                         "need_prev_status": "s0",
-                         "need_current_status": "s1",
+                         "associated_doctype": {"name": "doctype1"},                         
+                         "need_current_status": ["s1",],
                          "leads_to_status": "s2",
-                         "permitted_to_roles": ["r1",]
+                         "permitted_to_roles": ["r1",],
+                         "hide_to_roles": ["r1",],
+                         "undo_prev_hide_for": ["r1",]
                          }]
         actionrepo = repos.DomainRepo("Wfaction")
         msg = actionrepo.add_form_lod(Wfaction_lod)
@@ -74,11 +77,12 @@ class Tflask(FTestCase):
         self.assertTrue(msg[0]['associated_doctype_name'] == 'doctype1')
         searchf = {"name": "name1"}
         updated_data_dict = {"name": "name1",
-                         "associated_doctype": {"name": "doctype2"},
-                         "need_prev_status": "s0",
-                         "need_current_status": "s1",
+                         "associated_doctype": {"name": "doctype2"},                         
+                         "need_current_status": ["s1"],
                          "leads_to_status": "s2",
-                         "permitted_to_roles": ["r1",]
+                         "permitted_to_roles": ["r1",],
+                         "hide_to_roles": ["r1",],
+                         "undo_prev_hide_for": ["r1",]
                          }
         msg = actionrepo.update_from_dict(updated_data_dict, **searchf)
         self.assertTrue(msg['status'] == "success")        
