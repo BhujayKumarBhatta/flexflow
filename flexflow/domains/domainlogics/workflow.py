@@ -3,6 +3,7 @@ from flexflow.domains.repos import DomainRepo
 from flexflow.exceptions import rules_exceptions  as rexc
 from backports.configparser.helpers import str
 from flexflow.domains import utils
+from numpy import isin
 
 
 class Workflow:
@@ -136,54 +137,55 @@ class Workflow:
         wfactionObj = self._get_wfactionObj(wfdocObj, intended_action)        
         self._check_action_rules(wfdocObj, wfactionObj, intended_action, self.wfc.roles)
         self._validate_editable_fields(wfdocObj, input_data)
-        self._hide_action_to_roles(wfdocObj, intended_action)
+        self._unhide_or_hide_action_to_roles(wfdocObj, intended_action)
         changed_data = self._create_changed_data(input_data, wfdocObj, wfactionObj)
         result = self._updadate_with_audit(wfdocObj, intended_action, changed_data)
         return result
     
     def _get_roles_for_undo_prev_hide(self, wfdocObj, intended_action):
-        unhide_to_roles = []
+        undo_prev_hide_for = []
         for actionObj in wfdocObj.wfactions:
             if actionObj.name == intended_action:
-                unhide_to_roles = actionObj.unhide_to_roles
+                undo_prev_hide_for = actionObj.undo_prev_hide_for
                 break
-        return unhide_to_roles 
+        return undo_prev_hide_for 
     
-    def _delete_prev_holddoc_by_unhide_roles(self, wfdocObj, intended_action):
-        holddoc_repo = DomainRepo("Holddoc")
+    def _delete_prev_holddoc_by_unhide_roles(self, wfdocObj, intended_action, holddoc_repo):        
         unhide_to_roles = self._get_roles_for_undo_prev_hide(wfdocObj, intended_action)
         for unh_role in unhide_to_roles:
             search_string = {"wfdoc_name": wfdocObj.name,
                              "target_role": unh_role,
                              "name": unh_role+wfdocObj.name}
             holddoc_repo.delete(**search_string)#TODO: should be no doc found when not present
-     
-    
-    def _delete_all_holddoc_for_a_wfdoc(self, wfdocObj):
-        '''may not be required any more '''
-        search_string = {"wfdoc_name": wfdocObj.name}
+         
+    def _unhide_or_hide_action_to_roles(self, wfdocObj, intended_action):
         holddoc_repo = DomainRepo("Holddoc")
-        result = holddoc_repo.delete(**search_string)#TODO: should be no doc found when not present
-        return result
+        self._delete_prev_holddoc_by_unhide_roles(wfdocObj, intended_action, holddoc_repo)
+        hide_to_roles = self._get_hide_to_roles_from_wfdoc(wfdocObj, intended_action)        
+        for urole in hide_to_roles:                               
+            self._create_holddoc_for_current_role(urole, intended_action, wfdocObj, holddoc_repo)
     
-    def _hide_action_to_roles(self, wfdocObj, intended_action, intended_action):
-        hide_to_roles = self._get_hide_to_roles_from_wfdoc(wfdocObj, intended_action)
-        self._delete_prev_holddoc_by_unhide_roles(wfdocObj)
-        for urole in hide_to_roles:            
-            self._create_holddoc_for_current_role(urole, intended_action, wfdocObj)
-       
-    def _create_holddoc_for_current_role(self, urole, intended_action, wfdocObj):
+    def _get_holddoc_by_role(self, wfdocObj, role, holddoc_repo):
+        search_string = {"wfdoc_name": wfdocObj.name,
+                         "target_role": role,
+                         "name": role+wfdocObj.name}
+        holddoc = holddoc_repo.list_dict(**search_string)
+        return holddoc
+      
+    def _create_holddoc_for_current_role(self, urole, intended_action, wfdocObj, holddoc_repo):
+        result = None
         unique_id = urole+wfdocObj.name
-        holddocObj = ent.Holddoc(name=unique_id,
-                                 target_role=urole,
-                                 reason=intended_action,
-                                 wfdoc=wfdocObj,
-                                 associated_doctype = wfdocObj.associated_doctype,
-                                 prev_status=wfdocObj.prev_status,
-                                 current_status=wfdocObj.current_status,
-                                 doc_data=wfdocObj.doc_data)
-        wfdoc_repo = DomainRepo("Holddoc")
-        result = wfdoc_repo.add_list_of_domain_obj([holddocObj])
+        holddoc_list = self._get_holddoc_by_role(wfdocObj, urole, holddoc_repo)
+        if isinstance(holddoc_list, list) and len(holddoc_list) == 0:
+            holddocObj = ent.Holddoc(name=unique_id,
+                                     target_role=urole,
+                                     reason=intended_action,
+                                     wfdoc=wfdocObj,
+                                     associated_doctype = wfdocObj.associated_doctype,
+                                     prev_status=wfdocObj.prev_status,
+                                     current_status=wfdocObj.current_status,
+                                     doc_data=wfdocObj.doc_data)
+            result = holddoc_repo.add_list_of_domain_obj([holddocObj])
         return result
     
     def _get_hide_to_roles_from_wfdoc(self, wfdocObj, intended_action):
@@ -369,7 +371,12 @@ class Workflow:
 #                                                           wfdocObj.current_status,
 #                                                           efac)
                     
-    
+    def _delete_all_holddoc_for_a_wfdoc(self, wfdocObj):
+        '''may not be required any more '''
+        search_string = {"wfdoc_name": wfdocObj.name}
+        holddoc_repo = DomainRepo("Holddoc")
+        result = holddoc_repo.delete(**search_string)#TODO: should be no doc found when not present
+        return result
         
                 
         

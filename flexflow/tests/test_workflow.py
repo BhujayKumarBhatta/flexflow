@@ -96,8 +96,23 @@ class Tflask(FTestCase):
         testconf.testwfc.request_id = str(uuid.uuid4())
         testconf.testwfc.roles= ['r2']
         wf = Workflow('doctype2', wfc=testconf.testwfc)
-        msg = wf.action_change_status("dv22", "wfaction2")
+        msg = wf.action_change_status("dv22", "wfaction2", {"dk1": "changed_data_on_action2"})
         self.assertTrue(msg['status'] =="success")
+        ##during action1 "hide_to_roles": ["r4", "r5"], and in action2 "undo_prev_hide_for": ["r4",],
+        ####should be able to see latest data
+        ##########hold for R4 has now been removed
+        ####should be able to see latest data
+        testconf.testwfc.roles= ['r4']
+        testconf.testwfc.request_id = str(uuid.uuid4())
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        result = wf.list_wfdoc()
+        self.assertTrue(result[0].get('doc_data').get('dk1') == 'changed_data_on_action2') 
+        ##########hold for R5 stil remains        
+        testconf.testwfc.roles= ['r5']
+        testconf.testwfc.request_id = str(uuid.uuid4())
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        result = wf.list_wfdoc()
+        self.assertTrue(result[0].get('doc_data').get('dk1') == 'dv1')# data remained what it was before action1 which is the data at create stage
         ####HAVE A TEST FOR RULE STATUS VALIDATION FAILURE
         testconf.testwfc.request_id = str(uuid.uuid4())
         testconf.testwfc.roles= ['r1']
@@ -153,7 +168,8 @@ class Tflask(FTestCase):
                          "need_current_status": "NewBorn",
                          "leads_to_status": "Created",
                          "permitted_to_roles": ["r1",],
-                         "hide_to_roles": ["r3", "r4"]
+                         "hide_to_roles": ["r3", "r4"],
+                         "undo_prev_hide_for": [],
                          }
         wfaction1_dict=  {"name": "wfaction1",
                          "associated_doctype": {"name": "doctype2"},
@@ -161,7 +177,8 @@ class Tflask(FTestCase):
                          "need_current_status": "Created",
                          "leads_to_status": "s1",
                          "permitted_to_roles": ["r1",], 
-                         "hide_to_roles": ["r4", "r5"]
+                         "hide_to_roles": ["r4", "r5"],
+                         "undo_prev_hide_for": [],
                          }
         wfaction2_dict=  {"name": "wfaction2",
                          "associated_doctype": {"name": "doctype2"},
@@ -169,7 +186,8 @@ class Tflask(FTestCase):
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
                          "permitted_to_roles": ["r2",],
-                         "hide_to_roles": ["r5", "r6"]
+                         "hide_to_roles": ["r5", "r6"],
+                         "undo_prev_hide_for": ["r4",], #r4 hold doc shold be deleted but r5 to be retained
                          }
         wfaction3_dict=  {"name": "wfaction3",
                          "associated_doctype": {"name": "doctype2"},
@@ -177,7 +195,8 @@ class Tflask(FTestCase):
                          "need_current_status": "s2",
                          "leads_to_status": "s3",
                          "permitted_to_roles": ["r3",],
-                         "hide_to_roles": ["r1",]
+                         "hide_to_roles": ["r1",],
+                         "undo_prev_hide_for": ["r5", "r6"],
                          }
         wfaction4_dict=  {"name": "wfaction4",
                          "associated_doctype": {"name": "doctype2"},
@@ -185,7 +204,8 @@ class Tflask(FTestCase):
                          "need_current_status": "s3",
                          "leads_to_status": "s4",
                          "permitted_to_roles": ["r3",],
-                         "hide_to_roles": ["r5",]
+                         "hide_to_roles": ["r5",],
+                         "undo_prev_hide_for": [],
                          }
         wfactionCreate = ent.Wfaction.from_dict(wfcaction_create)
         wfaction1 = ent.Wfaction.from_dict(wfaction1_dict)
