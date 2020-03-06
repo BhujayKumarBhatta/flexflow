@@ -156,14 +156,16 @@ class Workflow:
             search_string = {"wfdoc_name": wfdocObj.name,
                              "target_role": unh_role,
                              "name": unh_role+wfdocObj.name}
-            holddoc_repo.delete(**search_string)#TODO: should be no doc found when not present
-         
+            msg = holddoc_repo.delete(**search_string)#TODO: should be no doc found when not present
+            print('deleting holddoc .....................',msg)
+            
     def _unhide_or_hide_action_to_roles(self, wfdocObj, intended_action):
         holddoc_repo = DomainRepo("Holddoc")
         self._delete_prev_holddoc_by_unhide_roles(wfdocObj, intended_action, holddoc_repo)
         hide_to_roles = self._get_hide_to_roles_from_wfdoc(wfdocObj, intended_action)        
-        for urole in hide_to_roles:                               
-            self._create_holddoc_for_current_role(urole, intended_action, wfdocObj, holddoc_repo)
+        if isinstance(hide_to_roles, list) and len(hide_to_roles) > 0:
+            for urole in hide_to_roles:           
+                self._create_holddoc_for_current_role(urole, intended_action, wfdocObj, holddoc_repo)
     
     def _get_holddoc_by_role(self, wfdocObj, role, holddoc_repo):
         search_string = {"wfdoc_name": wfdocObj.name,
@@ -175,6 +177,7 @@ class Workflow:
     def _create_holddoc_for_current_role(self, urole, intended_action, wfdocObj, holddoc_repo):
         result = None
         unique_id = urole+wfdocObj.name
+        print('hoding with name....................', unique_id)
         holddoc_list = self._get_holddoc_by_role(wfdocObj, urole, holddoc_repo)
         if isinstance(holddoc_list, list) and len(holddoc_list) == 0:
             holddocObj = ent.Holddoc(name=unique_id,
