@@ -74,6 +74,7 @@ class Wfaction(db.Model):
     #############
     permitted_to_roles = db.Column(JSON)
     hide_to_roles = db.Column(JSON)
+    undo_prev_hide_for = db.Column(JSON)
     def to_dict(self):
         return {"name": self.name, 
                 "associated_doctype": {"name": self.associated_doctype.name},
@@ -82,7 +83,8 @@ class Wfaction(db.Model):
                 "need_current_status": self.need_current_status,
                 "leads_to_status": self.leads_to_status,
                 "permitted_to_roles": self.permitted_to_roles,
-                "hide_to_roles": self.hide_to_roles}
+                "hide_to_roles": self.hide_to_roles,
+                "undo_prev_hide_for": self.undo_prev_hide_for,}
     
    
 
