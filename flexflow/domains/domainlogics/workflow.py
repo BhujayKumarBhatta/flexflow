@@ -88,8 +88,10 @@ class Workflow:
     def _get_current_actions_for_the_doc(self, wfdocObj):
         current_actions = []
         for actionObj in wfdocObj.actions_for_current_status:
+            permitted_to_roles = [prole.lower().strip() for prole in actionObj.permitted_to_roles]
             for role in self.wfc.roles:
-                if role in actionObj.permitted_to_roles:
+                print('login role and permitted roles', role, actionObj.permitted_to_roles)
+                if role.strip().lower() in permitted_to_roles:
                     current_actions.append(actionObj.name)
         return current_actions        
         
@@ -320,15 +322,21 @@ class Workflow:
         if not wfactionObj:
             raise rexc.NoWorkFlowRuleFound
         default_roles = [None, "admin",] 
-        permitted_to_roles = default_roles + wfactionObj.permitted_to_roles
-        for role in roles:
-            if  role in permitted_to_roles: 
-                role_matched = True
-                break
-            else:
-                role_matched = False
-        if role_matched is False:
+        permitted_to_roles = default_roles + [prole.lower().strip() for prole 
+                                              in wfactionObj.permitted_to_roles]
+        luser_role = [role.lower().strip() for role in roles]
+        cartesian_product = itertools.product(permitted_to_roles, luser_role)
+        role_matched_result = list(map(lambda x: x[0] == x[1], cartesian_product))
+        if not any(role_matched_result):
                 raise rexc.RoleNotPermittedForThisAction(roles, permitted_to_roles)
+#         for role in roles:
+#             if  role.strip().lower() in permitted_to_roles: 
+#                 role_matched = True
+#                 break
+#             else:
+#                 role_matched = False
+#         if role_matched is False:
+#                 raise rexc.RoleNotPermittedForThisAction(roles, permitted_to_roles)
 #         if not ( wfactionObj.need_prev_status.lower().strip() == wfdocObj.prev_status.lower().strip() and 
 #                  wfactionObj.need_current_status.lower().strip() == wfdocObj.current_status.lower().strip()):
         need_current_status_list = \
