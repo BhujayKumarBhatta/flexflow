@@ -113,7 +113,8 @@ class Holddoc(db.Model):
     name = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
     target_role = db.Column(db.String(120))
     reason = db.Column(db.String(120))
-    wfdoc = db.relationship('Wfdoc', backref='holddocs', single_parent=True, cascade="all, delete-orphan")
+    #wfdoc = db.relationship('Wfdoc', backref='holddocs', single_parent=True, cascade="all, delete-orphan")
+    wfdoc = db.relationship('Wfdoc', backref=db.backref('holddocs', cascade="all, delete-orphan"))
     wfdoc_name = db.Column(db.String(120), db.ForeignKey('wfdoc.name'))
     associated_doctype = db.relationship('Doctype', backref='holddocs')
     associated_doctype_name = db.Column(db.String(120), db.ForeignKey('doctype.name'))
@@ -136,7 +137,8 @@ class Holddoc(db.Model):
 
 class Wfdocaudit(db.Model):
     name = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
-    wfdoc = db.relationship('Wfdoc', backref='wfdocaudit', single_parent=True, cascade="all, delete-orphan")
+    #wfdoc = db.relationship('Wfdoc', backref='wfdocaudit', single_parent=True, cascade="all, delete-orphan")
+    wfdoc = db.relationship('Wfdoc', backref=db.backref('wfdocaudit', cascade="all, delete-orphan"))
     wfdoc_name = db.Column(db.String(120), db.ForeignKey('wfdoc.name'))
     username = db.Column(db.String(120))
     email = db.Column(db.String(120))

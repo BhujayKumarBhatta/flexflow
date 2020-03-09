@@ -4,6 +4,7 @@ from flexflow.domains.repos import DomainRepo
 from flexflow.exceptions import rules_exceptions  as rexc
 from backports.configparser.helpers import str
 from flexflow.domains import utils
+from alembic.command import current
 
 
 
@@ -93,6 +94,7 @@ class Workflow:
                 print('login role and permitted roles', role, actionObj.permitted_to_roles)
                 if role.strip().lower() in permitted_to_roles:
                     current_actions.append(actionObj.name)
+        print('current actions', current_actions)
         return current_actions        
         
     def get_full_wfdoctype_as_dict(self):
