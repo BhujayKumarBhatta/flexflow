@@ -24,7 +24,8 @@ class Workflow:
         '''
         doctyoeObj = self._get_doctype_obj_from_name()
         docid = self._get_primary_key_from_data_doc(doctyoeObj, input_data)
-        lead_to_status = self._check_role_for_create_action(doctyoeObj, self.wfc.roles) ## remeber fields validation is done during documents init method
+        lead_to_status, create_action_name = \
+        self._check_role_for_create_action(doctyoeObj, self.wfc.roles) ## remeber fields validation is done during documents init method
         print('got the lead to status ', lead_to_status )
         wfdocObj = ent.Wfdoc(name=docid,
                          associated_doctype=doctyoeObj,                         
@@ -35,7 +36,7 @@ class Workflow:
         result = self._create_with_audit(wfdocObj, docid, input_data)
         #push it to hold doc for create action
         #during listing from hold doc since the "reason' is create , during super impose pop it from the list
-        #self._unhide_or_hide_action_to_roles(wfdocObj, intended_action) #intended_action=create
+        self._unhide_or_hide_action_to_roles(wfdocObj, create_action_name, new_born=True ) #intended_action=create
         return result    
     
     def list_wfdoc(self):
@@ -133,11 +134,14 @@ class Workflow:
         return holddocs_filter_by_role
     
     def _superimpose_holddoc_on_wfdoc(self, wfdoc_list, holddoc_lis):
-        for wfd in wfdoc_list:
+        for i, wfd in enumerate(wfdoc_list):
             for hld in holddoc_lis:
                 if wfd.get('name') == hld.get('wfdoc_name'):                    
                     hld['name'] = wfd.get('name')#othewise it will show holddoc name = role+docname and fail to retrive it during detial view
                     wfd.update(hld)
+                    if hld.get('current_status').lower().strip() in  [ "", "newborn"]:
+                        print('hold exixists for newly creatd doc for' , hld.get('current_status').lower().strip())
+                        wfdoc_list.pop(i)
         return wfdoc_list
     
     def action_change_status(self, wfdoc_name, intended_action, input_data=None):
@@ -167,13 +171,13 @@ class Workflow:
             msg = holddoc_repo.delete(**search_string)#TODO: should be no doc found when not present
             print('deleting holddoc .....................',msg)
             
-    def _unhide_or_hide_action_to_roles(self, wfdocObj, intended_action):
+    def _unhide_or_hide_action_to_roles(self, wfdocObj, intended_action, new_born):
         holddoc_repo = DomainRepo("Holddoc")
         self._delete_prev_holddoc_by_unhide_roles(wfdocObj, intended_action, holddoc_repo)
         hide_to_roles = self._get_hide_to_roles_from_wfdoc(wfdocObj, intended_action)        
         if isinstance(hide_to_roles, list) and len(hide_to_roles) > 0:
             for urole in hide_to_roles:           
-                self._create_holddoc_for_current_role(urole, intended_action, wfdocObj, holddoc_repo)
+                self._create_holddoc_for_current_role(urole, intended_action, wfdocObj, holddoc_repo, new_born)
     
     def _get_holddoc_by_role(self, wfdocObj, role, holddoc_repo):
         search_string = {"wfdoc_name": wfdocObj.name,
@@ -182,11 +186,13 @@ class Workflow:
         holddoc = holddoc_repo.list_dict(**search_string)
         return holddoc
       
-    def _create_holddoc_for_current_role(self, urole, intended_action, wfdocObj, holddoc_repo):
+    def _create_holddoc_for_current_role(self, urole, intended_action, wfdocObj, holddoc_repo, new_born=False):
         result = None
         unique_id = urole+wfdocObj.name
         print('hoding with name....................', unique_id)
         holddoc_list = self._get_holddoc_by_role(wfdocObj, urole, holddoc_repo)
+        cstatus = wfdocObj.current_status
+        if new_born == True: cstatus = ""
         if isinstance(holddoc_list, list) and len(holddoc_list) == 0:
             holddocObj = ent.Holddoc(name=unique_id,
                                      target_role=urole,
@@ -194,7 +200,7 @@ class Workflow:
                                      wfdoc=wfdocObj,
                                      associated_doctype = wfdocObj.associated_doctype,
                                      prev_status=wfdocObj.prev_status,
-                                     current_status=wfdocObj.current_status,
+                                     current_status=cstatus,
                                      doc_data=wfdocObj.doc_data)
             result = holddoc_repo.add_list_of_domain_obj([holddocObj])
         return result
@@ -270,6 +276,7 @@ class Workflow:
     def _check_role_for_create_action(self, doctyoeObj, roles):
         role_not_found = False
         lead_to_status = None
+        create_action_name = "Create"
         for actionObj in doctyoeObj.wfactions:
             acptstatus = ["newborn", ""]  
             striped_roles = [ role.strip() for role in actionObj.permitted_to_roles]        
@@ -295,12 +302,13 @@ class Workflow:
                 break
             else:
                 action_not_found = True
+                create_action_name = actionObj.name.strip()
         print('status of role_not_found', role_not_found)         
         if action_not_found is True: raise rexc.NoActionRuleForCreate
         if role_not_found is True:
             raise rexc.RoleNotPermittedForThisAction(role,
                                                       actionObj.permitted_to_roles)
-        return lead_to_status
+        return lead_to_status, create_action_name
     
     def _get_doctype_obj_from_name(self):
         '''search by primary key name, hence expected to get one object'''
