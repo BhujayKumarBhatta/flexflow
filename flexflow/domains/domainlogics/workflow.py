@@ -51,7 +51,7 @@ class Workflow:
         roles before presenting in dict format'''
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         current_actions = self._get_current_actions_for_the_doc(wfdocObj)
-        current_edit_fields = [fObj.name.lower() for fObj in 
+        current_edit_fields = [fObj.name.lower().strip() for fObj in 
                                wfdocObj.editable_fields_at_current_status]
         roles_to_view_audit = wfdocObj.roles_to_view_audit
         audittrails = self._get_audit_trails_for_allowed_roles(wfdocObj, roles_to_view_audit)
@@ -149,7 +149,7 @@ class Workflow:
         wfactionObj = self._get_wfactionObj(wfdocObj, intended_action)        
         self._check_action_rules(wfdocObj, wfactionObj, intended_action, self.wfc.roles)
         self._validate_editable_fields(wfdocObj, input_data)
-        self._unhide_or_hide_action_to_roles(wfdocObj, intended_action)
+        self._unhide_or_hide_action_to_roles(wfdocObj, intended_action, new_born=False)
         changed_data = self._create_changed_data(input_data, wfdocObj, wfactionObj)
         result = self._updadate_with_audit(wfdocObj, intended_action, changed_data)
         return result

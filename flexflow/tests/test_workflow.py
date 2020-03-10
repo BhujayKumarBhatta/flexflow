@@ -168,7 +168,7 @@ class Tflask(FTestCase):
                          "need_current_status": ["NewBorn"],
                          "leads_to_status": "Created",
                          "permitted_to_roles": ["r1",],
-                         "hide_to_roles": ["r3", "r4"],
+                         "hide_to_roles": ["r7"],
                          "undo_prev_hide_for": [],
                          }
         wfaction1_dict=  {"name": "wfaction1",
