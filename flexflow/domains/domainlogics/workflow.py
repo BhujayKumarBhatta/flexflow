@@ -8,6 +8,7 @@ from alembic.command import current
 
 
 
+
 class Workflow:
     
     def __init__(self, doctype_name:str, wfc=None):
@@ -40,10 +41,30 @@ class Workflow:
         return result    
     
     def list_wfdoc(self):
-        wfdoc_list = self._list_from_wfdoc()
-        holddoc_lis = self._list_from_holddoc_filtered_by_logged_in_user_roles()
+        wfc_filter = self._get_list_filter_fm_wfc_to_field_map()
+        wfdoc_list = self._list_from_wfdoc(wfc_filter)
+        holddoc_lis = self._list_from_holddoc_filtered_by_logged_in_user_roles(wfc_filter)
         list_with_hold = self._superimpose_holddoc_on_wfdoc(wfdoc_list, holddoc_lis)
         return list_with_hold
+    
+    def _get_list_filter_fm_wfc_to_field_map(self):
+        doctypeObj = self._get_doctype_obj_from_name()
+        org = None, 
+        ou = None, 
+        dept = None, 
+        searchf = {}
+        roles_in_lower = [role.strip().lower() for role in self.wfc.roles]
+        for ddf in doctypeObj.datadocfields:
+            fwfc = ddf.wfc_filter.lower().strip()
+            if fwfc == "org" and fwfc in roles_in_lower:
+                searchf = {ddf.name: self.wfc.org}
+            if fwfc == "ou" and fwfc in roles_in_lower: 
+                ou = ddf.wfc_filter
+                searchf.update({ddf.name: self.wfc.orgunit})
+            if fwfc == "dept" and fwfc in roles_in_lower: 
+                dept = ddf.wfc_filter
+                searchf.update({ddf.name: self.wfc.department})
+        return searchf
     
     def get_full_wfdoc_as_dict(self, wfdoc_name):
         '''in workflow role is avilable , hence 
@@ -116,15 +137,17 @@ class Workflow:
         wfdoctype_dict.update({"datadocfields": datadocfields})
         return utils.lower_case_keys(wfdoctype_dict)
         
-    def _list_from_wfdoc(self):
+    def _list_from_wfdoc(self, wfc_filter:dict=None):
         wfdoc_repo = DomainRepo('Wfdoc')
         search_f = {"associated_doctype_name": self.doctype_name}
+        if wfc_filter: search_f.update(wfc_filter)
         lst = wfdoc_repo.list_dict(**search_f)
         return lst
     
-    def _list_from_holddoc_filtered_by_logged_in_user_roles(self):
+    def _list_from_holddoc_filtered_by_logged_in_user_roles(self, wfc_filter=None):
         wfdoctype_repo = DomainRepo('Holddoc')
         search_f = {"associated_doctype_name": self.doctype_name}
+        if wfc_filter: search_f.update(wfc_filter)
         lst = wfdoctype_repo.list_dict(**search_f)
         holddocs_filter_by_role = []
         for urole in self.wfc.roles:

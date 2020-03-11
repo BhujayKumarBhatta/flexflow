@@ -66,13 +66,14 @@ class Datadocfield(Entities):
                                              "primary_key": "name"},
                                              }
     def __init__(self, name, associated_doctype, ftype:str, 
-                 flength:int, status_needed_edit:list, **kwargs):
+                 flength:int, status_needed_edit:list, wfc_filter, **kwargs):
         self.name = name
         self.associated_doctype = associated_doctype
         self.associated_doctype_name = self.associated_doctype.name   
         self.ftype = ftype
         self.flength = flength
         self.status_needed_edit = status_needed_edit
+        self.wfc_filter = wfc_filter
         self._validate_relationship_param_values()
         super().__init__(**kwargs)
 
