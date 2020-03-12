@@ -49,22 +49,32 @@ class Workflow:
     
     def _get_list_filter_fm_wfc_to_field_map(self):
         doctypeObj = self._get_doctype_obj_from_name()
-        org = None, 
+        org = None,
         ou = None, 
         dept = None, 
         searchf = {}
-        roles_in_lower = [role.strip().lower() for role in self.wfc.roles]
         for ddf in doctypeObj.datadocfields:
             fwfc = ddf.wfc_filter.lower().strip()
-            if fwfc == "org" and fwfc in roles_in_lower:
+            f_wfc_roles = ddf.wfc_filter_to_roles         
+            if fwfc == "org" and self._comp_conf_roles_with_login_role(f_wfc_roles):
                 searchf = {ddf.name: self.wfc.org}
-            if fwfc == "ou" and fwfc in roles_in_lower: 
-                ou = ddf.wfc_filter
+            if fwfc == "ou" and  self._comp_conf_roles_with_login_role(f_wfc_roles):
+                #ou = ddf.wfc_filter
                 searchf.update({ddf.name: self.wfc.orgunit})
-            if fwfc == "dept" and fwfc in roles_in_lower: 
-                dept = ddf.wfc_filter
+            if fwfc == "dept" and self._comp_conf_roles_with_login_role(f_wfc_roles):
+                #dept = ddf.wfc_filter
                 searchf.update({ddf.name: self.wfc.department})
+        if searchf: searchf = {'doc_data' : searchf }
         return searchf
+    
+    def _comp_conf_roles_with_login_role(self, conf_roles):
+        role_comp_result = False        
+        login_roles_in_lower = [role.strip().lower() for role in self.wfc.roles]        
+        f_wfc_roles = [role.strip().lower() for role in conf_roles]
+        cartesian_product = itertools.product(login_roles_in_lower, f_wfc_roles)
+        role_comp_result = any(list(map(lambda x: x[0] == x[1], cartesian_product)))
+        return role_comp_result
+        
     
     def get_full_wfdoc_as_dict(self, wfdoc_name):
         '''in workflow role is avilable , hence 
@@ -140,15 +150,25 @@ class Workflow:
     def _list_from_wfdoc(self, wfc_filter:dict=None):
         wfdoc_repo = DomainRepo('Wfdoc')
         search_f = {"associated_doctype_name": self.doctype_name}
-        if wfc_filter: search_f.update(wfc_filter)
+        #if wfc_filter: search_f.update(wfc_filter)
         lst = wfdoc_repo.list_dict(**search_f)
+        if wfc_filter: lst = self._filter_by_wfc_on_doc_data(lst, wfc_filter)
         return lst
+    
+    def _filter_by_wfc_on_doc_data(self, original_list, wfc_filter):
+        list_with_wfc_filter_on_doc_data = []
+        for doc in original_list:
+            for k, v in wfc_filter.get('doc_data').items():
+                if doc.get('doc_data').get(k) == v:list_with_wfc_filter_on_doc_data.append(doc)
+        return list_with_wfc_filter_on_doc_data
+        
     
     def _list_from_holddoc_filtered_by_logged_in_user_roles(self, wfc_filter=None):
         wfdoctype_repo = DomainRepo('Holddoc')
         search_f = {"associated_doctype_name": self.doctype_name}
         if wfc_filter: search_f.update(wfc_filter)
         lst = wfdoctype_repo.list_dict(**search_f)
+        if wfc_filter: lst = self._filter_by_wfc_on_doc_data(lst, wfc_filter)
         holddocs_filter_by_role = []
         for urole in self.wfc.roles:
             for hold_doc in lst:

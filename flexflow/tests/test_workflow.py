@@ -35,7 +35,7 @@ class Tflask(FTestCase):
         m.dbdriver.delete(m.Datadocfield)
         m.dbdriver.delete(m.Doctype)
         self._register_doctype_n_actions()
-        testconf.testwfc.roles= ['r1']
+        testconf.testwfc.roles= ['r1']        
         wf = Workflow('doctype2', wfc=testconf.testwfc)        
         ##create should fail  when primary key fields in datadoc is not in rule
         try:
@@ -46,11 +46,18 @@ class Tflask(FTestCase):
         #wf.create_doc({"dk1": 100, "dk2": "dv2222", })
         ##Fail  when  fields dk3 is not present in the rule at all        
         try:
-            msg = wf.create_doc({"dk3": "not defined in the rule", "dk2": "dv22", "dk1": 100,})
+            msg = wf.create_doc({"dk3": "not defined in the rule", 
+                                 "dk2": "dv22", "dk1": 100, 
+                                 "tsp": "tata",
+                                 "division": "divison1"})
         except Exception as e:
             self.assertTrue(e.status == "UnknownFieldNameInDataDoc")
         ### WORKFLOW IS ABLE TO CREATE DOC
-        msg = wf.create_doc({"dk1": "dv1", "dk2": "dv22", })
+        testconf.testwfc.roles= ['r1']
+        testconf.testwfc.org= 'org1' 
+        msg = wf.create_doc({"dk1": "dv1", "dk2": "dv22", 
+                             "tsp": "org1",
+                             "division": "divison1"})
         self.assertTrue(msg['message'] == "has been registered" )
         ####ABLE TO RETRIEVE THE BY THE PRIMKEY AS DEFINED IN THE DOCTYPE
         doc_repo = DomainRepo("Wfdoc")
@@ -138,9 +145,39 @@ class Tflask(FTestCase):
         self.assertTrue('dk1' in msg.get('current_edit_fields'))
         self.assertTrue('wfaction3' in msg.get('current_actions'))
         ###WITH R5 ROLE SEE HOLDDOC IS CREATED
-        testconf.testwfc.request_id = str(uuid.uuid4())
+#         testconf.testwfc.request_id = str(uuid.uuid4())
+#         testconf.testwfc.roles= ['r3']
+#         wf = Workflow('doctype2', wfc=testconf.testwfc)
+        ##############################################################
+        ############document was created as tsp="org1", division="division1"
+        ###field to wfc mapping was tsp field maps to  org for role r1 
+        ###and divison maps to ou for role r3 
+        testconf.testwfc.org = "org2"
+        testconf.testwfc.orgunit = "divison1"
         testconf.testwfc.roles= ['r3']
+        testconf.testwfc.request_id = str(uuid.uuid4())
         wf = Workflow('doctype2', wfc=testconf.testwfc)
+        result = wf.list_wfdoc()
+        self.assertTrue(result[0].get('doc_data').get('division') == 'divison1')
+        ####division1 cant see when the  doc is created for  divison2 
+        testconf.testwfc.roles= ['r1']
+        testconf.testwfc.org= 'org1' 
+        msg = wf.create_doc({"dk1": "dv1", "dk2": "dkdiv2", 
+                             "tsp": "org1",
+                             "division": "divison2"})
+        testconf.testwfc.org = "org2"
+        testconf.testwfc.orgunit = "divison1"
+        testconf.testwfc.roles= ['r3']
+        testconf.testwfc.request_id = str(uuid.uuid4())
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        result = wf.list_wfdoc()
+        self.assertTrue(not len(result) == 2)
+        ###TSPorg2 cant see doc created by tsp=org1
+        testconf.testwfc.roles= ['r1']
+        testconf.testwfc.org= 'tsporg2'
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        result = wf.list_wfdoc()
+        self.assertTrue(not result)
         
       
     def _register_doctype_n_actions(self):
@@ -154,14 +191,32 @@ class Tflask(FTestCase):
                    "associated_doctype": {"name": "doctype2"},
                    "ftype": "str",
                    "flength": 25,
-                   "status_needed_edit": ["s1", "Created", "s2"]} #this should be status not role
+                   "status_needed_edit": ["s1", "Created", "s2"],#this should be status not role
+                   "wfc_filter": "",
+                   "wfc_filter_to_roles": []} 
         f2_dict = {"name": "dk2",
                    "associated_doctype": {"name": "doctype2"},
                    "ftype": "str",
                    "flength": 10,
-                   "status_needed_edit": [""]}
+                   "status_needed_edit": [""],
+                   "wfc_filter": "",
+                   "wfc_filter_to_roles": []}
+        f3_dict = {"name": "tsp",
+                   "associated_doctype": {"name": "doctype2"},
+                   "ftype": "str",
+                   "flength": 10,
+                   "status_needed_edit": [""],
+                   "wfc_filter": "org",
+                   "wfc_filter_to_roles": ['r1']}
+        f4_dict = {"name": "division",
+                   "associated_doctype": {"name": "doctype2"},
+                   "ftype": "str",
+                   "flength": 10,
+                   "status_needed_edit": [""],
+                   "wfc_filter": "ou",
+                   "wfc_filter_to_roles": ['r3']}
         docf_repo = repos.DomainRepo("Datadocfield")
-        docf_repo.add_form_lod([f1_dict, f2_dict])
+        docf_repo.add_form_lod([f1_dict, f2_dict, f3_dict, f4_dict])
         wfcaction_create = {"name": "Create",
                          "associated_doctype": {"name": "doctype2"},
                          #"need_prev_status": "NewBorn",

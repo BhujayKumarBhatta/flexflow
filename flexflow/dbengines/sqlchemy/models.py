@@ -48,7 +48,8 @@ class Datadocfield(db.Model):
         ftype = db.Column(db.String(120), nullable=False)
         flength = db.Column(db.Integer, nullable=False)
         status_needed_edit = db.Column(JSON)
-        wfc_filter = db.Column(db.String(120), nullable=False)
+        wfc_filter = db.Column(db.String(120), nullable=True)
+        wfc_filter_to_roles = db.Column(JSON) 
         
         def to_dict(self):
             return {"name": self.name,
@@ -57,7 +58,8 @@ class Datadocfield(db.Model):
                     "ftype": self.ftype,
                     "flength": self.flength,
                     "status_needed_edit": self.status_needed_edit,
-                    "wfc_filter": self.wfc_filter
+                    "wfc_filter": self.wfc_filter,
+                    "wfc_filter_to_roles": self.wfc_filter_to_roles,
                 }
             
  
