@@ -190,9 +190,23 @@ class Tflask(FTestCase):
         result = wf.save_as_draft("dv22", draft_data)
         self.assertTrue(result.get('draft_create_msg').get('status') == "success")
         self.assertTrue(result.get('wfdoc_update_msg').get('status') == "success")
+        ##get draft data for  same role 
+        result = wf.get_draft_data_for_role('dv22')
+        self.assertTrue(result.get('dk1') == 'want_to_save_as_draft')
+        ##other are not seeing the draft doc even when queried
+        testconf.testwfc.roles= ['r2']
+        testconf.testwfc.request_id = str(uuid.uuid4())
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        result = wf.get_draft_data_for_role('dv22')
+        self.assertTrue(not result)
+        ##update or action  from draft
+        testconf.testwfc.roles= ['r3']
+        testconf.testwfc.request_id = str(uuid.uuid4())
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        result = wf.action_from_draft('dv22', "wfaction3")
+        self.assertTrue("want_to_save_as_draft" in result.get('message'))
         
         
-      
     def _register_doctype_n_actions(self):
         doctype1 = ent.Doctype("doctype1", "dk1", ['role1'])
         doctype2 = ent.Doctype("doctype2", "dk2", ['role1'])

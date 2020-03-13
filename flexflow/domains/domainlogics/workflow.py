@@ -40,15 +40,93 @@ class Workflow:
         self._unhide_or_hide_action_to_roles(wfdocObj, create_action_name, new_born=True ) #intended_action=create
         return result
     
+    def list_wfdoc(self):
+        wfc_filter = self._get_list_filter_fm_wfc_to_field_map()
+        wfdoc_list = self._list_from_wfdoc(wfc_filter)
+        holddoc_lis = self._list_from_holddoc_filtered_by_logged_in_user_roles(wfc_filter)
+        list_with_hold = self._superimpose_holddoc_on_wfdoc(wfdoc_list, holddoc_lis)
+        return list_with_hold
+    
+    def get_full_wfdoc_as_dict(self, wfdoc_name):
+        '''in workflow role is avilable , hence 
+        wfdocObj.actions_for_current_status gets further filtered by 
+        roles before presenting in dict format'''
+        wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
+        current_actions = self._get_current_actions_for_the_doc(wfdocObj)
+        current_edit_fields = [fObj.name.lower().strip() for fObj in 
+                               wfdocObj.editable_fields_at_current_status]
+        roles_to_view_audit = wfdocObj.roles_to_view_audit
+        audittrails = self._get_audit_trails_for_allowed_roles(wfdocObj, roles_to_view_audit)
+        wfdoc_dict = wfdocObj.to_dict()
+        hodl_doc_dict = self._get_detail_holddoc_for_a_wfdoc(wfdoc_dict)
+        if hodl_doc_dict and isinstance(hodl_doc_dict, dict): wfdoc_dict.update(hodl_doc_dict)
+        wfdoc_dict.update({"current_actions": current_actions,
+                           "current_edit_fields": current_edit_fields,
+                           "audittrails": audittrails,
+                           "roles_to_view_audit": roles_to_view_audit })
+        return wfdoc_dict
+    
+    def action_change_status(self, wfdoc_name, intended_action,
+                             input_data=None, unset_draft=True):
+        '''any change action unsets draft'''
+        wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
+        wfactionObj = self._get_wfactionObj(wfdocObj, intended_action)        
+        self._check_action_rules(wfdocObj, wfactionObj, intended_action, self.wfc.roles)
+        self._validate_editable_fields(wfdocObj, input_data)
+        self._unhide_or_hide_action_to_roles(wfdocObj, intended_action, new_born=False)
+        changed_data = self._create_changed_data(input_data, wfdocObj, wfactionObj)
+        result = self._updadate_with_audit(wfdocObj, intended_action, changed_data)
+        return result
+    
     def save_as_draft(self, wfdoc_name, draft_data:dict):
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         if not self._current_actions_for_role(wfdocObj):
             rexc.NoActionCurrentlyForThisRole
-        self._validate_editable_fields(wfdocObj, draft_data)
+        self._validate_editable_fields(wfdocObj, draft_data)        
         msg = self._create_draft_or_roll_back(wfdocObj, draft_data)
         return msg
-        
-            
+    
+    def get_draft_data_for_role(self, wfdoc_name):
+        draft_data = None        
+        draftObj = self._get_draftdoc_by_name(wfdoc_name)
+        draft_fr_roles = draftObj.target_role
+        lower_dfr = [dfr.lower().strip() for dfr in draft_fr_roles if dfr ]
+        lower_login_roles = [role.lower().strip() for role in self.wfc.roles]
+        if utils._compare_two_lists_for_any_element_match(lower_dfr, lower_login_roles):
+            draft_data = draftObj.draft_data
+        return draft_data
+    
+    def action_from_draft(self, wfdoc_name, intended_action):
+        '''#unset "has_draft_for_roles" and delete draft 
+        is done during action change - create_change_data
+        #this also takes care roll back '''
+        draft_data = self.get_draft_data_for_role(wfdoc_name)
+        result = self.action_change_status(wfdoc_name, intended_action, draft_data)
+        return result
+    
+    def get_full_wfdoctype_as_dict(self):
+        wfdoctypeObj = None
+        wfdoctype_repo = DomainRepo('Doctype')
+        wfdoctypeObj = wfdoctype_repo.list_domain_obj(**{"name": self.doctype_name})       
+        if wfdoctypeObj: wfdoctypeObj = wfdoctypeObj[0]
+        datadocfields = []
+        for fObj in wfdoctypeObj.datadocfields:
+            fdict = fObj.to_dict()
+            fdict.pop('associated_doctype')
+            fdict.pop('associated_doctype_name')            
+            datadocfields.append(fdict)
+        wfdoctype_dict = wfdoctypeObj.to_dict()
+        wfdoctype_dict.update({"datadocfields": datadocfields})
+        return utils.lower_case_keys(wfdoctype_dict)
+           
+    def _get_draftdoc_by_name(self, wfdoc_name):
+        result = None
+        search_dict = {"name": wfdoc_name}
+        dfraft_repo = DomainRepo("Draftdata")
+        lst = dfraft_repo.list_domain_obj(**search_dict)
+        if  len(lst) == 1 : result = lst[0]              
+        return result 
+           
     def _create_draft_or_roll_back(self, wfdocObj, draft_data):
         draft_create_msg = {}
         draftdataObj = ent.Draftdata(name=wfdocObj.name, drafted_by=self.wfc.email,
@@ -56,10 +134,13 @@ class Workflow:
                                    wfdoc=wfdocObj, draft_data=draft_data)
         try:
             draftdoc_repo = DomainRepo("Draftdata")
+            draft_search_string = {"name": wfdocObj.name}#delete before creating
+            prev_draf_cleared_status = draftdoc_repo.delete(**draft_search_string)
             status = draftdoc_repo.add_list_of_domain_obj([draftdataObj])            
             wfdoc_update_msg = self._update_wfdoc_draft_status(wfdocObj, self.wfc.roles)
             draft_create_msg.update({"draft_create_msg": status, 
-                                     "wfdoc_update_msg": wfdoc_update_msg})
+                                     "wfdoc_update_msg": wfdoc_update_msg,
+                                     "prev_draf_cleared_status": prev_draf_cleared_status})
         except (rexc.FlexFlowException, Exception)  as e:
             delete_stat = draftdoc_repo.delete(**{"name": wfdocObj.name})
             reset_wfdoc_stat = self._update_wfdoc_draft_status(wfdocObj)            
@@ -75,37 +156,19 @@ class Workflow:
         updated_wfdoc_draft_roles = {"has_draft_for_roles": draft_for_role}
         ustatus = wfdoc_repo.update_from_dict(updated_wfdoc_draft_roles, **target_wfdoc_name) 
         return ustatus
-            
      
     def _current_actions_for_role(self, wfdocObj):
         current_actions_for_role = []
         wfactions_list = wfdocObj.wfactions
         default_roles = ["", "admin",]
         roles = default_roles + self.wfc.roles
-#         luser_role = []
-#         for role in roles:
-#             luser_role.append(role)
-            
         luser_role = [role.lower().strip() for role in roles]
         for actionObj in wfactions_list:
             permitted_to_roles = [prole.lower().strip() for prole 
                                               in actionObj.permitted_to_roles]
             if utils._compare_two_lists_for_any_element_match(permitted_to_roles, luser_role):
                 current_actions_for_role.append(actionObj)
-        return current_actions_for_role 
-            
-            
-        
-        
-        
-           
-    
-    def list_wfdoc(self):
-        wfc_filter = self._get_list_filter_fm_wfc_to_field_map()
-        wfdoc_list = self._list_from_wfdoc(wfc_filter)
-        holddoc_lis = self._list_from_holddoc_filtered_by_logged_in_user_roles(wfc_filter)
-        list_with_hold = self._superimpose_holddoc_on_wfdoc(wfdoc_list, holddoc_lis)
-        return list_with_hold
+        return current_actions_for_role
     
     def _get_list_filter_fm_wfc_to_field_map(self):
         doctypeObj = self._get_doctype_obj_from_name()
@@ -133,26 +196,7 @@ class Workflow:
         role_comp_result = any(list(map(lambda x: x[0] == x[1], cartesian_product)))
         print('result of role comp', role_comp_result)
         return role_comp_result
-        
-    def get_full_wfdoc_as_dict(self, wfdoc_name):
-        '''in workflow role is avilable , hence 
-        wfdocObj.actions_for_current_status gets further filtered by 
-        roles before presenting in dict format'''
-        wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
-        current_actions = self._get_current_actions_for_the_doc(wfdocObj)
-        current_edit_fields = [fObj.name.lower().strip() for fObj in 
-                               wfdocObj.editable_fields_at_current_status]
-        roles_to_view_audit = wfdocObj.roles_to_view_audit
-        audittrails = self._get_audit_trails_for_allowed_roles(wfdocObj, roles_to_view_audit)
-        wfdoc_dict = wfdocObj.to_dict()
-        hodl_doc_dict = self._get_detail_holddoc_for_a_wfdoc(wfdoc_dict)
-        if hodl_doc_dict and isinstance(hodl_doc_dict, dict): wfdoc_dict.update(hodl_doc_dict)
-        wfdoc_dict.update({"current_actions": current_actions,
-                           "current_edit_fields": current_edit_fields,
-                           "audittrails": audittrails,
-                           "roles_to_view_audit": roles_to_view_audit })
-        return wfdoc_dict
-    
+     
     def _get_detail_holddoc_for_a_wfdoc(self, wfdoc_dict):
         hodl_doc_dict = None
         holddoc_repo = DomainRepo('Holddoc')
@@ -189,22 +233,7 @@ class Workflow:
                     current_actions.append(actionObj.name)
         print('current actions', current_actions)
         return current_actions        
-        
-    def get_full_wfdoctype_as_dict(self):
-        wfdoctypeObj = None
-        wfdoctype_repo = DomainRepo('Doctype')
-        wfdoctypeObj = wfdoctype_repo.list_domain_obj(**{"name": self.doctype_name})       
-        if wfdoctypeObj: wfdoctypeObj = wfdoctypeObj[0]
-        datadocfields = []
-        for fObj in wfdoctypeObj.datadocfields:
-            fdict = fObj.to_dict()
-            fdict.pop('associated_doctype')
-            fdict.pop('associated_doctype_name')            
-            datadocfields.append(fdict)
-        wfdoctype_dict = wfdoctypeObj.to_dict()
-        wfdoctype_dict.update({"datadocfields": datadocfields})
-        return utils.lower_case_keys(wfdoctype_dict)
-        
+     
     def _list_from_wfdoc(self, wfc_filter:dict=None):
         wfdoc_repo = DomainRepo('Wfdoc')
         search_f = {"associated_doctype_name": self.doctype_name}
@@ -244,16 +273,6 @@ class Workflow:
                         print('hold exixists for newly creatd doc for' , hld.get('current_status').lower().strip())
                         wfdoc_list.pop(i)
         return wfdoc_list
-    
-    def action_change_status(self, wfdoc_name, intended_action, input_data=None):
-        wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
-        wfactionObj = self._get_wfactionObj(wfdocObj, intended_action)        
-        self._check_action_rules(wfdocObj, wfactionObj, intended_action, self.wfc.roles)
-        self._validate_editable_fields(wfdocObj, input_data)
-        self._unhide_or_hide_action_to_roles(wfdocObj, intended_action, new_born=False)
-        changed_data = self._create_changed_data(input_data, wfdocObj, wfactionObj)
-        result = self._updadate_with_audit(wfdocObj, intended_action, changed_data)
-        return result
     
     def _get_roles_for_undo_prev_hide(self, wfdocObj, intended_action):
         undo_prev_hide_for = []
@@ -329,15 +348,20 @@ class Workflow:
         return msg
         
     def _updadate_with_audit(self, wfdocObj, intended_action, changed_data ):
+        ''' also takes care "has_draft_for_roles" role back'''
         wfdoc_repo = DomainRepo("Wfdoc")
+        draftdata_repo = DomainRepo("Draftdata")
         target_doc_name = {"name": wfdocObj.name}
         msg = wfdoc_repo.update_from_dict(changed_data, **target_doc_name)
         try:
+            draft_search_string = {"name": wfdocObj.name}            
             audit_msg = self._create_audit_record(wfdocObj, intended_action,  changed_data)
-            msg.update({"audit_msg": audit_msg})
+            draf_cleared_status = draftdata_repo.delete(**draft_search_string)
+            msg.update({"audit_msg": audit_msg, "draf_cleared_status": draf_cleared_status})
         except Exception:
             updated_data_dict = {"current_status": wfdocObj.current_status,
                                  "prev_status": wfdocObj.prev_status,
+                                 "has_draft_for_roles": wfdocObj.has_draft_for_roles,
                                  "doc_data": wfdocObj.doc_data}
             rollback_msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
             msg.update({"rollback_msg": rollback_msg})
@@ -347,7 +371,8 @@ class Workflow:
     def _create_changed_data(self, input_data, wfdocObj, wfactionObj):
         #wfdocObj.current_status = wfactionObj.leads_to_status #TODO: it should be done this way
         updated_data_dict = {"current_status": wfactionObj.leads_to_status,
-                             "prev_status": wfdocObj.current_status}
+                             "prev_status": wfdocObj.current_status,
+                             "has_draft_for_roles": []}
         if input_data:
             existing_data = wfdocObj.doc_data
             existing_data.update(input_data)

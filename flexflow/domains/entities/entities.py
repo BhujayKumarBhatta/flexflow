@@ -110,8 +110,6 @@ class Wfaction(Entities):
         
         self._validate_relationship_param_values()
         super().__init__(**kwargs)
-        
-        
 
   
 class Wfdoc(Entities):
@@ -251,7 +249,7 @@ class Draftdata(Entities):
                                              "primary_key": "name"},
                        }
     
-    def __init__(self, name, drafted_by, target_role, wfdoc,  draft_data):
+    def __init__(self, name, drafted_by, target_role, wfdoc,  draft_data, **kwargs):
         self.name = name
         self.drafted_by = drafted_by
         self.target_role = target_role        
