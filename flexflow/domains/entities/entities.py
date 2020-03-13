@@ -123,7 +123,7 @@ class Wfdoc(Entities):
     
     def __init__(self, name:str, associated_doctype:Doctype, 
                  prev_status:str, current_status:str,
-                 doc_data:dict, **kwargs):
+                 doc_data:dict, has_draft_for_roles=[], **kwargs):
         '''id should be one of the value from the doc_data e.g. invoice_number'''
         self.name = name
         #self.name = self.primvalue_of_docdata
@@ -132,6 +132,7 @@ class Wfdoc(Entities):
         self.prev_status = prev_status
         self.current_status = current_status        
         self.doc_data = doc_data
+        self.has_draft_for_roles = has_draft_for_roles
         self._validate_relationship_param_values()
         self._validate_docdata()        
         super().__init__(**kwargs)
@@ -243,7 +244,21 @@ class Holddoc(Entities):
         self.current_status = current_status
         self.doc_data = doc_data
         
-        
+class Draftdata(Entities):
+    related_obj_map = {"wfdoc": {"mapped_object": Wfdoc, 
+                                 "primary_key": "name"}, 
+                       "associated_doctype": {"mapped_object": Doctype, 
+                                             "primary_key": "name"},
+                       }
+    
+    def __init__(self, name, drafted_by, target_role, wfdoc,  doc_data):
+        self.name = name
+        self.drafted_by = drafted_by
+        self.target_role = target_role        
+        self.wfdoc = wfdoc
+        self.wfdoc_name = self.wfdoc.name
+        self.doc_data = doc_data
+               
 ###########AT TIMES THE SUPER CLASS TO_DICT IS NOT WOROKING
 ########POSSIBLY THE RELATED_OBJECT_MAP CLASS VARIABLE IS NOT GETTIGN
 #REPLACED BY THE CHILD CLASS    

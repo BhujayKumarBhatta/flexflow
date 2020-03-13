@@ -103,6 +103,7 @@ class Wfdoc(db.Model):
     #allowed_next_action is filter the assocated_actions by prev and current_status
     ## we should compute the allowed actions, 
     doc_data = db.Column(JSON)
+    has_draft_for_roles = db.Column(JSON)
     
     def to_dict(self):
         return {"name": self.name,
@@ -110,7 +111,8 @@ class Wfdoc(db.Model):
                 "associated_doctype_name": self.associated_doctype_name,
                 "prev_status": self.prev_status,
                 "current_status": self.current_status,
-                "doc_data": self.doc_data}
+                "doc_data": self.doc_data,
+                "has_draft_for_roles": self.has_draft_for_roles}
    
      
 class Holddoc(db.Model):
@@ -169,7 +171,22 @@ class Wfdocaudit(db.Model):
                 "action": self.action,
                 "roles": self.roles,
                 "data": self.data }
-                
         
+                
+class Draftdata(db.Model):
+    name = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
+    drafted_by = db.Column(db.String(120))
+    target_role = db.Column(JSON)        
+    wfdoc = db.relationship('Wfdoc', backref=db.backref('wfdocaudit', cascade="all, delete-orphan"))
+    wfdoc_name = db.Column(db.String(120), db.ForeignKey('wfdoc.name'))
+    draft_data = db.Column(JSON)
+    
+    def to_dict(self):
+        return {"name": self.name,                
+                "drafted_by": self.drafted_by,
+                "target_role": self.target_role,
+                "wfdoc": {"name": self.wfdoc.name},
+                "wfdoc_name": self.wfdoc_name,
+                "draft_data": self.draft_data }       
     
     
