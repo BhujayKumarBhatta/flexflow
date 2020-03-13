@@ -27,6 +27,7 @@ class Tflask(FTestCase):
     
       
     def test_workflow(self):
+        m.dbdriver.delete(m.Draftdata)
         m.dbdriver.delete(m.Holddoc)
         m.dbdriver.delete(m.Wfdocaudit)
         m.dbdriver.delete(m.Wfdoc) 
@@ -178,6 +179,18 @@ class Tflask(FTestCase):
         wf = Workflow('doctype2', wfc=testconf.testwfc)
         result = wf.list_wfdoc()
         self.assertTrue(not result)
+        ###AT THIS STAGE ACTION 3 IS PERMITTED TO ROLE3
+        ###Role3 should be able to put some data in save as draft
+        testconf.testwfc.org = "org2"
+        testconf.testwfc.orgunit = "divison1"
+        testconf.testwfc.roles= ['r3']
+        testconf.testwfc.request_id = str(uuid.uuid4())
+        wf = Workflow('doctype2', wfc=testconf.testwfc)
+        draft_data = {"dk1": "want_to_save_as_draft"}
+        result = wf.save_as_draft("dv22", draft_data)
+        self.assertTrue(result.get('draft_create_msg').get('status') == "success")
+        self.assertTrue(result.get('wfdoc_update_msg').get('status') == "success")
+        
         
       
     def _register_doctype_n_actions(self):

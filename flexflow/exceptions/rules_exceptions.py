@@ -176,4 +176,9 @@ class KeyIsMissingInData(FlexFlowException):
         self.message = ('Field : "%s" or "%s"  is missing in input data'
                          %(self.fname, self.fnamelower))
         super().__init__(self.status, self.message)
+        
+class NoActionCurrentlyForThisRole(FlexFlowException):
+    status = "NoActionCurrentlyForThisRole"    
+    message = "Cant save as draft sonce currenly there is no action needed on the document for this role"
+    
          

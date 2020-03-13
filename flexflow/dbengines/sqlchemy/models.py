@@ -177,7 +177,7 @@ class Draftdata(db.Model):
     name = db.Column(db.String(500), primary_key=True, unique=True, nullable=False)
     drafted_by = db.Column(db.String(120))
     target_role = db.Column(JSON)        
-    wfdoc = db.relationship('Wfdoc', backref=db.backref('wfdocaudit', cascade="all, delete-orphan"))
+    wfdoc = db.relationship('Wfdoc', backref=db.backref('draftdocs', cascade="all, delete-orphan"))
     wfdoc_name = db.Column(db.String(120), db.ForeignKey('wfdoc.name'))
     draft_data = db.Column(JSON)
     

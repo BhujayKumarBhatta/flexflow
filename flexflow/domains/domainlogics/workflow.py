@@ -38,7 +38,67 @@ class Workflow:
         #push it to hold doc for create action
         #during listing from hold doc since the "reason' is create , during super impose pop it from the list
         self._unhide_or_hide_action_to_roles(wfdocObj, create_action_name, new_born=True ) #intended_action=create
-        return result    
+        return result
+    
+    def save_as_draft(self, wfdoc_name, draft_data:dict):
+        wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
+        if not self._current_actions_for_role(wfdocObj):
+            rexc.NoActionCurrentlyForThisRole
+        self._validate_editable_fields(wfdocObj, draft_data)
+        msg = self._create_draft_or_roll_back(wfdocObj, draft_data)
+        return msg
+        
+            
+    def _create_draft_or_roll_back(self, wfdocObj, draft_data):
+        draft_create_msg = {}
+        draftdataObj = ent.Draftdata(name=wfdocObj.name, drafted_by=self.wfc.email,
+                                   target_role = self.wfc.roles,
+                                   wfdoc=wfdocObj, draft_data=draft_data)
+        try:
+            draftdoc_repo = DomainRepo("Draftdata")
+            status = draftdoc_repo.add_list_of_domain_obj([draftdataObj])            
+            wfdoc_update_msg = self._update_wfdoc_draft_status(wfdocObj, self.wfc.roles)
+            draft_create_msg.update({"draft_create_msg": status, 
+                                     "wfdoc_update_msg": wfdoc_update_msg})
+        except (rexc.FlexFlowException, Exception)  as e:
+            delete_stat = draftdoc_repo.delete(**{"name": wfdocObj.name})
+            reset_wfdoc_stat = self._update_wfdoc_draft_status(wfdocObj)            
+            draft_create_msg.update({"delete_stat": delete_stat,
+                                     "reset_wfdoc_stat": reset_wfdoc_stat,
+                                     "rollback_msg": str(e)})
+            raise rexc.FlexFlowException
+        return draft_create_msg
+    
+    def _update_wfdoc_draft_status(self, wfdocObj, draft_for_role=None):
+        wfdoc_repo = DomainRepo("Wfdoc")
+        target_wfdoc_name = {"name": wfdocObj.name}
+        updated_wfdoc_draft_roles = {"has_draft_for_roles": draft_for_role}
+        ustatus = wfdoc_repo.update_from_dict(updated_wfdoc_draft_roles, **target_wfdoc_name) 
+        return ustatus
+            
+     
+    def _current_actions_for_role(self, wfdocObj):
+        current_actions_for_role = []
+        wfactions_list = wfdocObj.wfactions
+        default_roles = ["", "admin",]
+        roles = default_roles + self.wfc.roles
+#         luser_role = []
+#         for role in roles:
+#             luser_role.append(role)
+            
+        luser_role = [role.lower().strip() for role in roles]
+        for actionObj in wfactions_list:
+            permitted_to_roles = [prole.lower().strip() for prole 
+                                              in actionObj.permitted_to_roles]
+            if utils._compare_two_lists_for_any_element_match(permitted_to_roles, luser_role):
+                current_actions_for_role.append(actionObj)
+        return current_actions_for_role 
+            
+            
+        
+        
+        
+           
     
     def list_wfdoc(self):
         wfc_filter = self._get_list_filter_fm_wfc_to_field_map()
@@ -451,7 +511,8 @@ class Workflow:
         holddoc_repo = DomainRepo("Holddoc")
         result = holddoc_repo.delete(**search_string)#TODO: should be no doc found when not present
         return result
-        
+    
+    
                 
         
             

@@ -92,7 +92,7 @@ class DomainRepo:
         return result
     
     def update_from_dict(self, updated_data_dict, **search_filters):
-        ''' SAFE : if no search_filter if provided it will change all the records '''
+        ''' SAFE : if no search_filter if provided it will change only the first  records '''
         updated_data_dict = utils.sanitize_input_dict(updated_data_dict)
         self._validate_input_data_dict(updated_data_dict)
         dict_to_obj = self._convert_relational_text_to_obj_in_dict(updated_data_dict)

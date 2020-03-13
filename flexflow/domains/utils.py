@@ -1,3 +1,4 @@
+import itertools
 
 
 def convert_data_values_as_per_conf(ctype, data:dict, k, v):
@@ -36,4 +37,12 @@ def sanitize_input_dict( input_dict):
 
 def sanitize_lod(lod):
     return [sanitize_input_dict(d) for d in lod]
+
+
+def _compare_two_lists_for_any_element_match(list1, list2):
+    result = False
+    cartesian_product = itertools.product(list1, list2)              
+    role_matched_result = list(map(lambda x: x[0] == x[1], cartesian_product))
+    if any(role_matched_result): result = True
+    return result
             
