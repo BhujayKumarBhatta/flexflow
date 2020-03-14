@@ -249,13 +249,13 @@ class Draftdata(Entities):
                                              "primary_key": "name"},
                        }
     
-    def __init__(self, name, drafted_by, target_role, wfdoc,  draft_data, **kwargs):
+    def __init__(self, name, drafted_by, target_role, wfdoc,  doc_data, **kwargs):
         self.name = name
         self.drafted_by = drafted_by
         self.target_role = target_role        
         self.wfdoc = wfdoc
         self.wfdoc_name = self.wfdoc.name
-        self.draft_data = draft_data
+        self.doc_data = doc_data
                
 ###########AT TIMES THE SUPER CLASS TO_DICT IS NOT WOROKING
 ########POSSIBLY THE RELATED_OBJECT_MAP CLASS VARIABLE IS NOT GETTIGN

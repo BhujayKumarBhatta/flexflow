@@ -93,9 +93,44 @@ class Workflow:
         lower_dfr = [dfr.lower().strip() for dfr in draft_fr_roles if dfr ]
         lower_login_roles = [role.lower().strip() for role in self.wfc.roles]
         if utils._compare_two_lists_for_any_element_match(lower_dfr, lower_login_roles):
-            draft_data = draftObj.draft_data
+            draft_data = draftObj.doc_data
         return draft_data
     
+    def list_wfdocs_superimposed_by_draft(self):
+        '''from draft data we have to create draft doc before lisitng'''
+        draftdata_list = self._list_all_draftdata_filteredby_wfc()
+        wfc_filter = self._get_list_filter_fm_wfc_to_field_map()
+        wfdoc_list = self._list_from_wfdoc(wfc_filter)
+        docl_has_draft = [wfdoc for wfdoc in wfdoc_list if wfdoc.has_draft_for_roles]        
+        for draft in draftdata_list:
+            for wfdoc in docl_has_draft:
+                if draft.get('name') == wfdoc.get('name'):
+                    wfdoc.update({"doc_data": draft.get('doct_data')})
+        return docl_has_draft
+#     
+    
+    def _list_all_draftdata_filteredby_wfc(self):
+        '''query on Draftdata reurins only doc_data not the full wfdoc'''
+        draft_repo = DomainRepo("Draftdata")
+        wfc_filter = self._get_list_filter_fm_wfc_to_field_map()        
+        search_f = {"associated_doctype_name": self.doctype_name}
+        lst = draft_repo.list_dict(**search_f)
+        if wfc_filter: lst = self._filter_by_wfc_on_doc_data(lst, wfc_filter)
+        return lst
+        
+    def _replace_org_data_by_draftdata(self, wfdoc_dict):
+        if wfdoc_dict.get('has_draft_for_roles'):
+            draft_data = self.get_draft_data_for_role(wfdoc_dict.get('name'))
+            wfdoc_dict.update({'doc_data': draft_data})
+        return wfdoc_dict
+    
+    def get_full_doc_with_draft_data(self, wfdoc_name, replace_origianl_data=False):
+        full_doc = self.get_full_wfdoc_as_dict(wfdoc_name)
+        draft_data = self.get_draft_data_for_role(wfdoc_name)
+        full_doc.update({"draft_data": draft_data})
+        if replace_origianl_data: full_doc.update({"doc_data": draft_data})
+        return full_doc
+      
     def action_from_draft(self, wfdoc_name, intended_action):
         '''#unset "has_draft_for_roles" and delete draft 
         is done during action change - create_change_data
@@ -131,7 +166,7 @@ class Workflow:
         draft_create_msg = {}
         draftdataObj = ent.Draftdata(name=wfdocObj.name, drafted_by=self.wfc.email,
                                    target_role = self.wfc.roles,
-                                   wfdoc=wfdocObj, draft_data=draft_data)
+                                   wfdoc=wfdocObj, doc_data=draft_data)
         try:
             draftdoc_repo = DomainRepo("Draftdata")
             draft_search_string = {"name": wfdocObj.name}#delete before creating

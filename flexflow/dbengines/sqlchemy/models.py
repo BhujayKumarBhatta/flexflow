@@ -179,7 +179,7 @@ class Draftdata(db.Model):
     target_role = db.Column(JSON)        
     wfdoc = db.relationship('Wfdoc', backref=db.backref('draftdocs', cascade="all, delete-orphan"))
     wfdoc_name = db.Column(db.String(120), db.ForeignKey('wfdoc.name'))
-    draft_data = db.Column(JSON)
+    doc_data = db.Column(JSON)
     
     def to_dict(self):
         return {"name": self.name,                
@@ -187,6 +187,6 @@ class Draftdata(db.Model):
                 "target_role": self.target_role,
                 "wfdoc": {"name": self.wfdoc.name},
                 "wfdoc_name": self.wfdoc_name,
-                "draft_data": self.draft_data }       
+                "doc_data": self.doc_data }       
     
     
