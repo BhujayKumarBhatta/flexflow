@@ -180,5 +180,19 @@ class KeyIsMissingInData(FlexFlowException):
 class NoActionCurrentlyForThisRole(FlexFlowException):
     status = "NoActionCurrentlyForThisRole"    
     message = "Cant save as draft sonce currenly there is no action needed on the document for this role"
+
+
+class DraftCantBeBlank(FlexFlowException):
+    status = "DraftCantBeBlank"    
+    message = "Cant save as draft since no data provided in draft"
     
-         
+class InvalidInputdata(FlexFlowException):
+    status = "InvalidInputdata"    
+    message = "data must be json and 'draft_data' key must be preset "
+    
+    
+    
+    
+    
+    
+    

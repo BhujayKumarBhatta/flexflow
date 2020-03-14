@@ -97,11 +97,12 @@ def wfdoc_update(wfc):
         msg = {"status": "Failed", "message": str(e)}
     return jsonify(msg)
 
-@wf_doc_bp.route('/wfdoc/saveasdraft/<doctype>', methods=['POST'])
+@wf_doc_bp.route('/wfdoc/saveasdraft/<doctype>/<wfdoc_name>', methods=['POST'])
 @enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
-def wfdoc_saveasdraft(doctype, wfc):
+def wfdoc_saveasdraft(doctype, wfdoc_name, wfc):
     try:
-        wfdoc_name = request.json.get('wfdoc_name')
+        if "draft_data" not in request.json.keys():
+            raise rexc.InvalidInputdata
         draft_data = request.json.get('draft_data')
         wf = Workflow(doctype, wfc=wfc)
         msg = wf.save_as_draft(wfdoc_name, draft_data)

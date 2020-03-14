@@ -4,6 +4,7 @@ from flexflow.domains.repos import DomainRepo
 from flexflow.exceptions import rules_exceptions  as rexc
 from backports.configparser.helpers import str
 from flexflow.domains import utils
+from alembic.command import current
 
 
 
@@ -53,6 +54,7 @@ class Workflow:
         roles before presenting in dict format'''
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         current_actions = self._get_current_actions_for_the_doc(wfdocObj)
+        if current_actions and len(current_actions) > 0: current_actions.append("SaveAsDraft")
         current_edit_fields = [fObj.name.lower().strip() for fObj in 
                                wfdocObj.editable_fields_at_current_status]
         roles_to_view_audit = wfdocObj.roles_to_view_audit
@@ -79,9 +81,12 @@ class Workflow:
         return result
     
     def save_as_draft(self, wfdoc_name, draft_data:dict):
+        print('received draft data as ', draft_data)
+        if draft_data is None or not isinstance(draft_data, dict):
+            raise rexc.DraftCantBeBlank        
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         if not self._current_actions_for_role(wfdocObj):
-            rexc.NoActionCurrentlyForThisRole
+            raise rexc.NoActionCurrentlyForThisRole
         self._validate_editable_fields(wfdocObj, draft_data)        
         msg = self._create_draft_or_roll_back(wfdocObj, draft_data)
         return msg
