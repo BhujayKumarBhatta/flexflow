@@ -97,7 +97,32 @@ def wfdoc_update(wfc):
         msg = {"status": "Failed", "message": str(e)}
     return jsonify(msg)
 
+@wf_doc_bp.route('/wfdoc/saveasdraft/<doctype>', methods=['POST'])
+@enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
+def wfdoc_saveasdraft(doctype, wfc):
+    try:
+        wfdoc_name = request.json.get('wfdoc_name')
+        draft_data = request.json.get('draft_data')
+        wf = Workflow(doctype, wfc=wfc)
+        msg = wf.save_as_draft(wfdoc_name, draft_data)
+    except (rexc.FlexFlowException) as e:
+        msg = e.ret_val
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+    return jsonify(msg)
 
+
+@wf_doc_bp.route('/wfdoc/listdraft/<doctype>', methods=['GET'])
+@enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
+def list_draft(doctype, wfc):
+    try:
+        wf = Workflow(doctype, wfc=wfc)
+        msg = wf.list_wfdocs_superimposed_by_draft()
+    except (rexc.FlexFlowException) as e:
+        msg = e.ret_val
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+    return jsonify(msg)
 
 
 
