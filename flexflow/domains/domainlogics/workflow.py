@@ -98,25 +98,28 @@ class Workflow:
     
     def list_wfdocs_superimposed_by_draft(self):
         '''from draft data we have to create draft doc before lisitng'''
-        draftdata_list = self._list_all_draftdata_filteredby_wfc()
+        #draftdata_list = self._list_all_draftdata_filteredby_wfc()       
+        wfdocObj_list = self._list_wfdocObj()
+        docl_has_draft = [wfdoc for wfdoc in wfdocObj_list if wfdoc.has_draft_for_roles]        
+        updated_wfdoc_dict_list = []
+        for wfdocObj in docl_has_draft:
+            draft_data = wfdocObj.draftdata.get('doc_data')            
+            wfdocObj.doc_data =  draft_data
+            updated_wfdoc_dict_list.append(wfdocObj.to_dict())
         wfc_filter = self._get_list_filter_fm_wfc_to_field_map()
-        wfdoc_list = self._list_from_wfdoc(wfc_filter)
-        docl_has_draft = [wfdoc for wfdoc in wfdoc_list if wfdoc.has_draft_for_roles]        
-        for draft in draftdata_list:
-            for wfdoc in docl_has_draft:
-                if draft.get('name') == wfdoc.get('name'):
-                    wfdoc.update({"doc_data": draft.get('doct_data')})
-        return docl_has_draft
-#     
+        if wfc_filter: 
+            updated_wfdoc_dict_list = \
+            self._filter_by_wfc_on_doc_data(updated_wfdoc_dict_list, wfc_filter)
+        return updated_wfdoc_dict_list
     
-    def _list_all_draftdata_filteredby_wfc(self):
-        '''query on Draftdata reurins only doc_data not the full wfdoc'''
-        draft_repo = DomainRepo("Draftdata")
-        wfc_filter = self._get_list_filter_fm_wfc_to_field_map()        
+    def _list_wfdocObj(self):
+        wfdoc_repo = DomainRepo("Wfdoc")
         search_f = {"associated_doctype_name": self.doctype_name}
-        lst = draft_repo.list_dict(**search_f)
-        if wfc_filter: lst = self._filter_by_wfc_on_doc_data(lst, wfc_filter)
-        return lst
+        #if wfc_filter: 
+        #    search_f = {"associated_doctype_name": self.doctype_name,
+        #            "doc_data": wfc_filter}
+        wfdocObj_list = wfdoc_repo.list_domain_obj(**search_f)
+        return wfdocObj_list
         
     def _replace_org_data_by_draftdata(self, wfdoc_dict):
         if wfdoc_dict.get('has_draft_for_roles'):

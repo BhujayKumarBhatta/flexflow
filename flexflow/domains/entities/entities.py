@@ -172,6 +172,16 @@ class Wfdoc(Entities):
         roles_to_view_audit = self.associated_doctype.roles_to_view_audit
         return roles_to_view_audit
     
+    @property
+    def draftdata(self):
+        draft_data = None
+        draft_repo = repos.DomainRepo("Draftdata")
+        search_f = {"name": self.name}
+        draft_data_lst = draft_repo.list_dict(**search_f)
+        if draft_data_lst and len(draft_data_lst) > 0:
+            draft_data = draft_data_lst[0]
+        return draft_data
+        
     def _validate_docdata(self):
         editable_fields_at_this_status = []
         if  self.doc_data:
