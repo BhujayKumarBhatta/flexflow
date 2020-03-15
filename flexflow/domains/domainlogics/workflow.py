@@ -103,13 +103,21 @@ class Workflow:
     
     def list_wfdocs_superimposed_by_draft(self):
         '''from draft data we have to create draft doc before lisitng'''
-        #draftdata_list = self._list_all_draftdata_filteredby_wfc()       
+        #draftdata_list = self._list_all_draftdata_filteredby_wfc()
+        lower_login_roles = [role.lower().strip() for role in self.wfc.roles]      
         wfdocObj_list = self._list_wfdocObj()
-        docl_has_draft = [wfdoc for wfdoc in wfdocObj_list if wfdoc.has_draft_for_roles]        
+        docl_has_draft = []
+        for wfdocObj in wfdocObj_list:
+            if wfdocObj.has_draft_for_roles:
+                lower_dfr = [role.lower().strip() for role in wfdocObj.has_draft_for_roles]
+                if utils._compare_two_lists_for_any_element_match(lower_login_roles, lower_dfr):
+                    docl_has_draft.append(wfdocObj)
+        #wfdocObj_list =  [wfdoc for wfdoc in wfdocObj_list if wfdoc.has_draft_for_roles]                
         updated_wfdoc_dict_list = []
         for wfdocObj in docl_has_draft:
-            draft_data = wfdocObj.draftdata.get('doc_data')            
-            wfdocObj.doc_data =  draft_data
+            draft_data = wfdocObj.draftdata.get('doc_data')
+            doc_data = wfdocObj.doc_data
+            doc_data.update(draft_data)
             updated_wfdoc_dict_list.append(wfdocObj.to_dict())
         wfc_filter = self._get_list_filter_fm_wfc_to_field_map()
         if wfc_filter: 
