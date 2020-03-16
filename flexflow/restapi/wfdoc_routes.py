@@ -171,11 +171,11 @@ def wfdocdraft_fulldetial(uniquename, replace_orig_data, wfc):
 #             rexc.DataLengthViolation, rexc.NoActionRuleForCreate) as e:
 
 
-@wf_doc_bp.route('/wfdoc/action_fm_draft/<uniquename>/<intended_action>', methods=['GET'])
+@wf_doc_bp.route('/wfdoc/action_fm_draft/<uniquename>/<intended_action>', methods=['POST'])
 @enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
 def action_fm_draft(uniquename, intended_action, wfc):
     try:
-        addl_input = request.post.get('append_to_draft_data')
+        addl_input = request.json.get('addl_input')
         wf = Workflow('Wfdoc', wfc=wfc)
         msg = wf.action_from_draft(uniquename, intended_action, addl_input)
     except (rexc.FlexFlowException) as e:
