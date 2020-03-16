@@ -134,3 +134,16 @@ def list_draft(doctype, wfc):
 #             rexc.UnknownFieldNameInDataDoc, rexc.DataTypeViolation,
 #             rexc.DataLengthViolation, rexc.NoActionRuleForCreate) as e:
 
+
+@wf_doc_bp.route('/wfdoc/draft/get_fulldetail/<uniquename>', methods=['GET'])
+@enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
+def wfdocdraft_fulldetial(uniquename, wfc):
+    try:
+        wf = Workflow('Wfdoc', wfc=wfc)
+        msg = wf.get_full_doc_with_draft_data(uniquename, True )
+    except (rexc.FlexFlowException) as e:
+        msg = e.ret_val
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+    return jsonify(msg)
+
