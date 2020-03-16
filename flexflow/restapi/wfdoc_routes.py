@@ -135,12 +135,12 @@ def list_draft(doctype, wfc):
 #             rexc.DataLengthViolation, rexc.NoActionRuleForCreate) as e:
 
 
-@wf_doc_bp.route('/wfdoc/draft/get_fulldetail/<uniquename>', methods=['GET'])
+@wf_doc_bp.route('/wfdoc/draft/get_fulldetail/<uniquename>/<replace_orig_data>', methods=['GET'])
 @enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
-def wfdocdraft_fulldetial(uniquename, wfc):
+def wfdocdraft_fulldetial(uniquename, replace_orig_data, wfc):
     try:
         wf = Workflow('Wfdoc', wfc=wfc)
-        msg = wf.get_full_doc_with_draft_data(uniquename, True )
+        msg = wf.get_full_doc_with_draft_data(uniquename, replace_orig_data )
     except (rexc.FlexFlowException) as e:
         msg = e.ret_val
     except Exception as e:

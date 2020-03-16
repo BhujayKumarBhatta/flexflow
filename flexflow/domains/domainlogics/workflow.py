@@ -143,8 +143,13 @@ class Workflow:
     def get_full_doc_with_draft_data(self, wfdoc_name, replace_origianl_data=False):
         full_doc = self.get_full_wfdoc_as_dict(wfdoc_name)
         draft_data = self.get_draft_data_for_role(wfdoc_name)
+        print('draft_data is', draft_data)
         full_doc.update({"draft_data": draft_data})
-        if replace_origianl_data: full_doc.update({"doc_data": draft_data})
+        if replace_origianl_data:
+            doc_data = full_doc.get('doc_data')
+            doc_data.update(draft_data)
+            print('doc_data after update', doc_data)
+            full_doc.update({"doc_data": doc_data})
         return full_doc
       
     def action_from_draft(self, wfdoc_name, intended_action):
