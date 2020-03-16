@@ -126,15 +126,6 @@ def list_draft(doctype, wfc):
     return jsonify(msg)
 
 
-
-
-
-#     except (xlexc.InvalidDocCategory, xlexc.NoDataExtractedFromExcel,
-#             xlexc.MissingExcelConfig, rexc.RoleNotPermittedForThisAction,
-#             rexc.UnknownFieldNameInDataDoc, rexc.DataTypeViolation,
-#             rexc.DataLengthViolation, rexc.NoActionRuleForCreate) as e:
-
-
 @wf_doc_bp.route('/wfdoc/draft/get_fulldetail/<uniquename>/<replace_orig_data>', methods=['GET'])
 @enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
 def wfdocdraft_fulldetial(uniquename, replace_orig_data, wfc):
@@ -146,4 +137,37 @@ def wfdocdraft_fulldetial(uniquename, replace_orig_data, wfc):
     except Exception as e:
         msg = {"status": "Failed", "message": str(e)}
     return jsonify(msg)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#     except (xlexc.InvalidDocCategory, xlexc.NoDataExtractedFromExcel,
+#             xlexc.MissingExcelConfig, rexc.RoleNotPermittedForThisAction,
+#             rexc.UnknownFieldNameInDataDoc, rexc.DataTypeViolation,
+#             rexc.DataLengthViolation, rexc.NoActionRuleForCreate) as e:
+
 

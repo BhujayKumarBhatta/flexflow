@@ -152,11 +152,12 @@ class Workflow:
             full_doc.update({"doc_data": doc_data})
         return full_doc
       
-    def action_from_draft(self, wfdoc_name, intended_action):
+    def action_from_draft(self, wfdoc_name, intended_action, addl_input:dict=None):
         '''#unset "has_draft_for_roles" and delete draft 
         is done during action change - create_change_data
         #this also takes care roll back '''
         draft_data = self.get_draft_data_for_role(wfdoc_name)
+        if addl_input and isinstance(addl_input, dict): draft_data.update(addl_input)
         result = self.action_change_status(wfdoc_name, intended_action, draft_data)
         return result
     
