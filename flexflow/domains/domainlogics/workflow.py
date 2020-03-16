@@ -118,7 +118,11 @@ class Workflow:
             draft_data = wfdocObj.draftdata.get('doc_data')
             doc_data = wfdocObj.doc_data
             doc_data.update(draft_data)
-            updated_wfdoc_dict_list.append(wfdocObj.to_dict())
+            current_actions = self._get_current_actions_for_the_doc(wfdocObj)
+            wfcdict = wfdocObj.to_dict()
+            wfcdict.update({"current_actions": current_actions})
+            #updated_wfdoc_dict_list.append(wfdocObj.to_dict())
+            updated_wfdoc_dict_list.append(wfcdict)
         wfc_filter = self._get_list_filter_fm_wfc_to_field_map()
         if wfc_filter: 
             updated_wfdoc_dict_list = \
@@ -285,10 +289,10 @@ class Workflow:
         for actionObj in wfdocObj.actions_for_current_status:
             permitted_to_roles = [prole.lower().strip() for prole in actionObj.permitted_to_roles]
             for role in self.wfc.roles:
-                print('login role and permitted roles', role, actionObj.permitted_to_roles)
+                #print('login role and permitted roles', role, actionObj.permitted_to_roles)
                 if role.strip().lower() in permitted_to_roles:
                     current_actions.append(actionObj.name)
-        print('current actions', current_actions)
+        #print('current actions', current_actions)
         return current_actions        
      
     def _list_from_wfdoc(self, wfc_filter:dict=None):
