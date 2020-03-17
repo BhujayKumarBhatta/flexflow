@@ -10,6 +10,9 @@ from tokenleaderclient.configs.config_handler import Configs
 from tokenleaderclient.client.client import Client 
 from tokenleaderclient.rbac.enforcer import Enforcer
 
+
+from flexflow.domains.domainlogics import workers
+
 auth_config = Configs()
 tlclient = Client(auth_config)
 enforcer = Enforcer(tlclient)
@@ -139,38 +142,6 @@ def wfdocdraft_fulldetial(uniquename, replace_orig_data, wfc):
     return jsonify(msg)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#     except (xlexc.InvalidDocCategory, xlexc.NoDataExtractedFromExcel,
-#             xlexc.MissingExcelConfig, rexc.RoleNotPermittedForThisAction,
-#             rexc.UnknownFieldNameInDataDoc, rexc.DataTypeViolation,
-#             rexc.DataLengthViolation, rexc.NoActionRuleForCreate) as e:
-
-
 @wf_doc_bp.route('/wfdoc/action_fm_draft/<uniquename>/<intended_action>', methods=['POST'])
 @enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
 def action_fm_draft(uniquename, intended_action, wfc):
@@ -183,4 +154,33 @@ def action_fm_draft(uniquename, intended_action, wfc):
     except Exception as e:
         msg = {"status": "Failed", "message": str(e)}
     return jsonify(msg)
+
+
+@wf_doc_bp.route('/wfdoc/update_all_from_drafts', methods=['POST'])
+@enforcer.enforce_access_rule_with_token('paperhouse.list_all') 
+def update_all_from_drafts(wfc):
+    print('request.json',request.json)    
+    try:
+        wf = Workflow('Wfdoc', wfc=wfc)
+        if "wfdocs" not in request.json.keys() and \
+            "intended_action" not in request.json.keys():
+            raise rexc.InvalidInputdata
+        wfdocs = request.json.get('wfdocs')
+        intended_action = request.json.get('intended_action')        
+        result_list = workers.update_all_from_drafts(wf, wfdocs, intended_action)
+        print('update_all_from_draft', result_list)
+    except (rexc.FlexFlowException) as e:
+        msg = e.ret_val
+        result_list.append(msg)
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+        result_list.append(msg)
+    return jsonify(result_list)        
+    
+            
+            
+        
+            
+        
+    
 
