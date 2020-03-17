@@ -308,7 +308,7 @@ class Workflow:
             for k, v in wfc_filter.get('doc_data').items():
                 lower_doc_data = utils.lower_case_keys(doc.get('doc_data'))
                 if lower_doc_data.get(k.lower()) == v:
-                    print('comparing %s : %s'  %(lower_doc_data.get(k.lower()), v  ))
+                    #print('comparing %s : %s'  %(lower_doc_data.get(k.lower()), v  ))
                     list_with_wfc_filter_on_doc_data.append(doc)
         return list_with_wfc_filter_on_doc_data
     
@@ -325,14 +325,19 @@ class Workflow:
         return holddocs_filter_by_role
     
     def _superimpose_holddoc_on_wfdoc(self, wfdoc_list, holddoc_lis):
+        what_need_to_removed = []
         for i, wfd in enumerate(wfdoc_list):
             for hld in holddoc_lis:
-                if wfd.get('name') == hld.get('wfdoc_name'):                    
+                if wfd.get('name').lower().strip() == hld.get('wfdoc_name').lower().strip():                    
                     hld['name'] = wfd.get('name')#othewise it will show holddoc name = role+docname and fail to retrive it during detial view
                     wfd.update(hld)
                     if hld.get('current_status').lower().strip() in  [ "", "newborn"]:
-                        print('hold exixists for newly creatd doc for' , hld.get('current_status').lower().strip())
-                        wfdoc_list.pop(i)
+                        #print('hold exixists for newly creatd doc for' , hld.get('current_status').lower().strip())
+                        what_need_to_removed.append(wfd)
+                        #wfdoc_list.remove(wfd) #TODO: consult with kiran why always delelting one less
+                        #print('what_need_to_removed ......', wfd)
+        for j in what_need_to_removed:
+            if wfd in wfdoc_list: wfdoc_list.remove(j)
         return wfdoc_list
     
     def _get_roles_for_undo_prev_hide(self, wfdocObj, intended_action):
