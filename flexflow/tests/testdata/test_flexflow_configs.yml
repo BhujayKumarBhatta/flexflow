@@ -41,7 +41,7 @@ upload_excel:
                     'SiteID', 'FullSiteAddress', 'GSTNo',
                     'BillingDateFrom', 'BillingDateTO', 'InvoiceDate', 'TaxName', ' REMARKS']
                     
-    int_columns: [Total', ]
+    int_columns: ['Total', ]
                     
 
     data_length: {

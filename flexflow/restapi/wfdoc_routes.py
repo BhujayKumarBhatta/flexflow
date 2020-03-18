@@ -63,8 +63,9 @@ def list_wfdoc_by_doctype(doctype, wfc):
 @enforcer.enforce_access_rule_with_token('xluploader.upload_excel') 
 def upload_excel(doctype, wfc):
     try:
-        xlreceiver = XLReceiver(flexflow_configs, wfc, request=request)
-        msg = xlreceiver.action_from_lod(wfc.roles, doctype)
+        msg = workers.xl_upload(flexflow_configs, wfc, doctype, request=request )
+        #xlreceiver = XLReceiver(flexflow_configs, wfc, request=request)
+        #msg = xlreceiver.action_from_lod(wfc.roles, doctype)
     except (xlexc.FlexFlowException, rexc.FlexFlowException) as e:
         msg = e.ret_val
     except Exception as e:
@@ -167,7 +168,7 @@ def update_all_from_drafts(wfc):
             raise rexc.InvalidInputdata
         wfdocs = request.json.get('wfdocs')
         intended_action = request.json.get('intended_action')        
-        result_list = workers.update_all_from_drafts(wf, wfdocs, intended_action)
+        result_list = workers.update_all_from_drafts(flexflow_configs, wfc, wf, wfdocs, intended_action)
         print('update_all_from_draft', result_list)
     except (rexc.FlexFlowException) as e:
         msg = e.ret_val

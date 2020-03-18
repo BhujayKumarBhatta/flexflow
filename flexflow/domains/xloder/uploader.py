@@ -1,7 +1,7 @@
 import logging
 from  json import dumps
 from flexflow.domains.xloder.excelchecker import ExcelChecker
-from flexflow.domains.domainlogics.workflow import Workflow
+# from flexflow.domains.domainlogics.workflow import Workflow
 from flexflow.domains.xloder import xluploader_exceptions as xlexc
 
 logger = logging.getLogger(__name__)
@@ -49,19 +49,7 @@ class XLReceiver:
         return [self._lower_case_keys(d) for d in lod]
             
     
-    def action_from_lod(self, role, doctype_name):
-        response_list = []
-        if not self.lower_key_dict:
-            raise xlexc.NoDataExtractedFromExcel        
-        for xl_dict in self.lower_key_dict:
-            if xl_dict.get('doctype'): doctype_name = xl_dict.get('doctype')                
-            if xl_dict.get('action').lower() == "create":
-                wf = Workflow(doctype_name, wfc=self.wfc)
-                status_msg_dict = wf.create_doc(xl_dict )
-                response_list.append(status_msg_dict)
-        logger.debug('got response list after calling the  the'
-                     ' workflow create_doc', status_msg_dict)       
-        return response_list                  
+    
         
     def _get_xl_from_request(self):
         if self.request.method == 'POST' or self.request.method == 'PUT':

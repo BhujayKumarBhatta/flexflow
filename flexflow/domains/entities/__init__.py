@@ -1,6 +1,7 @@
 import json
 from flexflow.exceptions import rules_exceptions  as rexc
-from flexflow.domains import repos 
+#from flexflow.domains import repos 
+from flexflow.domains.repos import DomainRepo
 
 class Entities:
     related_obj_map = {}
@@ -54,7 +55,7 @@ class Entities:
                     if not primary_key in v:
                         raise rexc.PrimaryKeyNotPresentInSearch(primary_key, v)                
                     relobjname = cls.related_obj_map.get(k).get('mapped_object').__name__
-                    relobjrepo = repos.DomainRepo(relobjname)
+                    relobjrepo = DomainRepo(relobjname)
                     result_list = relobjrepo.list_domain_obj(**v)
                     data_dict.update({k: result_list[0]})
                 elif isinstance(v, related_class):
