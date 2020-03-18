@@ -1,3 +1,4 @@
+import uuid
 import itertools
 from flexflow.domains.entities import entities as ent
 from flexflow.domains.repos import DomainRepo
@@ -405,12 +406,14 @@ class Workflow:
         try:
             audit_msg = self._create_audit_record(wfdocObj, 'Create', input_data)
             msg.update({"audit_msg": audit_msg})
-        except (rexc.FlexFlowException, Exception)  as e:
+            if audit_msg.get('status').lower().strip() in ['failed', 'Failed', 'error']:
+                raise rexc.AuditRecordCreationFailed(docid, audit_msg.get('message') )
+        except (rexc.AuditRecordCreationFailed, rexc.FlexFlowException, Exception)  as e:
             status = wfdoc_repo.delete(**{"name": docid})
             #status_roll_back_holddoc = holddoc_repo.delete(**search_filter)
             rollback_msg = {"status": status, "message": str(e) }
             msg.update({"rollback_msg": rollback_msg})
-            raise rexc.FlexFlowException
+            raise rexc.AuditRecordCreationFailed(docid, audit_msg.get('message'), str(e) )
         return msg
         
     def _updadate_with_audit(self, wfdocObj, intended_action, changed_data ):
@@ -424,14 +427,16 @@ class Workflow:
             audit_msg = self._create_audit_record(wfdocObj, intended_action,  changed_data)
             draf_cleared_status = draftdata_repo.delete(**draft_search_string)
             msg.update({"audit_msg": audit_msg, "draf_cleared_status": draf_cleared_status})
-        except Exception:
+            if audit_msg.get('status').lower().strip() in ['failed', 'Failed', 'error']:
+                raise rexc.AuditRecordCreationFailed(target_doc_name, audit_msg.get('message') )
+        except Exception as e:
             updated_data_dict = {"current_status": wfdocObj.current_status,
                                  "prev_status": wfdocObj.prev_status,
                                  "has_draft_for_roles": wfdocObj.has_draft_for_roles,
                                  "doc_data": wfdocObj.doc_data}
             rollback_msg = wfdoc_repo.update_from_dict(updated_data_dict, **target_doc_name)
             msg.update({"rollback_msg": rollback_msg})
-            raise Exception
+            raise rexc.AuditRecordCreationFailed(target_doc_name, audit_msg.get('message'), str(e) )
         return msg    
     
     def _create_changed_data(self, input_data, wfdocObj, wfactionObj):
@@ -456,8 +461,9 @@ class Workflow:
         return wfactionObj
        
     def _get_primary_key_from_data_doc(self, doctyoeObj, data_doc):
+        data_doc = utils.lower_case_keys(data_doc)
         docid = None
-        primkey_in_datadoc = doctyoeObj.primkey_in_datadoc
+        primkey_in_datadoc = doctyoeObj.primkey_in_datadoc.lower().strip()
         if not data_doc.get(primkey_in_datadoc):
             raise rexc.PrimaryKeyNotPresentInDataDict(primkey_in_datadoc)
         docid = data_doc.get(primkey_in_datadoc)
@@ -568,7 +574,7 @@ class Workflow:
         return data
     
     def _create_audit_record(self, wfdocObj, intended_action, input_data:dict):
-        WfdocauditObj = ent.Wfdocaudit(name=self.wfc.request_id,
+        WfdocauditObj = ent.Wfdocaudit(name=str(uuid.uuid4()), #self.wfc.request_id,
                                        wfdoc=wfdocObj, 
                                        username=self.wfc.username, 
                                        email=self.wfc.email, 

@@ -190,6 +190,19 @@ class InvalidInputdata(FlexFlowException):
     status = "InvalidInputdata"    
     message = "data must be json and 'draft_data' key must be preset "
     
+class AuditRecordCreationFailed(FlexFlowException):
+    status = "AuditRecordCreationFailed"
+    def __init__(self, docname, reason, roll_back_msg=None):
+        self.docname = docname
+        self.reason = reason
+        self.rollback_msg = roll_back_msg
+        self.message = ('Audit record creation failed for: "%s" ,'
+                        'rollback_status: %s' 
+                           ' Detail reason is  "%s"'
+                         %(self.docname, self.rollback_msg, self.reason))
+        super().__init__(self.status, self.message)
+        
+    
     
     
     
