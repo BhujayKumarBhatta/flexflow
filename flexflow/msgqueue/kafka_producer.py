@@ -3,11 +3,27 @@ from kafka.errors import KafkaError
 from json import  dumps
 
 
+def convert_respoonse_for_infops(wfc, response_list):
+    stage2_candidates, cvtlst, redict  = [], [], {}
+    #[d.get('objectdict').get('doc_data') for d in response_list]
+    for d in response_list:
+        redict['invoice_num'] = d.get('objectdict').get('name')
+        redict['inv'] = {"status": d.get('objectdict').get('current_status'),
+                         "xldata": d.get('objectdict').get('doc_data')}
+        redict['org'] = wfc.org
+        redict['save_status'] = d.get('objectdict').get('current_status')
+        cvtlst.append(redict)
+        stage2_candidates.append(d.get('objectdict').get('doc_data'))
+    return cvtlst, stage2_candidates
+        
+
 def preparekafkaresponse(wfc, response_list):
+    response_list, stage2_candidates = convert_respoonse_for_infops(wfc, response_list)
     kafka_response = {"request_id": wfc.request_id,
                       "wfcdict": wfc.to_dict(),
                       "msg_source": "paperhouse",
                       "response_list": response_list,
+                      "stage2_candidates": stage2_candidates
                       }
           
     return   kafka_response   
