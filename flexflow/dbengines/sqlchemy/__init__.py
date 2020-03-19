@@ -57,7 +57,7 @@ class SqlalchemyDriver:
                 msg =("{} could not be registered , the erro is: \n  {}".format(record, e))
                 status = "failed"
                 self.db.session.rollback() 
-        msg = {"status": status,  "message": msg, "object": record.to_dict() }   
+        msg = {"status": status,  "message": msg, "objectdict": record.to_dict() }   
         #print(msg)
         return msg
     
@@ -146,10 +146,10 @@ class SqlalchemyDriver:
             try:                
                 self.db.session.commit()
                 msg = {"message" : "updated the follwoing %s" %updated_value_list,
-                       "status": "success", "object": updated_data}
+                       "status": "success", "objectdict": updated_data}
             except  Exception as e:
                 msg = {"message": "could not be updated , the erro is: \n  {}".format( e),
-                       "status": "failed", "object": updated_data}
+                       "status": "failed", "objectdict": updated_data}
                 self.db.session.rollback() 
         #print(msg)
         return msg  

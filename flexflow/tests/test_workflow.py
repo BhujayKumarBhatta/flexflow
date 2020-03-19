@@ -59,7 +59,10 @@ class Tflask(FTestCase):
         msg = wf.create_doc({"dk1": "dv1", "dk2": "dv22", 
                              "tsp": "org1",
                              "division": "divison1"})
-        self.assertTrue(msg['message'] == "has been registered" )
+        self.assertTrue(msg['status'] == "success" )
+        ####################################
+        ###OBJECT AS A DICT IS NOW 
+        self.assertTrue(msg['objectdict']['name'] == "dv22" )
         ####ABLE TO RETRIEVE THE BY THE PRIMKEY AS DEFINED IN THE DOCTYPE
         doc_repo = DomainRepo("Wfdoc")
         wfdocObj_list = doc_repo.list_domain_obj(name="dv22")
