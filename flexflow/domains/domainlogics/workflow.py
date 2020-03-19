@@ -588,7 +588,8 @@ class Workflow:
                                        action=intended_action,
                                        data=input_data)
         wfdocaudit_repo = DomainRepo('Wfdocaudit')
-        msg = wfdocaudit_repo.add_list_of_domain_obj([WfdocauditObj])
+        #msg = wfdocaudit_repo.add_list_of_domain_obj([WfdocauditObj])
+        msg = wfdocaudit_repo.add_single_domain_obj(WfdocauditObj)
         #print(msg)
         return msg
         

@@ -73,6 +73,7 @@ class Tflask(FTestCase):
         msg = wf.action_change_status("dv22", "wfaction1", {"dk1": "changed_data_on_action1"})
         ### check that self._validate_editable_fields(wfdocObj, data) working
         self.assertTrue(msg['status'] =="success")
+        self.assertTrue(msg.get('objectdict').get('name') == 'dv22')
         ###wdoc should be able to understand that dk2 is editable and dk1 is not
         self.assertTrue("dk2" not in [f.name for f in wfdocObj_list[0].editable_fields_at_current_status])
         self.assertTrue("dk1" in [f.name for f in wfdocObj_list[0].editable_fields_at_current_status])

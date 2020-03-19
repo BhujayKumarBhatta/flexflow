@@ -132,7 +132,7 @@ class SqlalchemyDriver:
         if not search_filters: raise rexc.SearhKeyNotProvided
         msg='no such record found to update'
         updated_value_list = []
-        updated_records = []
+        qdict = {}
         Obj = target_class_obj
         query_result = self.db.session.query(Obj).filter_by(**search_filters).first()
         for k, v in updated_data.items():
@@ -141,15 +141,16 @@ class SqlalchemyDriver:
                   )
             updated_value_list.append(what_updated)
             setattr(query_result, k, v)
-            updated_records.append(query_result.to_dict().update(updated_data))
+        qdict = query_result.to_dict()
+        #qdict.update(updated_data)
         if query_result and updated_value_list:            
             try:                
                 self.db.session.commit()
                 msg = {"message" : "updated the follwoing %s" %updated_value_list,
-                       "status": "success", "objectdict": updated_data}
+                       "status": "success", "objectdict": qdict}
             except  Exception as e:
                 msg = {"message": "could not be updated , the erro is: \n  {}".format( e),
-                       "status": "failed", "objectdict": updated_data}
+                       "status": "failed", "objectdict": qdict}
                 self.db.session.rollback() 
         #print(msg)
         return msg  

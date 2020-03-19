@@ -139,9 +139,9 @@ class Tflask(FTestCase):
         msg = wfdoc_repo.add_single_dict_obj(wfdoc_dict1)
         print('adding singledict after converting single obj', msg )
         self.assertTrue(msg.get('status') == 'success')
-        self.assertTrue(msg.get('object').get('name') == 'v1') #  primary key of the whole document
-        self.assertTrue(msg.get('object').get('current_status') == 's3')
-        return_object = msg.get('object')
+        self.assertTrue(msg.get('objectdict').get('name') == 'v1') #  primary key of the whole document
+        self.assertTrue(msg.get('objectdict').get('current_status') == 's3')
+        return_object = msg.get('objectdict')
         del(return_object['associated_doctype_name'])
         del(return_object['associated_doctype'])
         del(wfdoc_dict1['associated_doctype'])
@@ -162,8 +162,8 @@ class Tflask(FTestCase):
                               doc_data={"field1": "f1", "field2": 90})
         msg = wfdoc_repo.add_single_domain_obj(wfdocObj1)
         self.assertTrue(msg.get('status') == 'success')
-        self.assertTrue(msg.get('object').get('name') == 'f1') #  primary key of the whole document
-        self.assertTrue(msg.get('object').get('current_status') == '')
+        self.assertTrue(msg.get('objectdict').get('name') == 'f1') #  primary key of the whole document
+        self.assertTrue(msg.get('objectdict').get('current_status') == '')
         
         
         #######RETRIEVE DOC USING PRIMKEY
