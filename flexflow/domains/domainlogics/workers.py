@@ -11,17 +11,18 @@ def xl_upload(confobj, wfc, doctype_name, request=None, xlfile=None):
     if xlfile:
         xlreceiver = XLReceiver(confobj, wfc, xlfile=xlfile)
     else:
-        xlreceiver = XLReceiver(confobj, wfc, request=request) 
+        xlreceiver = XLReceiver(confobj, wfc, request=request)    
     if not xlreceiver.lower_key_dict:
         raise xlexc.NoDataExtractedFromExcel        
     for xl_dict in xlreceiver.lower_key_dict:
         try:
-            if xl_dict.get('doctype'): doctype_name = xl_dict.get('doctype')                
-            if xl_dict.get('action').lower() == "create":
+            if xl_dict.get('doctype'): doctype_name = xl_dict.get('doctype')                      
+            if xl_dict.get('action').lower().strip() == "create":
                 wf = Workflow(doctype_name, wfc=wfc)
                 status_msg_dict = wf.create_doc(xl_dict )
-                response_list.append(status_msg_dict)
-        except xlexc.FlexFlowException as e:
+                response_list.append(status_msg_dict)                   
+        except (xlexc.FlexFlowException, rexc.FlexFlowException) as e:
+            print(str(e))
             msg = e.ret_val
             response_list.append(msg)
             continue

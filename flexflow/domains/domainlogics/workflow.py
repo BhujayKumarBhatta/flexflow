@@ -26,7 +26,9 @@ class Workflow:
         Also see wfdocObj initialization. Earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         '''
         doctyoeObj = self._get_doctype_obj_from_name()
+        #print('doctyoeObj', doctyoeObj)
         docid = self._get_primary_key_from_data_doc(doctyoeObj, input_data)
+        print('outsie ...docid', docid)
         lead_to_status, create_action_name = \
         self._check_role_for_create_action(doctyoeObj, self.wfc.roles) ## remeber fields validation is done during documents init method
         print('got the lead to status ', lead_to_status )
@@ -464,11 +466,12 @@ class Workflow:
     def _get_primary_key_from_data_doc(self, doctyoeObj, data_doc):
         data_doc = utils.lower_case_keys(data_doc)
         docid = None
-        primkey_in_datadoc = doctyoeObj.primkey_in_datadoc.lower().strip()
+        primkey_in_datadoc = doctyoeObj.primkey_in_datadoc.lower().strip()        
         if not data_doc.get(primkey_in_datadoc):
             raise rexc.PrimaryKeyNotPresentInDataDict(primkey_in_datadoc)
         docid = data_doc.get(primkey_in_datadoc)
         if self._get_wfdoc_by_name(docid):
+            print('exception DuplicateDocumentExists')
             raise rexc.DuplicateDocumentExists(docid)
         return docid
     
@@ -523,11 +526,13 @@ class Workflow:
     
     def _get_wfdoc_by_name(self, wfdoc_name):
         '''search by primary key id, hence expected to get one object'''
+        #print('begin _get_wfdoc_by_name')
         result = None
         search_dict = {"name": wfdoc_name}
         wfdoc_repo = DomainRepo("Wfdoc")
         lst = wfdoc_repo.list_domain_obj(**search_dict)
-        if  len(lst) == 1 : result = lst[0]              
+        if  len(lst) == 1 : result = lst[0]
+        #print('end _get_wfdoc_by_name', result)              
         return result
     
     def _check_action_rules(self, wfdocObj, wfactionObj, intended_action, roles:list):
