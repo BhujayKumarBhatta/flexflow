@@ -402,7 +402,8 @@ class Workflow:
      
     def _create_with_audit(self, wfdocObj, docid, input_data):
         wfdoc_repo = DomainRepo("Wfdoc")
-        msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
+        #msg = wfdoc_repo.add_list_of_domain_obj([wfdocObj])
+        msg = wfdoc_repo.add_single_domain_obj(wfdocObj)
         try:
             audit_msg = self._create_audit_record(wfdocObj, 'Create', input_data)
             msg.update({"audit_msg": audit_msg})

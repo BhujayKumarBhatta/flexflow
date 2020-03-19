@@ -202,7 +202,7 @@ class Wfdoc(Entities):
 #                             raise rexc.DataTypeViolation(k, type(v), ctypeObj.__name__)
                         flength = fieldObj.flength
                         if not len(str(v)) <= flength:
-                            raise rexc.DataLengthViolation(k, len(v), flength)
+                            raise rexc.DataLengthViolation(k, len(str(v)), flength)
                         if self.current_status and \
                         self.current_status.lower().strip() in [sne.lower().strip() for sne in fieldObj.status_needed_edit]:                            
                             editable_fields_at_this_status.append(fieldObj)

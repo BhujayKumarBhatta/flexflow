@@ -58,6 +58,23 @@ class DomainRepo:
             data_lod.append(domain_obj.to_dict())
         result = self.add_form_lod(data_lod)
         return result
+    
+    def add_single_dict_obj(self, dictobj:dict):
+        data_dict = utils.sanitize_input_dict(dictobj)
+        self._validate_input_data_dict(data_dict)
+        dict_to_obj = self._convert_relational_text_to_obj_in_dict(data_dict)
+        dict_to_obj = self.sql_obj(**data_dict)#convert the non relational also to obj
+        result = self.dbdriver.insert(dict_to_obj)
+        return result
+    
+    def add_single_domain_obj(self, domObj):
+        #convert ent obj to sql obj
+        obj_to_dict = domObj.to_dict()
+        relational_obj_in_dict = self._convert_relational_text_to_obj_in_dict(obj_to_dict)
+        sqlObj =self.sql_obj(**relational_obj_in_dict)    
+        result = self.dbdriver.insert(sqlObj)
+        return result
+        
         
     def list_domain_obj(self, **search_filters):        
 #         lod = self.dbdriver.list_as_dict(self.sql_obj, **search_filters)

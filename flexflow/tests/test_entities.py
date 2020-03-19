@@ -44,28 +44,28 @@ class Tflask(FTestCase):
         self.assertTrue(msg['message'] == "has been registered" )
         ########REGISTER ACTION RULES        
         wfaction1_dict=  {"name": "wfaction1",
-                         "associated_doctype": {"name": "doctype1"},
-                         "need_prev_status": "s0",
+                         "associated_doctype": {"name": "doctype1"},                         
                          "need_current_status": "s1",
                          "leads_to_status": "s2",
                          "permitted_to_roles": ["r1",],
-                         "hide_to_roles": ["r5",]
+                         "hide_to_roles": ["r5",],
+                         "undo_prev_hide_for": []
                          }
         wfaction2_dict=  {"name": "wfaction2",
-                         "associated_doctype": {"name": "doctype2"},
-                         "need_prev_status": "s1",
+                         "associated_doctype": {"name": "doctype2"},                         
                          "need_current_status": "s2",
                          "leads_to_status": "s3",
                          "permitted_to_roles": ["r2",],
-                         "hide_to_roles": ["r5",]
+                         "hide_to_roles": ["r5",],
+                         "undo_prev_hide_for": [],
                          }
         wfaction3_dict=  {"name": "wfaction3",
-                         "associated_doctype": {"name": "doctype2"},
-                         "need_prev_status": "s2",
+                         "associated_doctype": {"name": "doctype2"},                         
                          "need_current_status": "s3",
                          "leads_to_status": "s4",
                          "permitted_to_roles": ["r3",],
-                         "hide_to_roles": ["r5",]
+                         "hide_to_roles": ["r5",],
+                         "undo_prev_hide_for": [],
                          }
         wfaction1 = ent.Wfaction.from_dict(wfaction1_dict)
         wfaction2 = ent.Wfaction.from_dict(wfaction2_dict)
@@ -128,7 +128,44 @@ class Tflask(FTestCase):
                          }
         wfdoc_lod = [wfdoc_dict1]
         wfdoc_repo = repos.DomainRepo("Wfdoc")
-        msg = wfdoc_repo.add_form_lod(wfdoc_lod)
+        ####################################################
+        ####Use add single to get the object details in return value ###
+        #with add from lod getting object detials as return value is complex
+        # Also the list may be unreliable when one of the object registration fails
+#         msg = wfdoc_repo.add_form_lod(wfdoc_lod)
+#         print('wfdoc after registration', msg)
+        ####################################################
+        ####Use add single to get the object details in return value ###
+        msg = wfdoc_repo.add_single_dict_obj(wfdoc_dict1)
+        print('adding singledict after converting single obj', msg )
+        self.assertTrue(msg.get('status') == 'success')
+        self.assertTrue(msg.get('object').get('name') == 'v1') #  primary key of the whole document
+        self.assertTrue(msg.get('object').get('current_status') == 's3')
+        return_object = msg.get('object')
+        del(return_object['associated_doctype_name'])
+        del(return_object['associated_doctype'])
+        del(wfdoc_dict1['associated_doctype'])
+        del(return_object['has_draft_for_roles'])
+        self.assertTrue(return_object == wfdoc_dict1) # get the whole doc as dict from the return msh 
+        ##registering object directly  
+        #######################################
+        #############################################  
+        doctypeObj = ent.Doctype(name='doctype2',
+                                 primkey_in_datadoc='dk2',
+                                 roles_to_view_audit=['r'],                                 
+                                 )
+        
+        wfdocObj1 = ent.Wfdoc(name='f1',
+                              associated_doctype=doctypeObj,
+                              prev_status='s1',
+                              current_status='',
+                              doc_data={"field1": "f1", "field2": 90})
+        msg = wfdoc_repo.add_single_domain_obj(wfdocObj1)
+        self.assertTrue(msg.get('status') == 'success')
+        self.assertTrue(msg.get('object').get('name') == 'f1') #  primary key of the whole document
+        self.assertTrue(msg.get('object').get('current_status') == '')
+        
+        
         #######RETRIEVE DOC USING PRIMKEY
         wfdoc_list = wfdoc_repo.list_domain_obj(**{"name": "v1"})
         ##########SEE THE COMNNETS above IN CASE OF INPUT TYPE EXCEPTION       

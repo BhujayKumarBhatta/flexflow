@@ -43,17 +43,21 @@ class SqlalchemyDriver:
     def insert(self, record):
         if record:
             try:
-                self.db.session.add(record)        
-                self.db.session.commit()
-                msg = "{} has been registered.".format(record)         
+                msg = self.db.session.add(record)        
+                self.db.session.commit()               
+                msg = "Registered in DB"  
+                status = "success"
             except exc.IntegrityError as e :
                 msg = ('databse integrity error, {} by the same name may be already present  or all the requred'
                        'fileds has not been supplied.\n\n Full detail: {}'.format( record, e))
                 self.db.session.rollback()
+                status = "failed"
                 #raise
             except  Exception as e:
                 msg =("{} could not be registered , the erro is: \n  {}".format(record, e))
+                status = "failed"
                 self.db.session.rollback() 
+        msg = {"status": status,  "message": msg, "object": record.to_dict() }   
         #print(msg)
         return msg
     
@@ -89,10 +93,11 @@ class SqlalchemyDriver:
         try:
             self.db.session.add_all(lobj)     
             self.db.session.commit()
-            msg = {"status": "success", "message": "has been registered"} 
+            msg = {"status": "success", "message": "has been registered", "objects": lobj} 
         except  Exception as e:
             msg ={"status": "Failed", 
-                  "message": "could not be registered , the erro is: \n  {}".format(e)}
+                  "message": "could not be registered , the erro is: \n  {}".format(e),
+                  "objects": lobj}
             self.db.session.rollback() 
         #print(msg)
         return msg
@@ -127,6 +132,7 @@ class SqlalchemyDriver:
         if not search_filters: raise rexc.SearhKeyNotProvided
         msg='no such record found to update'
         updated_value_list = []
+        updated_records = []
         Obj = target_class_obj
         query_result = self.db.session.query(Obj).filter_by(**search_filters).first()
         for k, v in updated_data.items():
@@ -135,14 +141,15 @@ class SqlalchemyDriver:
                   )
             updated_value_list.append(what_updated)
             setattr(query_result, k, v)
+            updated_records.append(query_result.to_dict().update(updated_data))
         if query_result and updated_value_list:            
             try:                
                 self.db.session.commit()
                 msg = {"message" : "updated the follwoing %s" %updated_value_list,
-                       "status": "success"}
+                       "status": "success", "object": updated_data}
             except  Exception as e:
                 msg = {"message": "could not be updated , the erro is: \n  {}".format( e),
-                       "status": "failed"}
+                       "status": "failed", "object": updated_data}
                 self.db.session.rollback() 
         #print(msg)
         return msg  
