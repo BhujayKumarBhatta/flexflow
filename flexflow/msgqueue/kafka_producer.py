@@ -11,14 +11,16 @@ def convert_respoonse_for_infops(wfc, response_list):
             redict['invoice_num'] = d.get('objectdict').get('name')
             redict['inv'] = {"status": d.get('objectdict').get('current_status'),
                              "xldata": d.get('objectdict').get('doc_data')}
-            redict['org'] = wfc.org
+            #redict['org'] = wfc.org
             redict['save_status'] = d.get('objectdict').get('current_status')
-            cvtlst.append(redict)
+            #cvtlst.append(redict)
             stage2_candidates.append(d.get('objectdict').get('doc_data'))
-        elif d.get('status') == 'failed' and "message" in d.keys():
+        elif 'status'in d.keys() and  'failed' and "message" in d.keys():
             redict['save_status'] = d.get('message')
-            redict['org'] = wfc.org            
-            cvtlst.append(redict)
+        else:
+            redict['save_status'] = "unknown status"
+        redict['org'] = wfc.org            
+        cvtlst.append(redict)
     return cvtlst, stage2_candidates
         
 

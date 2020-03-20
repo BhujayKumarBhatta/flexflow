@@ -22,7 +22,7 @@ def xl_upload(confobj, wfc, doctype_name, request=None, xlfile=None):
                 status_msg_dict = wf.create_doc(xl_dict )
                 response_list.append(status_msg_dict)                   
         except (xlexc.FlexFlowException, rexc.FlexFlowException) as e:
-            print(str(e))
+            #print(str(e))
             msg = e.ret_val
             response_list.append(msg)
             continue
