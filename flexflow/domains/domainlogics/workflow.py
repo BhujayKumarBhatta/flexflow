@@ -72,12 +72,13 @@ class Workflow:
         return wfdoc_dict
     
     def action_change_status(self, wfdoc_name, intended_action,
-                             input_data=None, unset_draft=True):
+                             input_data=None, unset_draft=True, strip_off=False):
         '''any change action unsets draft'''
         wfdocObj = self._get_wfdoc_by_name(wfdoc_name)
         wfactionObj = self._get_wfactionObj(wfdocObj, intended_action)        
         self._check_action_rules(wfdocObj, wfactionObj, intended_action, self.wfc.roles)
-        self._validate_editable_fields(wfdocObj, input_data)
+        #exception will be raised if data fields are not as per the editable fields conf except for xlupload when isntead of exception the fields will be removed from th input dara
+        input_data = self._validate_editable_fields(wfdocObj, input_data, strip_off=strip_off)
         self._unhide_or_hide_action_to_roles(wfdocObj, intended_action, new_born=False)
         changed_data = self._create_changed_data(input_data, wfdocObj, wfactionObj)
         result = self._updadate_with_audit(wfdocObj, intended_action, changed_data)
@@ -358,7 +359,7 @@ class Workflow:
                              "target_role": unh_role,
                              "name": unh_role+wfdocObj.name}
             msg = holddoc_repo.delete(**search_string)#TODO: should be no doc found when not present
-            print('deleting holddoc .....................',msg)
+            #print('deleting holddoc .....................',msg)
             
     def _unhide_or_hide_action_to_roles(self, wfdocObj, intended_action, new_born):
         holddoc_repo = DomainRepo("Holddoc")
@@ -378,7 +379,7 @@ class Workflow:
     def _create_holddoc_for_current_role(self, urole, intended_action, wfdocObj, holddoc_repo, new_born=False):
         result = None
         unique_id = urole+wfdocObj.name
-        print('hoding with name....................', unique_id)
+        print('holding with name....................', unique_id)
         holddoc_list = self._get_holddoc_by_role(wfdocObj, urole, holddoc_repo)
         cstatus = wfdocObj.current_status
         if new_born == True: cstatus = ""
@@ -563,13 +564,21 @@ class Workflow:
                                                    #wfactionObj.need_prev_status,        
                                                    wfactionObj.need_current_status)
                  
-    def _validate_editable_fields(self, wfdocObj, data:dict, new_born=False):
+    def _validate_editable_fields(self, wfdocObj, data:dict, new_born=False, strip_off=False):
+        ''' when xl upload is coming with all the fields , instead of raising exception we strip off those fields'''
+        stripoff_keys = []
         if data:
+            data = utils.lower_case_keys(data)
             efacs_list = wfdocObj.editable_fields_at_current_status
-            efacs_names = [fObj.name.lower().strip() for fObj in efacs_list]  
+            efacs_names = [fObj.name.lower().strip() for fObj in efacs_list]
+            print('editable fields  at this stage ', efacs_names) 
+            print('data have the follwing fields ', data.keys() )
             for k, v in data.items():
                 if k.lower().strip() not in efacs_names and new_born is False :
+                    if strip_off is False:
                         raise rexc.EditNotAllowedForThisField(k, wfdocObj.current_status, efacs_names)
+                    else:
+                        stripoff_keys.append(k)
                 for fieldObj in efacs_list:
                     if k.lower() == fieldObj.name.lower():
                         flength = fieldObj.flength
@@ -577,8 +586,11 @@ class Workflow:
                             raise rexc.DataLengthViolation(k, len(v), flength)
                         ctype = fieldObj.ftype.lower()
                         utils.convert_data_values_as_per_conf(ctype, data, k, v)
+        if stripoff_keys:
+            for k in stripoff_keys: del data[k]
         return data
     
+        
     def _create_audit_record(self, wfdocObj, intended_action, input_data:dict):
         WfdocauditObj = ent.Wfdocaudit(name=str(uuid.uuid4()), #self.wfc.request_id,
                                        wfdoc=wfdocObj, 

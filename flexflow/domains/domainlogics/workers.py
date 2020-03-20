@@ -23,7 +23,8 @@ def xl_upload(confobj, wfc, doctype_name, request=None, xlfile=None):
             else:
                 wfdoc_name = xl_dict.get('invoiceno')
                 intended_action = xl_dict.get('action')
-                status_msg_dict = wf.action_change_status(wfdoc_name, intended_action, xl_dict)
+                #strip-off non editable fields since xl will come with all fields
+                status_msg_dict = wf.action_change_status(wfdoc_name, intended_action, xl_dict, strip_off=True)
             response_list.append(status_msg_dict)                   
         except (xlexc.FlexFlowException, rexc.FlexFlowException) as e:
             #print(str(e))

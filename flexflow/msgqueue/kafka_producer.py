@@ -53,7 +53,7 @@ def notify_kafka(confobj, wfc, response_list):
               record_metadata.partition,
               record_metadata.offset,
               'Produced for paperhouse')
-        print(kafka_response)      
+        #print(kafka_response)      
     except KafkaError:
         # Decide what to do if produce request failed...
         #log.exception()
