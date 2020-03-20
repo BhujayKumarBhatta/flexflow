@@ -57,6 +57,7 @@ class TestUpload(FTestCase):
         from flexflow.domains.domainlogics import workers #to prevent circular dependency 
         rlist = workers.xl_upload(testconf, testwfc, 'tspinvoice', xlfile=test_file)
         self.assertTrue(d.get('status') == "success" for d in rlist)
+        rlist = workers.xl_upload(testconf, testwfc, 'tspinvoice', xlfile=test_file)
         
     def _register_doctype_n_actions(self):
         m.dbdriver.delete(m.Draftdata)
