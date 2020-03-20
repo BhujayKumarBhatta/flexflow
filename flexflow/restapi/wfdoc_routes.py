@@ -88,6 +88,7 @@ def wfdoc_saveasdraft(doctype, wfdoc_name, wfc):
         msg = e.ret_val
     except Exception as e:
         msg = {"status": "Failed", "message": str(e)}
+    #print('save as draft msg format ........................',msg)
     return jsonify(msg)
 
 

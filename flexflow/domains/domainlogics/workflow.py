@@ -201,7 +201,8 @@ class Workflow:
             draftdoc_repo = DomainRepo("Draftdata")
             draft_search_string = {"name": wfdocObj.name}#delete before creating
             prev_draf_cleared_status = draftdoc_repo.delete(**draft_search_string)
-            status = draftdoc_repo.add_list_of_domain_obj([draftdataObj])            
+            status = draftdoc_repo.add_single_domain_obj(draftdataObj)
+            #status = draftdoc_repo.add_list_of_domain_obj([draftdataObj])            
             wfdoc_update_msg = self._update_wfdoc_draft_status(wfdocObj, self.wfc.roles)
             draft_create_msg.update({"draft_create_msg": status, 
                                      "wfdoc_update_msg": wfdoc_update_msg,
