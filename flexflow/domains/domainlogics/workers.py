@@ -41,7 +41,6 @@ def xl_upload(confobj, wfc, doctype_name, request=None, xlfile=None):
     return response_list
 
 
-
 def update_all_from_drafts(confobj, wfc, wf, wfdocs:list, intended_action):
     result_list =[]
     for uniquename in wfdocs:
@@ -58,3 +57,32 @@ def update_all_from_drafts(confobj, wfc, wf, wfdocs:list, intended_action):
             continue
     kafka_producer.notify_kafka(confobj, wfc, result_list)
     return result_list
+
+
+def create_document(confObj, wfc, doctype, request):
+    try:           
+        doc_data = request.json
+        #print('data posted.................',doc_data)
+        wf = Workflow(doctype, wfc=wfc)
+        msg = wf.create_doc(doc_data)
+    except (rexc.FlexFlowException) as e:
+        msg = e.ret_val
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+    kafka_producer.notify_kafka(confObj, wfc, [msg])
+    return msg
+
+
+def update_document(confObj, wfc, doctype, request):
+    try:
+        wfdoc_name = request.json.get('wfdoc_name')
+        intended_action = request.json.get('intended_action')
+        doc_data = request.json.get('doc_data')
+        wf = Workflow('Wfdoc', wfc=wfc)# TODO: doctype param shoikd be passed here. 'Wfdoc' was passed  worongly here , howere we were saved since the change is not dependent on the Doctyoe
+        msg = wf.action_change_status(wfdoc_name, intended_action, doc_data)
+    except (rexc.FlexFlowException) as e:
+        msg = e.ret_val
+    except Exception as e:
+        msg = {"status": "Failed", "message": str(e)}
+    kafka_producer.notify_kafka(confObj, wfc, [msg])
+    return msg
