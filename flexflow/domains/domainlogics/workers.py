@@ -88,34 +88,7 @@ def update_document(confObj, wfc, doctype, request):
     return msg
 
 
-def get_autocheck_result_from_mq_and_update_invoice(msg_fm_kafka):
-    wf = Workflow('tspinvoice', wfc = msg_fm_kafka.get('wfcdict'))
-    response_list = []
-    for autochk_result in msg_fm_kafka.get('response_list'):
-        invoiceno = autochk_result.get('invoiceno')
-        if invoiceno:
-            autochk_remarks = ("autocheck_status:  {} \n"
-                       "inventory_status: {} \n"
-                       "lnet_status: {} \n"
-                       "billing_duration: {} \n"
-                       "bill_to_status: {}\n"
-                       "bill_to_msg: {}\n"
-                       "bill_from_status: {}\n"
-                       "bill_from_msg: {}").format(autochk_result.get('autocheck_status'),
-                                                        autochk_result.get('inventory_status'),
-                                                        autochk_result.get('lnet_status'),
-                                                        autochk_result.get('billing_duration'),
-                                                        autochk_result.get('bill_to_status'),
-                                                        autochk_result.get('bill_to_msg'),
-                                                        autochk_result.get('bill_from_status'),
-                                                        autochk_result.get('bill_from_msg')
-                                                        ) 
-            
-            result = wf.insert_autocheck_result(invoiceno, autochk_remarks)
-        else:
-            result = {"save_status": "could not find invoice %s" %invoiceno }
-        response_list.append(result)
-        print(response_list)
+
         
         
     

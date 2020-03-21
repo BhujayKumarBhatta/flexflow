@@ -1,14 +1,10 @@
 import json
 from kafka import KafkaConsumer
 from kafka.errors import KafkaError
-from flexflow.domains.domainlogics import workers
-
-
-
 
 
 class Klistener:
-    def __init__(self, conf):
+    def __init__(self, conf, Workflow):
         self.conf = conf
         self.ymlconf = conf.yml
         self.ks= self.ymlconf.get('kafka_servers')
@@ -22,6 +18,7 @@ class Klistener:
                                       group_id=self.listener_group,
                                       )        
         self.consumer.subscribe(self.topics)
+        self.Workflow = Workflow
         
     def _get_msg_n_trigger_action(self): 
         print(self.consumer)
@@ -51,7 +48,7 @@ class Klistener:
         if msg.get('msg_source') == "comparator":
             print('got a message from Comparator ')
             try:
-                result = workers.get_autocheck_result_from_mq_and_update_invoice(msg)
+                result = self.get_autocheck_result_from_mq_and_update_invoice(msg)
             except Exception as e:
                 result = str(e) 
                 print(result)
@@ -59,6 +56,39 @@ class Klistener:
             result = ("msg from unknown msg source: {} ".format(msg))
             print(result)
         return result
+    
+    def get_autocheck_result_from_mq_and_update_invoice(self, msg_fm_kafka):
+        
+        wf = self.Workflow('tspinvoice', wfc = msg_fm_kafka.get('wfcdict'))
+        response_list = []
+        for autochk_result in msg_fm_kafka.get('response_list'):
+            invoiceno = autochk_result.get('invoiceno')
+            if invoiceno:
+                autochk_remarks = ("autocheck_status:  {} \n"
+                           "inventory_status: {} \n"
+                           "lnet_status: {} \n"
+                           "billing_duration: {} \n"
+                           "bill_to_status: {}\n"
+                           "bill_to_msg: {}\n"
+                           "bill_from_status: {}\n"
+                           "bill_from_msg: {}").format(autochk_result.get('autocheck_status'),
+                                                            autochk_result.get('inventory_status'),
+                                                            autochk_result.get('lnet_status'),
+                                                            autochk_result.get('billing_duration'),
+                                                            autochk_result.get('bill_to_status'),
+                                                            autochk_result.get('bill_to_msg'),
+                                                            autochk_result.get('bill_from_status'),
+                                                            autochk_result.get('bill_from_msg')
+                                                            ) 
+                
+                result = wf.insert_autocheck_result(invoiceno, autochk_remarks)
+            else:
+                result = {"save_status": "could not find invoice %s" %invoiceno }
+            response_list.append(result)
+            print(response_list)
+    
+
+
 
     
         
