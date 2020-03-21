@@ -1,10 +1,10 @@
 import json
 from kafka import KafkaConsumer
 from kafka.errors import KafkaError
-
+from flexflow.domains.domainlogics.workflow import Workflow
 
 class Klistener:
-    def __init__(self, conf, Workflow):
+    def __init__(self, conf):
         self.conf = conf
         self.ymlconf = conf.yml
         self.ks= self.ymlconf.get('kafka_servers')
@@ -59,7 +59,7 @@ class Klistener:
     
     def get_autocheck_result_from_mq_and_update_invoice(self, msg_fm_kafka):
         
-        wf = self.Workflow('tspinvoice', wfc = msg_fm_kafka.get('wfcdict'))
+        wf = Workflow('tspinvoice', wfc = msg_fm_kafka.get('wfcdict'))
         response_list = []
         for autochk_result in msg_fm_kafka.get('response_list'):
             invoiceno = autochk_result.get('invoiceno')

@@ -80,7 +80,11 @@ class Entities:
         Lets try with making DomainRepo as a class attribute which can be assigned  to the entities while initializing  the entity by 
         other classes which  imports DominRepo and is lower level than  the entity , for example  our Workflow class
         
-        We also tried DominRepo as a parameter to from_dict method of the entity  '''
+        We also tried DominRepo as a parameter to from_dict method of the entity 
+        
+        Finally  ent.Entities.domrepoclass = DomainRepo  before initializing any entities  will handle all scnerios
+        In this entities module will not import the DomainRepo class but entities will have a class attribute domrepoclass which 
+        will be  assigned by workflow or test or any other lower level classes   '''
         for k,v in data_dict.items():            
             if k in cls.related_obj_map.keys():
                 related_class = cls.related_obj_map.get(k).get('mapped_object')              
