@@ -86,3 +86,12 @@ def update_document(confObj, wfc, doctype, request):
         msg = {"status": "Failed", "message": str(e)}
     kafka_producer.notify_kafka(confObj, wfc, [msg])
     return msg
+
+def get_autocheck_result_from_mq_and_update_invoice(msg_fm_kafka):
+    response_list = []
+    for autochk_result in msg_fm_kafka.get('response_list'):
+#             print('...............................AUTOCHKRESULT', autochk_result)
+        autochk_save_result = INV.intsert_auto_chk_result(autochk_result)
+        response_list.append(autochk_save_result)
+        print(autochk_save_result)
+    
