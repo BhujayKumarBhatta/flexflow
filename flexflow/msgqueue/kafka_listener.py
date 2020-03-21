@@ -2,6 +2,7 @@ import json
 from kafka import KafkaConsumer
 from kafka.errors import KafkaError
 from flexflow.domains.domainlogics.workflow import Workflow
+from flexflow.app_run import app
 
 class Klistener:
     def __init__(self, conf):
@@ -80,8 +81,8 @@ class Klistener:
                                                             autochk_result.get('bill_from_status'),
                                                             autochk_result.get('bill_from_msg')
                                                             ) 
-                
-                result = wf.insert_autocheck_result(invoiceno, autochk_remarks)
+                with app.app_context():
+                    result = wf.insert_autocheck_result(invoiceno, autochk_remarks)
             else:
                 result = {"save_status": "could not find invoice %s" %invoiceno }
             response_list.append(result)

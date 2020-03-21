@@ -1,5 +1,5 @@
 from flexflow.configs.prodconf import flexflow_configs
-from .kafka_listener import Klistener
+from flexflow.msgqueue.kafka_listener import Klistener
 
 
 def main():

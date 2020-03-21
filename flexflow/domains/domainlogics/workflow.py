@@ -86,6 +86,7 @@ class Workflow:
         return result
     
     def insert_autocheck_result(self, invoiceno,  autochk_remarks):
+        print('inside insert_autocheck_result')
         msg = None
         wfdocObj = self._get_wfdoc_by_name(invoiceno)
         if wfdocObj and autochk_remarks:
