@@ -84,6 +84,19 @@ class Workflow:
         result = self._updadate_with_audit(wfdocObj, intended_action, changed_data)
         return result
     
+    def insert_autocheck_result(self, invoiceno,  autochk_remarks):
+        msg = None
+        wfdocObj = self._get_wfdoc_by_name(invoiceno)
+        if wfdocObj and autochk_remarks:
+            existing_data = wfdocObj.doc_data
+            existing_data.update({"remarks": autochk_remarks})
+            wfdoc_repo = DomainRepo("Wfdoc")
+            target_doc_name = {"name": wfdocObj.name}
+            msg = wfdoc_repo.update_from_dict(existing_data, **target_doc_name)
+            print(msg)
+        return msg   
+        
+    
     def save_as_draft(self, wfdoc_name, draft_data:dict):
         print('received draft data as ', draft_data)
         if draft_data is None or not isinstance(draft_data, dict):
