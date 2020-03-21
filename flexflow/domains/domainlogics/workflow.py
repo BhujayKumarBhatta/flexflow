@@ -36,7 +36,8 @@ class Workflow:
                          associated_doctype=doctyoeObj,                         
                          prev_status="NewBorn",
                          current_status=lead_to_status,
-                         doc_data=input_data) ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
+                         doc_data=input_data,
+                         DomainRepo=DomainRepo) ###earlier we used to call the storage classes from sqlalchemy or mongoengine for creating the object, now we are using domain entities 
         self._validate_editable_fields(wfdocObj, input_data, new_born=True) #Bypasss edit control checking during creation. aprt from  length validtion, data type is converted as per the conf 
         result = self._create_with_audit(wfdocObj, docid, input_data)
         #push it to hold doc for create action
@@ -209,7 +210,7 @@ class Workflow:
         draft_create_msg = {}
         draftdataObj = ent.Draftdata(name=wfdocObj.name, drafted_by=self.wfc.email,
                                    target_role = self.wfc.roles,
-                                   wfdoc=wfdocObj, doc_data=draft_data)
+                                   wfdoc=wfdocObj, doc_data=draft_data, DomainRepo=DomainRepo)
         try:
             draftdoc_repo = DomainRepo("Draftdata")
             draft_search_string = {"name": wfdocObj.name}#delete before creating
@@ -405,7 +406,8 @@ class Workflow:
                                      associated_doctype = wfdocObj.associated_doctype,
                                      prev_status=wfdocObj.prev_status,
                                      current_status=cstatus,
-                                     doc_data=wfdocObj.doc_data)
+                                     doc_data=wfdocObj.doc_data, 
+                                     DomainRepo=DomainRepo)
             result = holddoc_repo.add_list_of_domain_obj([holddocObj])
         return result
     
@@ -617,7 +619,8 @@ class Workflow:
                                        department=self.wfc.department,                                       
                                        roles=self.wfc.roles, 
                                        action=intended_action,
-                                       data=input_data)
+                                       data=input_data,
+                                       DomainRepo=DomainRepo)
         wfdocaudit_repo = DomainRepo('Wfdocaudit')
         #msg = wfdocaudit_repo.add_list_of_domain_obj([WfdocauditObj])
         msg = wfdocaudit_repo.add_single_domain_obj(WfdocauditObj)

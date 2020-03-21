@@ -36,10 +36,13 @@ class DomainRepo:
         self.dbdriver = dbdriver        
         if self.sql_obJ_map.get(objname):
             self.sql_obj = self.sql_obJ_map.get(objname)
-            self.domain_obj = self.domain_obj_map.get(objname)
+            self.domain_obj = self.domain_obj_map.get(objname)            
         else:
             raise rexc.InvalidWorkflowObject(objname, ','.join(self.sql_obJ_map.keys()))
         
+#     def __call__(self, *arg, **kwargs):
+#         return self(*arg, **kwargs)
+    
     def insert_bulk_mapping(self, data_lod:list):
         self._validate_input_data_lod(data_lod)
         db_save_result = self.dbdriver.insert_bulk(self.sql_obj, data_lod)
@@ -137,8 +140,11 @@ class DomainRepo:
         #############################################
         return obj_named_dict.args
     
+   
     def _create_domain_object(self, status_dict:dict):
+        self.domain_obj.domrepoclass = self.__class__
         return self.domain_obj.from_dict(status_dict)
+    
     
     def _validate_input_data_lod(self, input_data_lod):
         data_lod = input_data_lod        

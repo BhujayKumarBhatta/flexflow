@@ -1,6 +1,6 @@
 import json
 from flexflow.exceptions import rules_exceptions  as rexc
-from flexflow.domains import repos 
+#from flexflow.domains import repos 
 from flexflow.domains.entities import Entities
 from sqlalchemy.orm.relationships import RelationshipProperty
 from sqlalchemy.ext.serializer import our_ids
@@ -30,25 +30,27 @@ class Doctype(Entities):
         self.name = name
         self.primkey_in_datadoc = primkey_in_datadoc
         self.roles_to_view_audit = roles_to_view_audit
+        #self.domrepoclass = kwargs.get('domain_repo')  #should come from super
         super().__init__(**kwargs)
         
     @property
     def wfactions(self):
-        wfaction_repo = repos.DomainRepo('Wfaction')
+        wfaction_repo = self.domrepoclass('Wfaction')
         searh_filter = {"associated_doctype": {"name": self.name} }
         result = wfaction_repo.list_domain_obj(**searh_filter)
         return result
     
     @property
     def wfdocs(self):
-        wfdoc_repo = repos.DomainRepo('Wfdoc')
+        wfdoc_repo = self.domrepoclass('Wfdoc')
         searh_filter = {"associated_doctype": {"name": self.name} }
         result = wfdoc_repo.list_domain_obj(**searh_filter)
         return result
     
     @property
     def datadocfields(self):
-        datadocfields_repo = repos.DomainRepo("Datadocfield")
+        datadocfields_repo = self.domrepoclass("Datadocfield")
+        #datadocfields_repo = self.domrepoclass("Datadocfield")
         searh_filter = {"associated_doctype": {"name": self.name} }
         result = datadocfields_repo.list_domain_obj(**searh_filter)
         return result
@@ -141,7 +143,7 @@ class Wfdoc(Entities):
     
     @property
     def wfactions(self):
-        wfaction_repo = repos.DomainRepo('Wfaction')
+        wfaction_repo = self.domrepoclass('Wfaction')
         searh_filter = {"associated_doctype": {"name": self.associated_doctype_name} }
         result = wfaction_repo.list_domain_obj(**searh_filter)
         return result
@@ -162,7 +164,7 @@ class Wfdoc(Entities):
     
     @property
     def wfdocaudits(self):
-        wfdocaudit_repo = repos.DomainRepo('Wfdocaudit')
+        wfdocaudit_repo = self.domrepoclass('Wfdocaudit')
         searh_filter = {"wfdoc": {"name": self.name} }
         result = wfdocaudit_repo.list_domain_obj(**searh_filter)
         return result
@@ -175,7 +177,7 @@ class Wfdoc(Entities):
     @property
     def draftdata(self):
         draft_data = None
-        draft_repo = repos.DomainRepo("Draftdata")
+        draft_repo = self.domrepoclass("Draftdata")
         search_f = {"name": self.name}
         draft_data_lst = draft_repo.list_dict(**search_f)
         if draft_data_lst and len(draft_data_lst) > 0:
