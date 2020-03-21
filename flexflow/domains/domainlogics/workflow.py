@@ -94,7 +94,8 @@ class Workflow:
             existing_data.update({"remarks": autochk_remarks})
             wfdoc_repo = DomainRepo("Wfdoc")
             target_doc_name = {"name": wfdocObj.name}
-            msg = wfdoc_repo.update_from_dict(existing_data, **target_doc_name)
+            updated_data = {"doc_data": existing_data}
+            msg = wfdoc_repo.update_from_dict(updated_data, **target_doc_name)
             print(msg)
         return msg   
         
