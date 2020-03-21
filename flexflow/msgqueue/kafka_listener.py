@@ -61,6 +61,7 @@ class Klistener:
     def get_autocheck_result_from_mq_and_update_invoice(self, msg_fm_kafka):
         
         wf = Workflow('tspinvoice', wfc = msg_fm_kafka.get('wfcdict'))
+        print('initialing workflow')
         response_list = []
         for autochk_result in msg_fm_kafka.get('response_list'):
             invoiceno = autochk_result.get('invoiceno')
@@ -80,7 +81,7 @@ class Klistener:
                                                             autochk_result.get('bill_to_msg'),
                                                             autochk_result.get('bill_from_status'),
                                                             autochk_result.get('bill_from_msg')
-                                                            ) 
+                                                           ) 
                 with app.app_context():
                     result = wf.insert_autocheck_result(invoiceno, autochk_remarks)
             else:
