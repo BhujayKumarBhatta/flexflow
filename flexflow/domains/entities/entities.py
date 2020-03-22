@@ -2,8 +2,26 @@ import json
 from flexflow.exceptions import rules_exceptions  as rexc
 #from flexflow.domains import repos 
 from flexflow.domains.entities import Entities
-from sqlalchemy.orm.relationships import RelationshipProperty
-from sqlalchemy.ext.serializer import our_ids
+
+
+
+'''
+Checks within Entities
+-------------------------------------------
+_validate_relationship_param_values
+1. InvalidObjTypeInInputParam
+
+from_dict method: 
+1. InvalidObjTypeInInputParam  - For related objects 
+2. PrimaryKeyNotPresentInSearch - Related object
+
+_validate_docdata  in wfdoc
+
+1.UnknownFieldNameInDataDoc
+2.KeyIsMissingInData
+3. DataLengthViolation
+For data type instead of giving error, we convert it to desired format
+'''
 
 class Wfstatus(Entities):
     '''workflow status master'''
@@ -68,7 +86,9 @@ class Datadocfield(Entities):
                                              "primary_key": "name"},
                                              }
     def __init__(self, name, associated_doctype, ftype:str, 
-                 flength:int, status_needed_edit:list, wfc_filter, wfc_filter_to_roles, **kwargs):
+                 flength:int, status_needed_edit:list,
+                  wfc_filter, wfc_filter_to_roles, 
+                  retro:str='False', internaluse:str='False', **kwargs):
         self.name = name
         self.associated_doctype = associated_doctype
         self.associated_doctype_name = self.associated_doctype.name   
@@ -77,6 +97,8 @@ class Datadocfield(Entities):
         self.status_needed_edit = status_needed_edit
         self.wfc_filter = wfc_filter
         self.wfc_filter_to_roles = wfc_filter_to_roles
+        self.retro = retro
+        self.internaluse = internaluse
         self._validate_relationship_param_values()
         super().__init__(**kwargs)
 
@@ -188,13 +210,14 @@ class Wfdoc(Entities):
         editable_fields_at_this_status = []
         if  self.doc_data:
             conf_fieldobj_lst = self.associated_doctype.datadocfields
-            conf_field_names = [item.name.lower().strip() for item in conf_fieldobj_lst]
+            conf_field_names = [item.name.lower().strip() for item in conf_fieldobj_lst]            
             for k, v in self.doc_data.items():
                 if k.lower().strip() not in conf_field_names:
                         raise rexc.UnknownFieldNameInDataDoc(k, conf_field_names)
                 for fieldObj in conf_fieldobj_lst:
                     ##TODO: fieldObj should be checked to see it has all the attributes, otherwise exception that field is not configured properly
-                    if fieldObj.name.lower() not in self.doc_data.keys():
+                    print('retro status ..............................', fieldObj.retro)
+                    if fieldObj.name.lower() not in self.doc_data.keys() and fieldObj.retro in [False, "", None]:
                         raise rexc.KeyIsMissingInData(fieldObj.name, fieldObj.name.lower())
                     if k.lower().strip() == fieldObj.name.lower().strip():                    
                         ctype = fieldObj.ftype.lower().strip()

@@ -67,6 +67,7 @@ class Tflask(FTestCase):
                          "hide_to_roles": ["r5",],
                          "undo_prev_hide_for": [],
                          }
+        ent.Wfaction.domrepoclass = DomainRepo
         wfaction1 = ent.Wfaction.from_dict(wfaction1_dict)
         wfaction2 = ent.Wfaction.from_dict(wfaction2_dict)
         wfaction3 = ent.Wfaction.from_dict(wfaction3_dict)
