@@ -93,11 +93,11 @@ class SqlalchemyDriver:
         try:
             self.db.session.add_all(lobj)     
             self.db.session.commit()
-            msg = {"status": "success", "message": "has been registered", "objects": lobj} 
+            msg = {"status": "success", "message": "has been registered", "objects": [l.to_dict() for l in lobj]} 
         except  Exception as e:
             msg ={"status": "Failed", 
                   "message": "could not be registered , the erro is: \n  {}".format(e),
-                  "objects": lobj}
+                  "objects": [l.to_dict() for l in lobj]}
             self.db.session.rollback() 
         #print(msg)
         return msg

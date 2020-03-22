@@ -25,6 +25,7 @@ def wfmaster_add(objname, wfc):
     try:
         repo = repos.DomainRepo(objname)
         result = repo.add_form_lod(request.json)
+        #print('how is the  result', result)
     except (rexc.InvalidWorkflowObject, rexc.InvalidInputDataList,
             rexc.InvalidInputDataDict, rexc.InvalidKeysInData) as errObj:
         result = errObj.ret_val
