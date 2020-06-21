@@ -1,7 +1,43 @@
+Workflow document type
+#####################################################
+name    primkey_in_datadoc  roles_to_view_audit edit    delete
+tspinvoice  invoiceno   ['TSP', 'role1', 'MIS']
+
+
+Workflow Status
+#####################################
+name    edit    delete
+SentToDivision      
+SENTBackByTSP       
+SENTBackByInfobhan      
+NewBorn     
+Created     
+ApprovedByTSP       
+ApprovedByInfobahn      
+
+Fields in documents
+####################################################################################
+name    associated_doctype  ftype   flength status_needed_edit  wfc_filter  wfc_filter_to_roles retro   internaluse edit    delete
+TSP {'name': 'tspinvoice'}  str 15  ['NewBorn', ''] org ['TSP']             
+Total   {'name': 'tspinvoice'}  int 10  ['NewBorn', 'Created', 'SENTBackByInfobhan', 'ApprovedByInfobahn', 'SENTBackByTSP', 'ApprovedByTSP', 'SentToDivision']      ['']                
+Remarks {'name': 'tspinvoice'}  str 100 ['NewBorn', 'Created', 'SENTBackByInfobhan', 'ApprovedByInfobahn', 'SENTBackByTSP', 'ApprovedByTSP', 'SentToDivision']      ['']        True        
+invoiceno   {'name': 'tspinvoice'}  str 30  ['NewBorn', '']     ['']                
+InfoID  {'name': 'tspinvoice'}  str 30  ['NewBorn', 'Created', 'SENTBackByTSP']     ['']                
+Division    {'name': 'tspinvoice'}  str 15  ['NewBorn', ' Created', 'SENTBackByTSP']    ou  ['MIS']             
+CircuitID   {'name': 'tspinvoice'}  str 30  ['NewBorn', 'Created', 'SENTBackByTSP']     ['']                
+Action  {'name': 'tspinvoice'}  str 30  ['NewBorn', 'Created', 'SENTBackByInfobhan', 'ApprovedByInfobahn', 'SENTBackByTSP', 'ApprovedByTSP', 'SentToDivision']      ['']        True        
+
+
+
 
 name    associated_doctype  need_current_status leads_to_status permitted_to_roles  hide_to_roles   undo_prev_hide_for  edit    delete
-SendToDivision  {'name': 'tspinvoice'}  ['Created', 'SENTBackByTSP', 'ApprovedByTSP']   SentToDivision  ['role1', ' ITSS']  ['TSP'] ['MIS']     
-SendBackByTSP   {'name': 'tspinvoice'}  ['SENTBackByInfobhan']  SENTBackByTSP   ['TSP'] ['MIS'] ['']        
-SendBackByInfobahn  {'name': 'tspinvoice'}  ['Created', 'SENTBackByTSP']    SENTBackByInfobhan  ['role1', ' ITSS']  ['MIS'] ['']        
-Create  {'name': 'tspinvoice'}  ['']    Created ['TSP'] ['MIS'] ['']        
-Approve-TSP {'name': 'tspinvoice'}  ['SENTBackByInfobhan']  ApprovedByTSP   ['TSP'] ['MIS'] ['']        
+#############################################################################################################################################################
+Create  {'name': 'tspinvoice'}  ['']    Created ['TSP'] ['MIS'] ['']
+SendBackByInfobahn  {'name': 'tspinvoice'}  ['Created', 'SENTBackByTSP']    SENTBackByInfobhan  ['role1', ' ITSS']  ['MIS'] ['']   
+SendBackByTSP   {'name': 'tspinvoice'}  ['SENTBackByInfobhan']  SENTBackByTSP   ['TSP'] ['MIS'] [''] 
+ApproveByTSP {'name': 'tspinvoice'}  ['SENTBackByInfobhan']  ApprovedByTSP   ['TSP'] ['MIS'] ['']
+SendToDivision  {'name': 'tspinvoice'}  ['Created', 'SENTBackByTSP', 'ApprovedByTSP']   SentToDivision  ['role1', ' ITSS']  ['TSP'] ['MIS']
+
+
+Total    tspinvoice    int 10  NewBorn,Created,SENTBackByInfobhan,ApprovedByInfobahn,SENTBackByTSP,ApprovedByTSP,SentToDivision    
+     

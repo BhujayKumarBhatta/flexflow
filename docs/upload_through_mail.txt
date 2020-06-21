@@ -1,0 +1,29 @@
+username : TATATEStCOM
+password : Welcome@123
+email: t12@test.com
+
+#############################
+downlaod the excel format - that worked - or in download folder - sample_invoice_downlaod_v2(4).xls worked
+3rd tab - sheet_name='donotmodify'
+A1 and B1 is used as heading 
+A2 - OTP
+B2 - Domain
+otp = df.loc[1, 0] - row1 - col0
+domain = df.loc[1, 1] - row1 - col1
+################################mail server test.com - http://10.174.112.72/
+username:t12 / welcome@123
+check sent item for the previously sent mails - the sheet 1 heaidings may not be updated but see the donotmodify sheet for otp and domain
+
+
+sheet1 
+###################
+InvoiceNo   Action  TSP Division    InfoID  CircuitID   Speed   ARC ServiceType SiteID  FullSiteAddress GSTNo   BillingDateFrom BillingDateTO   InvoiceDate TaxName Total    REMARKS
+TATA00123   CREATE  TATA    ABD S0000000008 UploadCircuit   4 mbps  2400    GXDN    52454   This looks like a good address  09AAJJ888899N90 02-12-2018  01-03-2019  15-03-2019  USA SGST@9%+CGST@9% 234455  OK
+
+#######################CREATE FLEXFLOW UPLOAD IN MAILSRV###############################################
+
+from clientflexflow.client import clientflexflow
+xluploadclient = clientflexflow(tlclient)        
+Upload_result = xluploadclient.upload_xl(wfdoctype, uploaded_file_url)
+
+
