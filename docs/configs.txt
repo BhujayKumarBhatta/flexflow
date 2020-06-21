@@ -1,0 +1,143 @@
+####################encryot the password of flwxflow data base connection#####################################
+
+venv) ubuntu@info-ops-apps:~/tspb/tokenleader$ ./encrypt-pwd.sh -k flexflow_db_pwd -p password_of_user2
+file /home/ubuntu/secrets/secrets.yml has been generated
+(venv) ubuntu@info-ops-apps:~/tspb/tokenleader$ 
+(venv) ubuntu@info-ops-apps:~/tspb/tokenleader$ cat /home/ubuntu/secrets/secrets.yml
+db_pwd: gAAAAABdHtlHxd4U5876cuZmQltjdJO-DRlD9qJE2v6eI1H6yrhE9P3XYJcBUEYFgKZTN9FaA3tVUfJbhg98rXKnyEyziJCIDw==
+flexflow_db_pwd: gAAAAABe7u8Ww0m_b41FIP2jqJjFlKtOVwDJVoCMsaLdpjaF1mZ1XIQ-60xUj_4GJ0ftS45054srBKFhOxH_lm5-eVJy1C-biQ==
+tl_password: gAAAAABdGe9bGw2L-MS_ZcuCeL3HaKRDysehkOafqQaFpbaDsf9pVjaZ1EheHxoCN1KJdxq9pCinWJt55bx-WQum2UtZz8E9kg==
+
+
+#################database conf in /etc/tokenleader/flexflow_configs.yml##################################
+mysql:
+      Server: 10.174.112.206
+      Port: 3306
+      Database: flexflow
+      UID: user2
+      db_pwd_key_map: flexflow_db_pwd
+secrets:                                                                                                                                                                                                          
+     user_auth_info_file_location: /home/ubuntu/secrets/secrets.yml
+     fernet_key_file: /home/ubuntu/secrets/fernet_key_file.yml
+     db_pwd_key_map: db_pwd # when using encrypt-pwd command use this value for --kemap
+     tokenleader_pwd_key_map: tl_pwd
+database:
+   Server: mysqldbhost
+   Port: 3306
+   Database: auth
+   UID: root
+   db_pwd_key_map: db_pwd
+   #engine_connect_string: 'mssql+pymysql:///{0}'
+
+
+
+tokenleader connection db  161
+###############################
+Server version: 8.0.16 MySQL Community Server - GPL
+bbhatta@xrdp-new:~/tspb/flexflow$ cU 161
+Ubuntu 16.04.3 LTS
+Welcome to Ubuntu 16.04.3 LTS (GNU/Linux 4.4.0-92-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+144 packages can be updated.
+19 updates are security updates.
+
+New release '18.04.4 LTS' available.
+Run 'do-release-upgrade' to upgrade to it.
+
+
+*** System restart required ***
+------------------------------------------------------------------------------
+* WARNING                                                                    *
+* You are accessing a secured system and your actions will be logged along   *
+* with identifying information. Disconnect immediately if you are not an     *
+* authorized user of this system.                                            *
+------------------------------------------------------------------------------
+Authorized uses only. All activity may be monitored and reported.
+Last login: Tue Dec 24 15:32:00 2019 from 10.174.112.145
+ubuntu@mydockers:~$ sudo docker exec -it mysql bash
+sudo: unable to resolve host mydockers: Connection timed out
+root@16e5ee31e811:/# mysql
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: NO)
+root@16e5ee31e811:/# mysql -u root -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 712
+Server version: 8.0.16 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2019, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+your 
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> create database flexflow_db;
+Query OK, 1 row affected (0.25 sec)
+
+mysql> 
+
+(venv) ubuntu@info-ops-apps:~/tspb/flexflow$ export FLASK_APP='flexflow/app_run.py'
+venv) ubuntu@info-ops-apps:~/tspb/flexflow$ flask db upgrade
+{'tokenexpiration': 8, 'public_key_file_location': '~/.ssh/id_rsa.pub', 'private_key_file_location': '~/.ssh/id_rsa'}
+INFO  [alembic.runtime.migration] Context impl MySQLImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 4f1371de0bff, recraeate db after retro and insternal use added in field
+
+
+(venv) ubuntu@info-ops-apps:~/tspb/flexflow$ nohup python -u api-felxflow_start.sh>api_flexflow.log 2>&1 &
+
+(venv) ubuntu@info-ops-apps:~/tspb/flexflow$ nohup python -u listener_flexflow.sh>listener_flexflow.log 2>&1 &
+
+
+(venv) ubuntu@info-ops-apps:~/tspb/flexflow$ nohup python -u listener_flexflow.sh>listener_flexflow.log 2>&1 &
+
+
+
+##########################################################################
+in mariadb the flask migration didnt work for JSON fieds
+###############################################################################################   
+(venv) ubuntu@info-ops-apps:~/tspb/flexflow$ sudo apt install mysql-client-core-5.7
+   
+(venv) ubuntu@info-ops-apps:~/tspb/flexflow$ mysql -h 10.174.112.206 -u user2 -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 509
+Server version: 5.5.5-10.1.44-MariaDB-1~xenial mariadb.org binary distribution
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| auth               |
+| information_schema |
+| iprismdb           |
+| mysql              |
+| mysql_log          |
+| performance_schema |
++--------------------+
+6 rows in set (0.01 sec)
+
+mysql> create database flexflow_db
+    -> ;
+Query OK, 1 row affected (0.21 sec)
+
+mysql> 
+mysql> quit
+
+##########################################################################
