@@ -14,6 +14,9 @@ domain = df.loc[1, 1] - row1 - col1
 username:t12 / welcome@123
 check sent item for the previously sent mails - the sheet 1 heaidings may not be updated but see the donotmodify sheet for otp and domain
 
+a@mailhook_server.com
+tsp_invoice_verification
+attachment name = invoice.xls
 
 sheet1 
 ###################
@@ -25,5 +28,27 @@ TATA00123   CREATE  TATA    ABD S0000000008 UploadCircuit   4 mbps  2400    GXDN
 from clientflexflow.client import clientflexflow
 xluploadclient = clientflexflow(tlclient)        
 Upload_result = xluploadclient.upload_xl(wfdoctype, uploaded_file_url)
+result = x.xlupload('tspinvoice', attachment_file)
+#######The name 'tspinvoice' for wfdoctype is gettig hardcoded here###################
 
+########################mailsrv###############################
+
+should have clientflexflow installed and in /etc/tokenleader/client_configs have flexflow server entry
+flexflow:
+  url_type: endpoint_url_internal
+  #url_type: endpoint_url_admin
+  ssl_enabled: no
+  ssl_verify: no
+###############################cloud.com  
+10.174.112.169  cloud.com   triggers mail to prod_mailhook_server.com 10.174.112.95
+user in mail server : t12/  user in flexflow TATAQ / OTP : 1779 / Welcome@1234
+10.174.112.72  test.com   triggers mail to prod_mailhook_server.com 10.174.112.145 my LVDI
+username ; admin / i1/i2/t11/t12/m11/m12
+username in mail sever t12, username in infovoice : TATATEStCOM/OTP: 8725
+
+mail srv installation can be done using normal user but servie has to be startes on port 25 using root
+BEWAREEEEEEEE about pip installation not being done using root 
+however 95 is adedicated server for mailhook and here installation itself was done using root
+
+empResig branch is also having the changes for invoice upload and repky for flexflow
 
